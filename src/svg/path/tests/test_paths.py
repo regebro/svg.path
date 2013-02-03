@@ -2,7 +2,7 @@ from __future__ import division
 import unittest
 from math import sqrt, pi
 
-from ..svgpath import CubicBezier, QuadraticBezier, Line, Arc, Path
+from ..path import CubicBezier, QuadraticBezier, Line, Arc, Path
 
 # Most of these test points are not calculated serparately, as that would
 # take too long and be too error prone. Instead the curves have been verified

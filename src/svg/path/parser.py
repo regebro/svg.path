@@ -1,6 +1,6 @@
 # SVG Path specification parser
 
-from . import svgpath 
+from . import path 
 
 COMMANDS = 'MmZzLlHhVvCcSsQqTtAa'
 UPPERCASE = 'MZLHVCSQTA'
@@ -27,7 +27,7 @@ def parse_path(pathdef, current_pos=0j):
     elements = _tokenize_path(pathdef)
     elements.reverse()
     
-    segments = svgpath.Path()
+    segments = path.Path()
     start_pos = None
     command = None
     
@@ -66,7 +66,7 @@ def parse_path(pathdef, current_pos=0j):
                 
         elif command == 'Z':
             # Close path
-            segments.append(svgpath.Line(current_pos, start_pos))
+            segments.append(path.Line(current_pos, start_pos))
             
         elif command == 'L':
             x = elements.pop()
@@ -74,7 +74,7 @@ def parse_path(pathdef, current_pos=0j):
             pos = float(x) + float(y) * 1j
             if not absolute:
                 pos += current_pos
-            segments.append(svgpath.Line(current_pos, pos))
+            segments.append(path.Line(current_pos, pos))
             current_pos = pos
             
         elif command == 'H':
@@ -82,7 +82,7 @@ def parse_path(pathdef, current_pos=0j):
             pos = float(x) + current_pos.imag * 1j
             if not absolute:
                 pos += current_pos.real
-            segments.append(svgpath.Line(current_pos, pos))
+            segments.append(path.Line(current_pos, pos))
             current_pos = pos
             
         elif command == 'V':
@@ -90,7 +90,7 @@ def parse_path(pathdef, current_pos=0j):
             pos = current_pos.real + float(y) * 1j
             if not absolute:
                 pos += current_pos.imag * 1j
-            segments.append(svgpath.Line(current_pos, pos))
+            segments.append(path.Line(current_pos, pos))
             current_pos = pos
         
         elif command == 'C':
@@ -103,7 +103,7 @@ def parse_path(pathdef, current_pos=0j):
                 control2 += current_pos
                 end += current_pos
                 
-            segments.append(svgpath.CubicBezier(current_pos, control1, control2, end))
+            segments.append(path.CubicBezier(current_pos, control1, control2, end))
             current_pos = end
 
         elif command == 'S':
@@ -128,7 +128,7 @@ def parse_path(pathdef, current_pos=0j):
                 control2 += current_pos
                 end += current_pos
                 
-            segments.append(svgpath.CubicBezier(current_pos, control1, control2, end))
+            segments.append(path.CubicBezier(current_pos, control1, control2, end))
             current_pos = end
 
         elif command == 'Q':
@@ -139,7 +139,7 @@ def parse_path(pathdef, current_pos=0j):
                 control += current_pos
                 end += current_pos
                 
-            segments.append(svgpath.QuadraticBezier(current_pos, control, end))
+            segments.append(path.QuadraticBezier(current_pos, control, end))
             current_pos = end
 
         elif command == 'T':
@@ -163,7 +163,7 @@ def parse_path(pathdef, current_pos=0j):
                 control += current_pos
                 end += current_pos
                 
-            segments.append(svgpath.QuadraticBezier(current_pos, control, end))
+            segments.append(path.QuadraticBezier(current_pos, control, end))
             current_pos = end
 
         elif command == 'A':
@@ -176,7 +176,7 @@ def parse_path(pathdef, current_pos=0j):
             if not absolute:
                 end += current_pos
                 
-            segments.append(svgpath.Arc(current_pos, radius, rotation, arc, sweep, end))
+            segments.append(path.Arc(current_pos, radius, rotation, arc, sweep, end))
             current_pos = end
             
     return segments

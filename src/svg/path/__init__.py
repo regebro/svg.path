@@ -1,2 +1,2 @@
-from .svgpath import Line, Arc, CubicBezier, QuadraticBezier
-from .svgparser import parse_path
+from .path import Line, Arc, CubicBezier, QuadraticBezier
+from .parser import parse_path

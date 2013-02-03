@@ -1,7 +1,7 @@
 from __future__ import division
 import unittest
-from ..svgpath import CubicBezier, QuadraticBezier, Line, Arc, Path
-from ..svgparser import parse_path
+from ..path import CubicBezier, QuadraticBezier, Line, Arc, Path
+from ..parser import parse_path
 
 class TestParser(unittest.TestCase):
     
