@@ -22,7 +22,8 @@ the path, where the point is given as a floating point value where ``0.0`` is
 the start of the path and ``1.0`` is end end. 
 
 The ``.length()`` function will return the path segment or paths length. This
-is in some cases done by gemoetric approximation and **may be very slow**.
+is in some cases done by geometric approximation and for this reason **may be
+very slow**.
 
 
 Todo
@@ -34,5 +35,5 @@ completeness.
 Licence
 -------
 
-This module is under a CC0 1.90 Universal licence. 
+This module is under a CC0 1.0 Universal licence. 
 http://creativecommons.org/publicdomain/zero/1.0/
