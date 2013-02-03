@@ -46,7 +46,7 @@ parameter means.
 In addition to that, there is the ``Path`` class, which is instantiated
 with a sequence of path segments:
 
-    ``Path(*segments)``
+* ``Path(*segments)``
     
 That ``Path`` class is a mutable sequence, so it behaves like a list.
 
