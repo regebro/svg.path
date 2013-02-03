@@ -1,1 +1,4 @@
 Lennart Regebro <regebro@gmail.com>, Original Author
+
+Thanks to Martin R (http://stackoverflow.com/users/1187415/martin-r) for
+finding some bugs in the Arc calculations.

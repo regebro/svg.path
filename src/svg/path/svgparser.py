@@ -5,7 +5,7 @@ from . import svgpath
 COMMANDS = 'MmZzLlHhVvCcSsQqTtAa'
 UPPERCASE = 'MZLHVCSQTA'
 
-def tokenize_path(pathdef):
+def _tokenize_path(pathdef):
     # Commas are separators, just like spaces.
     pathdef = pathdef.replace(',', ' ')
     
@@ -24,7 +24,7 @@ def parse_path(pathdef, current_pos=0j):
     # But if you pass in a current_pos variable, the initial moveto
     # will be relative to that current_pos. This is useful.
     
-    elements = tokenize_path(pathdef)
+    elements = _tokenize_path(pathdef)
     elements.reverse()
     
     segments = svgpath.Path()
