@@ -1,5 +1,5 @@
-# This is not a generic SVG parser. It just looks for the first path it can
-# find and makes a Path object out of it.
+# SVG Path specification parser
+
 from . import svgpath 
 
 COMMANDS = 'MmZzLlHhVvCcSsQqTtAa'
