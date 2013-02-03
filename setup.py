@@ -4,7 +4,7 @@ import os
 version = '1.0'
 
 long_description = (
-    open('README.txt').read()
+    open('README.rst').read()
     + '\n' +
     'Contributors\n'
     '============\n'
@@ -16,7 +16,7 @@ long_description = (
 
 setup(name='svg.path',
       version=version,
-      description="SVG Path objects and parser",
+      description="SVG path objects and parser",
       long_description=long_description,
       # Get more strings from
       # http://pypi.python.org/pypi?%3Aaction=list_classifiers
@@ -35,9 +35,6 @@ setup(name='svg.path',
       zip_safe=False,
       install_requires=[
           'setuptools',
-          # -*- Extra requirements: -*-
       ],
-      entry_points="""
-      # -*- Entry points: -*-
-      """,
+      test_suite='svg.path.tests',
       )
