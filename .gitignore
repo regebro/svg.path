@@ -20,6 +20,8 @@ lib64
 
 # Installer logs
 pip-log.txt
+*.wpr
+*.wpu
 
 # Unit test / coverage reports
 .coverage
