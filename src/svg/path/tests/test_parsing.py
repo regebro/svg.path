@@ -7,6 +7,10 @@ class TestParser(unittest.TestCase):
     
     def test_svg_examples(self):
         """Examples from the SVG spec"""
+        path1 = parse_path('M100,200c10-5,20-10,30-20')
+        path2 = parse_path('M 100 200 c 10 -5 20 -10 30 -20')
+        self.assertEqual(path1, path2)
+
         path1 = parse_path('M 100 100 L 300 100 L 200 300 z')
         self.assertEqual(path1, Path(Line(100+100j, 300+100j), 
                                      Line(300+100j, 200+300j),

@@ -8,6 +8,8 @@ UPPERCASE = 'MZLHVCSQTA'
 def _tokenize_path(pathdef):
     # Commas are separators, just like spaces.
     pathdef = pathdef.replace(',', ' ')
+    # Separate negative numbers denoted by minus sign
+    pathdef = pathdef.replace('-', ' -')
     
     # Commands are allowed without spaces around. Let's insert spaces so it's
     # easier to split later.
