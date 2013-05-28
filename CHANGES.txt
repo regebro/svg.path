@@ -4,7 +4,8 @@ Changelog
 1.0 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Solved issue #2: Paths with negative values and no spaces didn't work.
+  [regebro]
 
 
 1.0b1 (2013-02-03)

@@ -85,7 +85,12 @@ class TestParser(unittest.TestCase):
                  Line(900+200j, 950+175j),
                  Arc(950+175j, 25+100j, -30, 0, 1, 1000+150j),
                  Line(1000+150j, 1050+125j)))
-        
+
+    def test_negative(self):
+        """You don't need spaces before a minus-sign"""
+        path1 = parse_path('M100,200c10-5,20-10,30-20')
+        path2 = parse_path('M 100 200 c 10 -5 20 -10 30 -20')
+        self.assertEqual(path1, path2)         
         
 if __name__ == '__main__':
     unittest.main()
