@@ -7,7 +7,7 @@ UPPERCASE = 'MZLHVCSQTA'
 
 def _tokenize_path(pathdef):
     # Commas and minus-signs are separators, just like spaces.
-    pathdef = pathdef.replace(',', ' ').replace('-', ' -')
+    pathdef = pathdef.replace(',', ' ').replace('e-', 'XX').replace('E-', 'XX').replace('-', ' -').replace('XX', 'e-')
     
     # Commands are allowed without spaces around. Let's insert spaces so it's
     # easier to split later.
@@ -30,8 +30,7 @@ def parse_path(pathdef, current_pos=0j):
     start_pos = None
     command = None
     
-    while elements:
-        
+    while elements:        
         if elements[-1] in COMMANDS:
             # New command.
             last_command = command # Used by S and T
