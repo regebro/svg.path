@@ -2,28 +2,32 @@
 
 from . import path 
 
-COMMANDS = 'MmZzLlHhVvCcSsQqTtAa'
-UPPERCASE = 'MZLHVCSQTA'
+COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
+UPPERCASE = set('MZLHVCSQTA')
 
+# This "replace-based" tokenizer is perhaps less "pretty" than using a regex,
+# but it is also faster.
 def _tokenize_path(pathdef):
+    # First handle negative exponents:
+    pathdef = pathdef.replace('e-', 'NEGEXP').replace('E-', 'NEGEXP')
     # Commas and minus-signs are separators, just like spaces.
     pathdef = pathdef.replace(',', ' ').replace('-', ' -')
-    
+    pathdef = pathdef.replace('NEGEXP', 'e-')
     # Commands are allowed without spaces around. Let's insert spaces so it's
     # easier to split later.
     for c in COMMANDS:
         pathdef = pathdef.replace(c, ' %s ' % c)
         
-    # Split the path into elements and reverse, for easy use of .pop()
+    # Split the path into elements
     return pathdef.split()
-    
-    
+
 def parse_path(pathdef, current_pos=0j):
     # In the SVG specs, initial movetos are absolute, even if
     # specified as 'm'. This is the default behavior here as well.
     # But if you pass in a current_pos variable, the initial moveto
     # will be relative to that current_pos. This is useful.
     elements = _tokenize_path(pathdef)
+    # Reverse for easy use of .pop()
     elements.reverse()
     
     segments = path.Path()

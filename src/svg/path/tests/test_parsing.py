@@ -91,6 +91,14 @@ class TestParser(unittest.TestCase):
         path1 = parse_path('M100,200c10-5,20-10,30-20')
         path2 = parse_path('M 100 200 c 10 -5 20 -10 30 -20')
         self.assertEqual(path1, path2)         
+
+    def test_numbers(self):
+        """Exponents and other number format cases"""
+        # It can be e or E, the plus is optional, and a minimum of +/-3.4e38 must be supported.
+        path1 = parse_path('M-3.4e38 3.4E+38L-3.4E-38,3.4e-38')
+        path2 = Path(Line(-3.4e+38+3.4e+38j, -3.4e-38+3.4e-38j))
+        self.assertEqual(path1, path2)         
+        
         
 if __name__ == '__main__':
     unittest.main()
