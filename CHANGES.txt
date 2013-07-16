@@ -6,6 +6,8 @@ Changelog
 
 - Floats with negative exponents work again.
 
+- New tokenizer that is around 20 times faster.
+
 
 1.0 (2013-05-28)
 ----------------
