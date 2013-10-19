@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.1 (unreleased)
+1.1 (2013-10-19)
 ----------------
 
 - Floats with negative exponents work again.
