@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.2'
+version = '1.2.dev0'
 
 long_description = (
     open('README.rst').read()
@@ -32,6 +32,9 @@ setup(name='svg.path',
           'Programming Language :: Python :: 3.1',
           'Programming Language :: Python :: 3.2',
           'Programming Language :: Python :: 3.3',
+          'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: Implementation :: PyPy',
+          'Programming Language :: Python :: Implementation :: Jython',
           'Topic :: Multimedia :: Graphics'
           ],
       keywords='svg path maths',
