@@ -380,7 +380,9 @@ class TestPath(unittest.TestCase):
         """The paths that are in the SVG specs"""
 
         # Big pie: M300,200 h-150 a150,150 0 1,0 150,-150 z
-        path = Path(Line(300 + 200j, 150 + 200j), Arc(150 + 200j, 150 + 150j, 0, 1, 0, 300 + 50j), Line(300 + 50j, 300 + 200j))
+        path = Path(Line(300 + 200j, 150 + 200j),
+                    Arc(150 + 200j, 150 + 150j, 0, 1, 0, 300 + 50j),
+                    Line(300 + 50j, 300 + 200j))
         # The points and length for this path are calculated and not regression tests.
         self.assertAlmostEqual(path.point(0.0), (300 + 200j))
         self.assertAlmostEqual(path.point(0.14897825542), (150 + 200j))
@@ -391,7 +393,9 @@ class TestPath(unittest.TestCase):
         self.assertAlmostEqual(path.length(), pi * 225 + 300, places=6)
 
         # Little pie: M275,175 v-150 a150,150 0 0,0 -150,150 z
-        path = Path(Line(275 + 175j, 275 + 25j), Arc(275 + 25j, 150 + 150j, 0, 0, 0, 125 + 175j), Line(125 + 175j, 275 + 175j))
+        path = Path(Line(275 + 175j, 275 + 25j),
+                    Arc(275 + 25j, 150 + 150j, 0, 0, 0, 125 + 175j),
+                    Line(125 + 175j, 275 + 175j))
         # The points and length for this path are calculated and not regression tests.
         self.assertAlmostEqual(path.point(0.0), (275 + 175j))
         self.assertAlmostEqual(path.point(0.2800495767557787), (275 + 25j))

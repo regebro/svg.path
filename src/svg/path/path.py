@@ -78,7 +78,8 @@ class CubicBezier(object):
 
         for x in range(1, subdivisions + 1):
             next_point = self.point(delta * x)
-            distance = sqrt((next_point.real - current_point.real) ** 2 + (next_point.imag - current_point.imag) ** 2)
+            distance = sqrt((next_point.real - current_point.real) ** 2 +
+                            (next_point.imag - current_point.imag) ** 2)
             lenght += distance
             current_point = next_point
 
@@ -125,7 +126,8 @@ class QuadraticBezier(object):
         C2 = 2 * sqrt(C)
         BA = B / A2
 
-        return (A32 * Sabc + A2 * B * (Sabc - C2) + (4 * C * A - B ** 2) * log((2 * A2 + BA + Sabc) / (BA + C2))) / (4 * A32)
+        return (A32 * Sabc + A2 * B * (Sabc - C2) + (4 * C * A - B ** 2) *
+                log((2 * A2 + BA + Sabc) / (BA + C2))) / (4 * A32)
 
 
 class Arc(object):
@@ -227,8 +229,10 @@ class Arc(object):
         cosr = cos(radians(self.rotation))
         sinr = sin(radians(self.rotation))
 
-        x = cosr * cos(angle) * self.radius.real - sinr * sin(angle) * self.radius.imag + self.center.real
-        y = sinr * cos(angle) * self.radius.real + cosr * sin(angle) * self.radius.imag + self.center.imag
+        x = (cosr * cos(angle) * self.radius.real - sinr * sin(angle) *
+             self.radius.imag + self.center.real)
+        y = (sinr * cos(angle) * self.radius.real + cosr * sin(angle) *
+             self.radius.imag + self.center.imag)
         return complex(x, y)
 
     def length(self):
@@ -247,7 +251,8 @@ class Arc(object):
 
         for x in range(1, subdivisions + 1):
             next_point = self.point(delta * x)
-            distance = sqrt((next_point.real - current_point.real) ** 2 + (next_point.imag - current_point.imag) ** 2)
+            distance = sqrt((next_point.real - current_point.real) ** 2 +
+                            (next_point.imag - current_point.imag) ** 2)
             lenght += distance
             current_point = next_point
 

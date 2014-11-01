@@ -57,7 +57,8 @@ def parse_path(pathdef, current_pos=0j):
                 current_pos += pos
 
             # when M is called, reset start_pos
-            # This behavior of Z is defined in svg spec: http://www.w3.org/TR/SVG/paths.html#PathDataClosePathCommand
+            # This behavior of Z is defined in svg spec:
+            # http://www.w3.org/TR/SVG/paths.html#PathDataClosePathCommand
             start_pos = current_pos
 
             # Implicit moveto commands are treated as lineto commands.
