@@ -4,7 +4,7 @@ Changelog
 1.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- New Quadradic Bezier implementation by Justin Gruenberg.
 
 
 1.1 (2013-10-19)
