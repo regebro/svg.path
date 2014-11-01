@@ -263,20 +263,24 @@ class QuadraticBezierTest(unittest.TestCase):
         # M200,300 Q400,50 600,300 T1000,300
         path1 = QuadraticBezier(200+300j, 400+50j, 600+300j)
         self.assertAlmostEqual(path1.point(0), (200+300j))
-        self.assertAlmostEqual(path1.point(0.3), (336.8+142.5j))
-        self.assertAlmostEqual(path1.point(0.5), (400+112.5j))
-        self.assertAlmostEqual(path1.point(0.9), (545.6+232.5j))
+        self.assertAlmostEqual(path1.point(0.3), (320+195j))
+        self.assertAlmostEqual(path1.point(0.5), (400+175j))
+        self.assertAlmostEqual(path1.point(0.9), (560+255j))
         self.assertAlmostEqual(path1.point(1), (600+300j))
 
         # T1000, 300
         inversion = (600+300j) + (600+300j) - (400+50j)
         path2 = QuadraticBezier(600+300j, inversion, 1000+300j)
         self.assertAlmostEqual(path2.point(0), (600+300j))
-        self.assertAlmostEqual(path2.point(0.3), (736.8+457.5j))
-        self.assertAlmostEqual(path2.point(0.5), (800+487.5j))
-        self.assertAlmostEqual(path2.point(0.9), (945.6+367.5j))
+        self.assertAlmostEqual(path2.point(0.3), (720+405j))
+        self.assertAlmostEqual(path2.point(0.5), (800+425j))
+        self.assertAlmostEqual(path2.point(0.9), (960+345j))
         self.assertAlmostEqual(path2.point(1), (1000+300j))
-
+        
+    def test_length(self):
+        # calculated with the cubic bezier length estimation
+        path1 = QuadraticBezier(200+300j, 400+50j, 600+300j)
+        self.assertAlmostEqual(path1.length(), 487.7710938890204)
         
 class ArcTest(unittest.TestCase):
     

@@ -1,5 +1,5 @@
 from __future__ import division
-from math import sqrt, cos, sin, acos, degrees, radians
+from math import sqrt, cos, sin, acos, degrees, radians, log
 from collections import MutableSequence
 
 # This file contains classes for the different types of SVG path segments as
@@ -83,21 +83,47 @@ class CubicBezier(object):
             
         return lenght
     
-class QuadraticBezier(CubicBezier):
-    # For Quadratic Bezier we simply subclass the Cubic. This is less efficient
-    # and gives more complex calculations, but reuse means less bugs.
-    # It is possible to calculate the length of a quadratic bezier so a TODO is to
-    # replace the geometric approximation here.
-
+class QuadraticBezier(object):
     def __init__(self, start, control, end):
         self.start = start
-        self.control1 = self.control2 = control
         self.end = end
+        self.control = control
 
     def __repr__(self):
         return '<QuadradicBezier start=%s control=%s end=%s>' % (
-               self.start, self.control1, self.end)
+               self.start, self.control, self.end)
+               
+    def __eq__(self, other):
+        if not isinstance(other, QuadraticBezier):
+            return NotImplemented
+        return self.start == other.start and self.end == other.end and \
+               self.control == other.control
+    
+    def __ne__(self, other):
+        if not isinstance(other, QuadraticBezier):
+            return NotImplemented
+        return not self == other
         
+    def point(self, pos):
+        return (1-pos)**2*self.start + 2*(1-pos)*pos*self.control + \
+               pos**2*self.end
+    
+    def length(self):
+        # http://www.malczak.info/blog/quadratic-bezier-curve-length/
+        a = self.start - 2*self.control + self.end
+        b = 2*(self.control - self.start)
+    
+        A = 4*(a.real**2 + a.imag**2)
+        B = 4*(a.real*b.real + a.imag*b.imag)
+        C = b.real**2 + b.imag**2
+        
+        Sabc = 2*sqrt(A+B+C)
+        A2 = sqrt(A)
+        A32 = 2*A*A2
+        C2 = 2*sqrt(C)
+        BA = B/A2
+
+        return (A32*Sabc + A2*B*(Sabc-C2) + (4*C*A-B**2)*log((2*A2+BA+Sabc)/(BA+C2)))/(4*A32)
 
 class Arc(object):
 

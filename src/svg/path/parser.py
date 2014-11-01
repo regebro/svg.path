@@ -156,7 +156,7 @@ def parse_path(pathdef, current_pos=0j):
                 # The control point is assumed to be the reflection of
                 # the control point on the previous command relative
                 # to the current point.
-                control = current_pos + current_pos - segments[-1].control2
+                control = current_pos + current_pos - segments[-1].control
                 
             end = float(elements.pop()) + float(elements.pop()) * 1j
             
