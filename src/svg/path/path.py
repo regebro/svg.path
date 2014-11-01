@@ -109,7 +109,7 @@ class QuadraticBezier(object):
                pos**2*self.end
     
     def length(self):
-        # http://fontforge.github.io/bezier.html
+        # http://www.malczak.info/blog/quadratic-bezier-curve-length/
         a = self.start - 2*self.control + self.end
         b = 2*(self.control - self.start)
     
