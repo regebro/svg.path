@@ -2,6 +2,7 @@ from __future__ import division
 from math import sqrt, cos, sin, acos, degrees, radians, log
 from collections import MutableSequence
 
+
 # This file contains classes for the different types of SVG path segments as
 # well as a Path object that contains a sequence of path segments.
 
@@ -10,7 +11,7 @@ class Line(object):
     def __init__(self, start, end):
         self.start = start
         self.end = end
-    
+
     def __repr__(self):
         return '<Line start=%s end=%s>' % (self.start, self.end)
 
@@ -23,14 +24,14 @@ class Line(object):
         if not isinstance(other, Line):
             return NotImplemented
         return not self == other
-    
+
     def point(self, pos):
         distance = self.end - self.start
         return self.start + distance * pos
-        
+
     def length(self):
         distance = (self.end - self.start)
-        return sqrt(distance.real**2+distance.imag**2)
+        return sqrt(distance.real ** 2 + distance.imag ** 2)
 
 
 class CubicBezier(object):
@@ -39,11 +40,11 @@ class CubicBezier(object):
         self.control1 = control1
         self.control2 = control2
         self.end = end
-    
+
     def __repr__(self):
         return '<CubicBezier start=%s control1=%s control2=%s end=%s>' % (
                self.start, self.control1, self.control2, self.end)
-        
+
     def __eq__(self, other):
         if not isinstance(other, CubicBezier):
             return NotImplemented
@@ -57,32 +58,33 @@ class CubicBezier(object):
 
     def point(self, pos):
         """Calculate the x,y position at a certain position of the path"""
-        return ((1-pos) ** 3 * self.start) + \
-               (3 * (1-pos) ** 2 * pos * self.control1) + \
-               (3 * (1-pos) * pos ** 2 * self.control2) + \
+        return ((1 - pos) ** 3 * self.start) + \
+               (3 * (1 - pos) ** 2 * pos * self.control1) + \
+               (3 * (1 - pos) * pos ** 2 * self.control2) + \
                (pos ** 3 * self.end)
-    
+
     def length(self):
         """Calculate the length of the path up to a certain position"""
         # Apparently it's impossible to integrate a Cubic Bezier, so
         # this is a geometric approximation instead.
-        
+
         current_point = self.point(0)
         # I needed 100,000 subdivisions to satisfy assertAlmostEqual on the
         # Arc segment, so I go for the same here. Over 1,000,000 subdivisions
         # makes no difference in accuracy at all.
         subdivisions = 100000
         lenght = 0
-        delta = 1/subdivisions
-        
-        for x in range(1, subdivisions+1):
-            next_point = self.point(delta*x)
-            distance = sqrt((next_point.real - current_point.real)**2 + (next_point.imag - current_point.imag)**2)
+        delta = 1 / subdivisions
+
+        for x in range(1, subdivisions + 1):
+            next_point = self.point(delta * x)
+            distance = sqrt((next_point.real - current_point.real) ** 2 + (next_point.imag - current_point.imag) ** 2)
             lenght += distance
             current_point = next_point
-            
+
         return lenght
-    
+
+
 class QuadraticBezier(object):
     def __init__(self, start, control, end):
         self.start = start
@@ -92,43 +94,44 @@ class QuadraticBezier(object):
     def __repr__(self):
         return '<QuadradicBezier start=%s control=%s end=%s>' % (
                self.start, self.control, self.end)
-               
+
     def __eq__(self, other):
         if not isinstance(other, QuadraticBezier):
             return NotImplemented
         return self.start == other.start and self.end == other.end and \
                self.control == other.control
-    
+
     def __ne__(self, other):
         if not isinstance(other, QuadraticBezier):
             return NotImplemented
         return not self == other
-        
+
     def point(self, pos):
-        return (1-pos)**2*self.start + 2*(1-pos)*pos*self.control + \
-               pos**2*self.end
-    
+        return (1 - pos) ** 2 * self.start + 2 * (1 - pos) * pos * self.control + \
+               pos ** 2 * self.end
+
     def length(self):
         # http://www.malczak.info/blog/quadratic-bezier-curve-length/
-        a = self.start - 2*self.control + self.end
-        b = 2*(self.control - self.start)
-    
-        A = 4*(a.real**2 + a.imag**2)
-        B = 4*(a.real*b.real + a.imag*b.imag)
-        C = b.real**2 + b.imag**2
-        
-        Sabc = 2*sqrt(A+B+C)
-        A2 = sqrt(A)
-        A32 = 2*A*A2
-        C2 = 2*sqrt(C)
-        BA = B/A2
+        a = self.start - 2 * self.control + self.end
+        b = 2 * (self.control - self.start)
 
-        return (A32*Sabc + A2*B*(Sabc-C2) + (4*C*A-B**2)*log((2*A2+BA+Sabc)/(BA+C2)))/(4*A32)
+        A = 4 * (a.real ** 2 + a.imag ** 2)
+        B = 4 * (a.real * b.real + a.imag * b.imag)
+        C = b.real ** 2 + b.imag ** 2
+
+        Sabc = 2 * sqrt(A + B + C)
+        A2 = sqrt(A)
+        A32 = 2 * A * A2
+        C2 = 2 * sqrt(C)
+        BA = B / A2
+
+        return (A32 * Sabc + A2 * B * (Sabc - C2) + (4 * C * A - B ** 2) * log((2 * A2 + BA + Sabc) / (BA + C2))) / (4 * A32)
+
 
 class Arc(object):
 
     def __init__(self, start, radius, rotation, arc, sweep, end):
-        """radius is complex, rotation is in degrees, 
+        """radius is complex, rotation is in degrees,
            large and sweep are 1 or 0 (True/False also work)"""
 
         self.start = start
@@ -148,7 +151,7 @@ class Arc(object):
         if not isinstance(other, Arc):
             return NotImplemented
         return self.start == other.start and self.end == other.end and \
-               self.radius == other.radius and self.rotation == other.rotation and\
+               self.radius == other.radius and self.rotation == other.rotation and \
                self.arc == other.arc and self.sweep == other.sweep
 
     def __ne__(self, other):
@@ -171,7 +174,7 @@ class Arc(object):
 
         rx = self.radius.real
         rx_sq = rx * rx
-        ry = self.radius.imag        
+        ry = self.radius.imag
         ry_sq = ry * ry
 
         # Correct out of range radii
@@ -185,15 +188,15 @@ class Arc(object):
         t1 = rx_sq * y1prim_sq
         t2 = ry_sq * x1prim_sq
         c = sqrt(abs((rx_sq * ry_sq - t1 - t2) / (t1 + t2)))
-        
+
         if self.arc == self.sweep:
             c = -c
         cxprim = c * rx * y1prim / ry
         cyprim = -c * ry * x1prim / rx
 
-        self.center = complex((cosr * cxprim - sinr * cyprim) + 
+        self.center = complex((cosr * cxprim - sinr * cyprim) +
                               ((self.start.real + self.end.real) / 2),
-                              (sinr * cxprim + cosr * cyprim) + 
+                              (sinr * cxprim + cosr * cyprim) +
                               ((self.start.imag + self.end.imag) / 2))
 
         ux = (x1prim - cxprim) / rx
@@ -223,41 +226,42 @@ class Arc(object):
         angle = radians(self.theta + (self.delta * pos))
         cosr = cos(radians(self.rotation))
         sinr = sin(radians(self.rotation))
-    
+
         x = cosr * cos(angle) * self.radius.real - sinr * sin(angle) * self.radius.imag + self.center.real
         y = sinr * cos(angle) * self.radius.real + cosr * sin(angle) * self.radius.imag + self.center.imag
         return complex(x, y)
-    
+
     def length(self):
         """The length of an elliptical arc segment requires numerical
         integration, and in that case it's simpler to just do a geometric
         approximation, as for cubic bezier curves.
         """
-        
+
         current_point = self.point(0)
         # Here I need 100,000 subdivisions to satisfy assertAlmostEqual. It's
         # a bit slow, but I'm not in a hurry. Over 1,000,000 subdivisions
         # makes no difference in accuracy at all.
         subdivisions = 100000
         lenght = 0
-        delta = 1/subdivisions
-        
-        for x in range(1, subdivisions+1):
-            next_point = self.point(delta*x)
-            distance = sqrt((next_point.real - current_point.real)**2 + (next_point.imag - current_point.imag)**2)
+        delta = 1 / subdivisions
+
+        for x in range(1, subdivisions + 1):
+            next_point = self.point(delta * x)
+            distance = sqrt((next_point.real - current_point.real) ** 2 + (next_point.imag - current_point.imag) ** 2)
             lenght += distance
             current_point = next_point
-            
+
         return lenght
-    
+
+
 class Path(MutableSequence):
     """A Path is a sequence of path segments"""
-        
+
     def __init__(self, *segments):
         self._segments = list(segments)
         self._length = None
         self._lengths = None
-                
+
     def __getitem__(self, index):
         return self._segments[index]
 
@@ -269,13 +273,13 @@ class Path(MutableSequence):
 
     def insert(self, index, value):
         self._segments.insert(index, value)
-    
+
     def __len__(self):
         return len(self._segments)
-    
+
     def __repr__(self):
         return '<Path %s>' % ', '.join(repr(x) for x in self._segments)
-    
+
     def __eq__(self, other):
         if not isinstance(other, Path):
             return NotImplemented
@@ -290,15 +294,15 @@ class Path(MutableSequence):
         if not isinstance(other, Path):
             return NotImplemented
         return not self == other
-    
+
     def _calc_lengths(self):
         if self._length is not None:
             return
-        
-        lengths = [each.length() for each in self._segments]        
+
+        lengths = [each.length() for each in self._segments]
         self._length = sum(lengths)
-        self._lengths = [each/self._length for each in lengths]
-        
+        self._lengths = [each / self._length for each in lengths]
+
     def point(self, pos):
         self._calc_lengths()
         # Find which segment the point we search for is located on:
@@ -316,7 +320,7 @@ class Path(MutableSequence):
             segment_pos = 1.0
 
         return segment.point(segment_pos)
-    
+
     def length(self):
         self._calc_lengths()
         return self._length
