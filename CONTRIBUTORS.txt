@@ -1,5 +1,5 @@
 Lennart Regebro <regebro@gmail.com>, Original Author
 
-Martin R <martinr448@gmail.com> fized some bugs in the Arc calculations.
-
 Justin Gruenberg implemented the Quadradic Bezeier calculations.
+
+Thanks also to bug fixers Martin R and abcjjy.

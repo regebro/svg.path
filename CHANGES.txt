@@ -4,7 +4,9 @@ Changelog
 1.2 (unreleased)
 ----------------
 
-- New Quadradic Bezier implementation by Justin Gruenberg.
+- New Quadradic Bezier implementation. [Justin Gruenberg]
+
+- Solved issue #6: Z close path behavior. [abcjjy]
 
 
 1.1 (2013-10-19)
