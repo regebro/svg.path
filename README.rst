@@ -85,12 +85,11 @@ Paths are mutable sequences, you can slice and append:
     >>> len(path1[2:]) == 2
     True
 
-
-Todo
-----
-
-This module should have a way to generate path definitions from a path, for
-completeness.
+Finally, you can generate a path string definition from the path object:
+    
+    >>> path2.path_string()
+    'M 100.0,100.0 L 300.0,100.0 L 200.0,300.0 L 100.0,100.0'
+    
 
 Licence
 -------
