@@ -3,6 +3,7 @@ import unittest
 from math import sqrt, pi
 
 from ..path import CubicBezier, QuadraticBezier, Line, Arc, Path
+from ..parser import parse_path
 
 
 # Most of these test points are not calculated serparately, as that would
@@ -428,6 +429,27 @@ class TestPath(unittest.TestCase):
         self.assertAlmostEqual(path.point(1.0), (1050 + 125j))
         # The errors seem to accumulate. Still 6 decimal places is more than good enough.
         self.assertAlmostEqual(path.length(), 860.6756221710)
+
+    def test_path_string_with_floating_point(self):
+        d = """M70,70
+               C63.43674627771844,111.54010372456632,39.120523358051315,144.69858974376533,4,160"""
+        path1 = parse_path(d)
+        path2 = parse_path(path1.path_string())
+        self.assertAlmostEqual(path1.length(), path2.length())
+
+    def test_path_string_with_multiple_moves(self):
+        d = """M40,20 A30,30 0 0,0 70,70
+               M40,20 A30,30 0 1,0 70,70
+               M40,20 A30,30 0 1,1 70,70
+               M40,20 A30,30 0 0,1 70,70"""
+        path1 = parse_path(d)
+        path2 = parse_path(path1.path_string())
+        self.assertAlmostEqual(path1.length(), path2.length())
+
+    def test_path_string_with_multiple_moves(self):
+        path1 = parse_path("M200,300 Q400,50 600,300 T1000,300 Z")
+        path2 = parse_path(path1.path_string())
+        self.assertAlmostEqual(path1.length(), path2.length())
 
 
 if __name__ == "__main__":
