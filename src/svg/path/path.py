@@ -33,6 +33,11 @@ class Line(object):
         distance = (self.end - self.start)
         return sqrt(distance.real ** 2 + distance.imag ** 2)
 
+    def path_string(self, first=True):
+        path = "L {},{}".format(self.end.real, self.end.imag)
+        if first:
+            path = "M {},{} ".format(self.start.real, self.start.imag) + path
+        return path
 
 class CubicBezier(object):
     def __init__(self, start, control1, control2, end):
@@ -85,6 +90,15 @@ class CubicBezier(object):
 
         return lenght
 
+    def path_string(self, first=True):
+        path = "C {},{} {},{} {},{}".format(
+            self.control1.real, self.control1.imag,
+            self.control2.real, self.control2.imag,
+            self.end.real, self.end.imag)
+        if first:
+            path = "M {},{} ".format(self.start.real, self.start.imag) + path
+        return path
+
 
 class QuadraticBezier(object):
     def __init__(self, start, control, end):
@@ -128,6 +142,14 @@ class QuadraticBezier(object):
 
         return (A32 * Sabc + A2 * B * (Sabc - C2) + (4 * C * A - B ** 2) *
                 log((2 * A2 + BA + Sabc) / (BA + C2))) / (4 * A32)
+
+    def path_string(self, first=True):
+        path = "Q {},{} {},{}".format(
+            self.control.real, self.control.imag,
+            self.end.real, self.end.imag)
+        if first:
+            path = "M {},{} ".format(self.start.real, self.start.imag) + path
+        return path
 
 
 class Arc(object):
@@ -258,6 +280,15 @@ class Arc(object):
 
         return lenght
 
+    def path_string(self, first=True):
+        path = "A {},{} {} {},{} {},{}".format(
+            self.radius.real, self.radius.imag, self.rotation,
+            int(self.arc), int(self.sweep),
+            self.end.real, self.end.imag)
+        if first:
+            path = "M {},{} ".format(self.start.real, self.start.imag) + path
+        return path
+
 
 class Path(MutableSequence):
     """A Path is a sequence of path segments"""
@@ -329,3 +360,13 @@ class Path(MutableSequence):
     def length(self):
         self._calc_lengths()
         return self._length
+
+    def path_string(self):
+        elements = []
+        prev_end = None
+
+        for seg in self._segments:
+            elements.append(seg.path_string(prev_end != seg.start))
+            prev_end = seg.end
+
+        return ' '.join(elements)
