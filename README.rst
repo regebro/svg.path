@@ -39,7 +39,7 @@ parameter means.
 
 * ``Arc(start, radius, rotation, arc, sweep, end)``
 
-* ``QuadraticBezier(start, control1, control2, end)``
+* ``QuadraticBezier(start, control, end)``
 
 * ``CubicBezier(start, control1, control2, end)``
 
