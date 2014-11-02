@@ -445,11 +445,13 @@ class TestPath(unittest.TestCase):
         path1 = parse_path(d)
         path2 = parse_path(path1.path_string())
         self.assertAlmostEqual(path1.length(), path2.length())
+        self.assertTrue(path1 == path2)
 
     def test_path_string_with_multiple_moves(self):
         path1 = parse_path("M200,300 Q400,50 600,300 T1000,300 Z")
         path2 = parse_path(path1.path_string())
         self.assertAlmostEqual(path1.length(), path2.length())
+        self.assertTrue(path1 == path2)
 
 
 if __name__ == "__main__":
