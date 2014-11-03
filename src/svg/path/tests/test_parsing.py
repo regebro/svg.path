@@ -12,6 +12,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(path1, Path(Line(100 + 100j, 300 + 100j),
                                      Line(300 + 100j, 200 + 300j),
                                      Line(200 + 300j, 100 + 100j)))
+        self.assertTrue(path1.closed)
 
         # for Z command behavior when there is multiple subpaths
         path1 = parse_path('M 0 0 L 50 20 M 100 100 L 300 100 L 200 300 z')

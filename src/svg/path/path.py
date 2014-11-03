@@ -262,6 +262,9 @@ class Arc(object):
 class Path(MutableSequence):
     """A Path is a sequence of path segments"""
 
+    # Put it here, so there is a default if unpickled.
+    closed = False
+
     def __init__(self, *segments):
         self._segments = list(segments)
         self._length = None
@@ -272,12 +275,15 @@ class Path(MutableSequence):
 
     def __setitem__(self, index, value):
         self._segments[index] = value
+        self.update_closed()
 
     def __delitem__(self, index):
         del self._segments[index]
+        self.update_closed()
 
     def insert(self, index, value):
         self._segments.insert(index, value)
+        self.update_closed()
 
     def __len__(self):
         return len(self._segments)
@@ -329,3 +335,53 @@ class Path(MutableSequence):
     def length(self):
         self._calc_lengths()
         return self._length
+
+    def is_closable(self):
+        """Checks that the end point is the same as the start point"""
+        return self[0].start == self[-1].end
+
+    def update_closed(self):
+        """Opens the path if it no longer can be closed"""
+        if self.closed and not self.is_closable():
+            self.closed = False
+
+    def to_svg(self):
+
+        if self.closed:
+            segments = self[:-1]
+        else:
+            segments = self[:]
+
+        current_pos = None
+        parts = []
+
+        for segment in segments:
+            start = segment.start
+            if current_pos != start:
+                parts.append('M {:g},{:g}'.format(start.real, start.imag))
+
+            if isinstance(segment, Line):
+                parts.append('L {:g},{:g}'.format(segment.end.real, segment.end.imag))
+            elif isinstance(segment, CubicBezier):
+                parts.append('C {:g},{:g} {:g},{:g} {:g},{:g}'.format(
+                    segment.control1.real, segment.control1.imag,
+                    segment.control2.real, segment.control2.imag,
+                    segment.end.real, segment.end.imag)
+                )
+            elif isinstance(segment, QuadraticBezier):
+                parts.append('Q {:g},{:g} {:g},{:g}'.format(
+                    segment.control.real, segment.control.imag,
+                    segment.end.real, segment.end.imag)
+                )
+            elif isinstance(segment, Arc):
+                parts.append('A {:g},{:g} {:g} {:d},{:d} {:g},{:g}'.format(
+                    segment.radius.real, segment.radius.imag, segment.rotation,
+                    int(segment.arc), int(segment.sweep),
+                    segment.end.real, segment.end.imag)
+                )
+            current_pos = segment.end
+
+        if self.closed:
+            parts.append('Z')
+
+        return ' '.join(parts)
