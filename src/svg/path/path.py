@@ -34,9 +34,9 @@ class Line(object):
         return sqrt(distance.real ** 2 + distance.imag ** 2)
 
     def path_string(self, first=True):
-        path = "L {},{}".format(self.end.real, self.end.imag)
+        path = "L {:g},{:g}".format(self.end.real, self.end.imag)
         if first:
-            path = "M {},{} ".format(self.start.real, self.start.imag) + path
+            path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
         return path
 
 class CubicBezier(object):
@@ -91,12 +91,12 @@ class CubicBezier(object):
         return lenght
 
     def path_string(self, first=True):
-        path = "C {},{} {},{} {},{}".format(
+        path = "C {:g},{:g} {:g},{:g} {:g},{:g}".format(
             self.control1.real, self.control1.imag,
             self.control2.real, self.control2.imag,
             self.end.real, self.end.imag)
         if first:
-            path = "M {},{} ".format(self.start.real, self.start.imag) + path
+            path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
         return path
 
 
@@ -144,11 +144,11 @@ class QuadraticBezier(object):
                 log((2 * A2 + BA + Sabc) / (BA + C2))) / (4 * A32)
 
     def path_string(self, first=True):
-        path = "Q {},{} {},{}".format(
+        path = "Q {:g},{:g} {:g},{:g}".format(
             self.control.real, self.control.imag,
             self.end.real, self.end.imag)
         if first:
-            path = "M {},{} ".format(self.start.real, self.start.imag) + path
+            path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
         return path
 
 
@@ -281,12 +281,12 @@ class Arc(object):
         return lenght
 
     def path_string(self, first=True):
-        path = "A {},{} {} {},{} {},{}".format(
+        path = "A {:g},{:g} {:g} {:d},{:d} {:g},{:g}".format(
             self.radius.real, self.radius.imag, self.rotation,
             int(self.arc), int(self.sweep),
             self.end.real, self.end.imag)
         if first:
-            path = "M {},{} ".format(self.start.real, self.start.imag) + path
+            path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
         return path
 
 
