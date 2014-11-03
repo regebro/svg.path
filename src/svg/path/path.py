@@ -56,6 +56,14 @@ class CubicBezier(object):
             return NotImplemented
         return not self == other
 
+    def is_smooth_from(self, previous):
+        """Checks if this segment would be a smooth segment following the previous"""
+        if isinstance(previous, CubicBezier):
+            return (self.start == previous.end and
+                    (self.control1 - self.start) == (previous.end - previous.control2))
+        else:
+            return self.control1 == self.start
+
     def point(self, pos):
         """Calculate the x,y position at a certain position of the path"""
         return ((1 - pos) ** 3 * self.start) + \
@@ -106,6 +114,14 @@ class QuadraticBezier(object):
         if not isinstance(other, QuadraticBezier):
             return NotImplemented
         return not self == other
+
+    def is_smooth_from(self, previous):
+        """Checks if this segment would be a smooth segment following the previous"""
+        if isinstance(previous, QuadraticBezier):
+            return (self.start == previous.end and
+                    (self.control - self.start) == (previous.end - previous.control))
+        else:
+            return self.control == self.start
 
     def point(self, pos):
         return (1 - pos) ** 2 * self.start + 2 * (1 - pos) * pos * self.control + \
@@ -354,6 +370,7 @@ class Path(MutableSequence):
 
         current_pos = None
         parts = []
+        previous_segment = None
 
         for segment in segments:
             start = segment.start
@@ -361,18 +378,32 @@ class Path(MutableSequence):
                 parts.append('M {:g},{:g}'.format(start.real, start.imag))
 
             if isinstance(segment, Line):
-                parts.append('L {:g},{:g}'.format(segment.end.real, segment.end.imag))
+                parts.append('L {:g},{:g}'.format(
+                    segment.end.real, segment.end.imag)
+                )
             elif isinstance(segment, CubicBezier):
-                parts.append('C {:g},{:g} {:g},{:g} {:g},{:g}'.format(
-                    segment.control1.real, segment.control1.imag,
-                    segment.control2.real, segment.control2.imag,
-                    segment.end.real, segment.end.imag)
-                )
+                if segment.is_smooth_from(previous_segment):
+                    parts.append('S {:g},{:g} {:g},{:g}'.format(
+                        segment.control2.real, segment.control2.imag,
+                        segment.end.real, segment.end.imag)
+                    )
+                else:
+                    parts.append('C {:g},{:g} {:g},{:g} {:g},{:g}'.format(
+                        segment.control1.real, segment.control1.imag,
+                        segment.control2.real, segment.control2.imag,
+                        segment.end.real, segment.end.imag)
+                    )
             elif isinstance(segment, QuadraticBezier):
-                parts.append('Q {:g},{:g} {:g},{:g}'.format(
-                    segment.control.real, segment.control.imag,
-                    segment.end.real, segment.end.imag)
-                )
+                if segment.is_smooth_from(previous_segment):
+                    parts.append('T {:g},{:g}'.format(
+                        segment.end.real, segment.end.imag)
+                    )
+                else:
+                    parts.append('Q {:g},{:g} {:g},{:g}'.format(
+                        segment.control.real, segment.control.imag,
+                        segment.end.real, segment.end.imag)
+                    )
+
             elif isinstance(segment, Arc):
                 parts.append('A {:g},{:g} {:g} {:d},{:d} {:g},{:g}'.format(
                     segment.radius.real, segment.radius.imag, segment.rotation,
@@ -380,6 +411,7 @@ class Path(MutableSequence):
                     segment.end.real, segment.end.imag)
                 )
             current_pos = segment.end
+            previous_segment = segment
 
         if self.closed:
             parts.append('Z')
