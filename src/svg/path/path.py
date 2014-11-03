@@ -33,8 +33,30 @@ class Line(object):
         distance = (self.end - self.start)
         return sqrt(distance.real ** 2 + distance.imag ** 2)
 
+    def path_string(self, first=True):
+        path = "L {:g},{:g}".format(self.end.real, self.end.imag)
+        if first:
+            path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
+        return path
+
+
+class ClosePath(Line):
+
+    def __init__(self, start, end):
+        super(ClosePath, self).__init__(start, end)
+
+    def __repr__(self):
+        return '<ClosePath start=%s, end=%s>' % (self.start, self.end)
+
+    def path_string(self, first=True):
+        path = "Z"
+        if first:
+            path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
+        return path
+
 
 class CubicBezier(object):
+
     def __init__(self, start, control1, control2, end):
         self.start = start
         self.control1 = control1
@@ -85,8 +107,18 @@ class CubicBezier(object):
 
         return lenght
 
+    def path_string(self, first=True):
+        path = "C {:g},{:g} {:g},{:g} {:g},{:g}".format(
+            self.control1.real, self.control1.imag,
+            self.control2.real, self.control2.imag,
+            self.end.real, self.end.imag)
+        if first:
+            path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
+        return path
+
 
 class QuadraticBezier(object):
+
     def __init__(self, start, control, end):
         self.start = start
         self.end = end
@@ -128,6 +160,14 @@ class QuadraticBezier(object):
 
         return (A32 * Sabc + A2 * B * (Sabc - C2) + (4 * C * A - B ** 2) *
                 log((2 * A2 + BA + Sabc) / (BA + C2))) / (4 * A32)
+
+    def path_string(self, first=True):
+        path = "Q {:g},{:g} {:g},{:g}".format(
+            self.control.real, self.control.imag,
+            self.end.real, self.end.imag)
+        if first:
+            path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
+        return path
 
 
 class Arc(object):
@@ -258,6 +298,15 @@ class Arc(object):
 
         return lenght
 
+    def path_string(self, first=True):
+        path = "A {:g},{:g} {:g} {:d},{:d} {:g},{:g}".format(
+            self.radius.real, self.radius.imag, self.rotation,
+            int(self.arc), int(self.sweep),
+            self.end.real, self.end.imag)
+        if first:
+            path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
+        return path
+
 
 class Path(MutableSequence):
     """A Path is a sequence of path segments"""
@@ -266,18 +315,22 @@ class Path(MutableSequence):
         self._segments = list(segments)
         self._length = None
         self._lengths = None
+        # self._consistencyUpdate()
 
     def __getitem__(self, index):
         return self._segments[index]
 
     def __setitem__(self, index, value):
         self._segments[index] = value
+        # self._consistencyUpdate()
 
     def __delitem__(self, index):
         del self._segments[index]
+        # self._consistencyUpdate()
 
     def insert(self, index, value):
         self._segments.insert(index, value)
+        # self._consistencyUpdate()
 
     def __len__(self):
         return len(self._segments)
@@ -299,6 +352,28 @@ class Path(MutableSequence):
         if not isinstance(other, Path):
             return NotImplemented
         return not self == other
+
+    def _consistencyUpdate(self):
+        # update ClosePaths to change the start and end points to reflect
+        # changes in _segments
+
+        start_seg = 0
+        current_end = self._segments[0].end
+
+        for i in range(1, len(self._segments)):
+            # start at the second segment, because if ClosePath is the first
+            # segment, we probably shouldn't change it.
+
+            if current_end != self._segments[i].start:
+                # we jumped (M)
+                start_seg = i
+
+            if isinstance(self._segments[i], ClosePath):
+                self._segments[i].start = self._segments[i - 1].end
+                self._segments[i].end = self._segments[start_seg].start
+
+            current_end = self._segments[i].end
+
 
     def _calc_lengths(self):
         if self._length is not None:
@@ -329,3 +404,13 @@ class Path(MutableSequence):
     def length(self):
         self._calc_lengths()
         return self._length
+
+    def path_string(self):
+        elements = []
+        prev_end = None
+
+        for seg in self._segments:
+            elements.append(seg.path_string(prev_end != seg.start))
+            prev_end = seg.end
+
+        return ' '.join(elements)
