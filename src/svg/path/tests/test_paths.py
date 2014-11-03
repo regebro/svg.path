@@ -435,7 +435,7 @@ class TestPath(unittest.TestCase):
                C63.43674627771844,111.54010372456632,39.120523358051315,144.69858974376533,4,160"""
         path1 = parse_path(d)
         path2 = parse_path(path1.path_string())
-        self.assertAlmostEqual(path1.length(), path2.length())
+        self.assertAlmostEqual(path1.length(), path2.length(), places=4)
 
     def test_path_string_with_multiple_moves(self):
         d = """M40,20 A30,30 0 0,0 70,70
