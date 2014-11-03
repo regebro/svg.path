@@ -2,7 +2,7 @@ from __future__ import division
 import unittest
 from math import sqrt, pi
 
-from ..path import CubicBezier, QuadraticBezier, Line, Arc, Path
+from ..path import CubicBezier, QuadraticBezier, Line, Arc, ClosePath, Path
 from ..parser import parse_path
 
 
@@ -452,6 +452,19 @@ class TestPath(unittest.TestCase):
         path2 = parse_path(path1.path_string())
         self.assertAlmostEqual(path1.length(), path2.length())
         self.assertTrue(path1 == path2)
+
+    def test_close_path_delete_element_in_middle(self):
+        path1 = parse_path("M 0 0 L 100 0 L 100 100 Z")
+        del path1[1]
+        path2 = Path(Line(start=0, end=100), ClosePath(start=100, end=0))
+        self.assertTrue(path1 == path2)
+
+    # def test_close_path_delete_first_element_in_path(self):
+    #     path1 = parse_path("M 0 0 L 100 0 L 100 100 Z")
+    #     del path1[0]
+    #     path2 = Path(Line(start=100, end=100), ClosePath(start=100, end=0))
+    #     self.assertTrue(path1 == path2)
+
 
 
 if __name__ == "__main__":

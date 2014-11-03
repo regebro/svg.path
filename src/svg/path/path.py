@@ -39,7 +39,24 @@ class Line(object):
             path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
         return path
 
+
+class ClosePath(Line):
+
+    def __init__(self, start, end):
+        super(ClosePath, self).__init__(start, end)
+
+    def __repr__(self):
+        return '<ClosePath start=%s, end=%s>' % (self.start, self.end)
+
+    def path_string(self, first=True):
+        path = "Z"
+        if first:
+            path = "M {:g},{:g} ".format(self.start.real, self.start.imag) + path
+        return path
+
+
 class CubicBezier(object):
+
     def __init__(self, start, control1, control2, end):
         self.start = start
         self.control1 = control1
@@ -101,6 +118,7 @@ class CubicBezier(object):
 
 
 class QuadraticBezier(object):
+
     def __init__(self, start, control, end):
         self.start = start
         self.end = end
@@ -297,18 +315,22 @@ class Path(MutableSequence):
         self._segments = list(segments)
         self._length = None
         self._lengths = None
+        # self._consistencyUpdate()
 
     def __getitem__(self, index):
         return self._segments[index]
 
     def __setitem__(self, index, value):
         self._segments[index] = value
+        # self._consistencyUpdate()
 
     def __delitem__(self, index):
         del self._segments[index]
+        # self._consistencyUpdate()
 
     def insert(self, index, value):
         self._segments.insert(index, value)
+        # self._consistencyUpdate()
 
     def __len__(self):
         return len(self._segments)
@@ -330,6 +352,28 @@ class Path(MutableSequence):
         if not isinstance(other, Path):
             return NotImplemented
         return not self == other
+
+    def _consistencyUpdate(self):
+        # update ClosePaths to change the start and end points to reflect
+        # changes in _segments
+
+        start_seg = 0
+        current_end = self._segments[0].end
+
+        for i in range(1, len(self._segments)):
+            # start at the second segment, because if ClosePath is the first
+            # segment, we probably shouldn't change it.
+
+            if current_end != self._segments[i].start:
+                # we jumped (M)
+                start_seg = i
+
+            if isinstance(self._segments[i], ClosePath):
+                self._segments[i].start = self._segments[i - 1].end
+                self._segments[i].end = self._segments[start_seg].start
+
+            current_end = self._segments[i].end
+
 
     def _calc_lengths(self):
         if self._length is not None:
