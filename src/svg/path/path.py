@@ -56,6 +56,14 @@ class CubicBezier(object):
             return NotImplemented
         return not self == other
 
+    def is_smooth_from(self, previous):
+        """Checks if this segment would be a smooth segment following the previous"""
+        if isinstance(previous, CubicBezier):
+            return (self.start == previous.end and
+                    (self.control1 - self.start) == (previous.end - previous.control2))
+        else:
+            return self.control1 == self.start
+
     def point(self, pos):
         """Calculate the x,y position at a certain position of the path"""
         return ((1 - pos) ** 3 * self.start) + \
@@ -106,6 +114,14 @@ class QuadraticBezier(object):
         if not isinstance(other, QuadraticBezier):
             return NotImplemented
         return not self == other
+
+    def is_smooth_from(self, previous):
+        """Checks if this segment would be a smooth segment following the previous"""
+        if isinstance(previous, QuadraticBezier):
+            return (self.start == previous.end and
+                    (self.control - self.start) == (previous.end - previous.control))
+        else:
+            return self.control == self.start
 
     def point(self, pos):
         return (1 - pos) ** 2 * self.start + 2 * (1 - pos) * pos * self.control + \
@@ -262,6 +278,9 @@ class Arc(object):
 class Path(MutableSequence):
     """A Path is a sequence of path segments"""
 
+    # Put it here, so there is a default if unpickled.
+    _closed = False
+
     def __init__(self, *segments):
         self._segments = list(segments)
         self._length = None
@@ -278,6 +297,11 @@ class Path(MutableSequence):
 
     def insert(self, index, value):
         self._segments.insert(index, value)
+
+    def reverse(self):
+        # Reversing the order of a path would require reversing each element
+        # as well. That's not implemented.
+        raise NotImplementedError
 
     def __len__(self):
         return len(self._segments)
@@ -329,3 +353,83 @@ class Path(MutableSequence):
     def length(self):
         self._calc_lengths()
         return self._length
+
+    def _is_closable(self):
+        """Returns true if the end is on the start of a segment"""
+        end = self[-1].end
+        for segment in self:
+            if segment.start == end:
+                return True
+        return False
+
+    @property
+    def closed(self):
+        """Checks that the end point is the same as the start point"""
+        return self._closed and self._is_closable()
+
+    @closed.setter
+    def closed(self, value):
+        value = bool(value)
+        if value and not self._is_closable():
+            raise ValueError("End does not coincide with a segment start.")
+        self._closed = value
+
+    def d(self):
+        if self.closed:
+            segments = self[:-1]
+        else:
+            segments = self[:]
+
+        current_pos = None
+        parts = []
+        previous_segment = None
+        end = self[-1].end
+
+        for segment in segments:
+            start = segment.start
+            # If the start of this segment does not coincide with the end of
+            # the last segment or if this segment is actually the close point
+            # of a closed path, then we should start a new subpath here.
+            if current_pos != start or (self.closed and start == end):
+                parts.append('M {0:G},{1:G}'.format(start.real, start.imag))
+
+            if isinstance(segment, Line):
+                parts.append('L {0:G},{1:G}'.format(
+                    segment.end.real, segment.end.imag)
+                )
+            elif isinstance(segment, CubicBezier):
+                if segment.is_smooth_from(previous_segment):
+                    parts.append('S {0:G},{1:G} {2:G},{3:G}'.format(
+                        segment.control2.real, segment.control2.imag,
+                        segment.end.real, segment.end.imag)
+                    )
+                else:
+                    parts.append('C {0:G},{1:G} {2:G},{3:G} {4:G},{5:G}'.format(
+                        segment.control1.real, segment.control1.imag,
+                        segment.control2.real, segment.control2.imag,
+                        segment.end.real, segment.end.imag)
+                    )
+            elif isinstance(segment, QuadraticBezier):
+                if segment.is_smooth_from(previous_segment):
+                    parts.append('T {0:G},{1:G}'.format(
+                        segment.end.real, segment.end.imag)
+                    )
+                else:
+                    parts.append('Q {0:G},{1:G} {2:G},{3:G}'.format(
+                        segment.control.real, segment.control.imag,
+                        segment.end.real, segment.end.imag)
+                    )
+
+            elif isinstance(segment, Arc):
+                parts.append('A {0:G},{1:G} {2:G} {3:d},{4:d} {5:G},{6:G}'.format(
+                    segment.radius.real, segment.radius.imag, segment.rotation,
+                    int(segment.arc), int(segment.sweep),
+                    segment.end.real, segment.end.imag)
+                )
+            current_pos = segment.end
+            previous_segment = segment
+
+        if self.closed:
+            parts.append('Z')
+
+        return ' '.join(parts)
