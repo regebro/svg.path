@@ -13,7 +13,7 @@ class Line(object):
         self.end = end
 
     def __repr__(self):
-        return '<Line start=%s end=%s>' % (self.start, self.end)
+        return 'Line(start=%s, end=%s)' % (self.start, self.end)
 
     def __eq__(self, other):
         if not isinstance(other, Line):
@@ -42,7 +42,7 @@ class CubicBezier(object):
         self.end = end
 
     def __repr__(self):
-        return '<CubicBezier start=%s control1=%s control2=%s end=%s>' % (
+        return 'CubicBezier(start=%s, control1=%s, control2=%s, end=%s)' % (
                self.start, self.control1, self.control2, self.end)
 
     def __eq__(self, other):
@@ -101,7 +101,7 @@ class QuadraticBezier(object):
         self.control = control
 
     def __repr__(self):
-        return '<QuadradicBezier start=%s control=%s end=%s>' % (
+        return 'QuadraticBezier(start=%s, control=%s, end=%s)' % (
                self.start, self.control, self.end)
 
     def __eq__(self, other):
@@ -162,7 +162,7 @@ class Arc(object):
         self._parameterize()
 
     def __repr__(self):
-        return '<Arc start=%s radius=%s rotation=%s arc=%s sweep=%s end=%s>' % (
+        return 'Arc(start=%s, radius=%s, rotation=%s, arc=%s, sweep=%s, end=%s)' % (
                self.start, self.radius, self.rotation, self.arc, self.sweep, self.end)
 
     def __eq__(self, other):
@@ -307,7 +307,7 @@ class Path(MutableSequence):
         return len(self._segments)
 
     def __repr__(self):
-        return '<Path %s>' % ', '.join(repr(x) for x in self._segments)
+        return 'Path(%s)' % ', '.join(repr(x) for x in self._segments)
 
     def __eq__(self, other):
         if not isinstance(other, Path):

@@ -10,6 +10,8 @@ Changelog
 
 - Path()'s now have a .closed property.
 
+- Fixed the representation so it's parseable.
+
 
 1.2 (2014-11-01)
 ----------------
