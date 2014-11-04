@@ -281,10 +281,12 @@ class Path(MutableSequence):
     # Put it here, so there is a default if unpickled.
     _closed = False
 
-    def __init__(self, *segments):
+    def __init__(self, *segments, **kw):
         self._segments = list(segments)
         self._length = None
         self._lengths = None
+        if 'closed' in kw:
+            self.closed = kw['closed']
 
     def __getitem__(self, index):
         return self._segments[index]
@@ -307,7 +309,8 @@ class Path(MutableSequence):
         return len(self._segments)
 
     def __repr__(self):
-        return 'Path(%s)' % ', '.join(repr(x) for x in self._segments)
+        return 'Path(%s, closed=%s)' % (
+            ', '.join(repr(x) for x in self._segments), self.closed)
 
     def __eq__(self, other):
         if not isinstance(other, Path):
