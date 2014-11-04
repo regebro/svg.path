@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.3.dev0'
+version = '2.0.dev0'
 
 long_description = (
     open('README.rst').read()
@@ -21,7 +21,7 @@ setup(name='svg.path',
       # Get more strings from
       # http://pypi.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
-          'Development Status :: 5 - Production/Stable',
+          'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
           'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',
           'Operating System :: OS Independent',
