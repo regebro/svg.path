@@ -279,7 +279,7 @@ class Path(MutableSequence):
     """A Path is a sequence of path segments"""
 
     # Put it here, so there is a default if unpickled.
-    closed = False
+    _closed = False
 
     def __init__(self, *segments):
         self._segments = list(segments)
@@ -291,15 +291,17 @@ class Path(MutableSequence):
 
     def __setitem__(self, index, value):
         self._segments[index] = value
-        self.update_closed()
 
     def __delitem__(self, index):
         del self._segments[index]
-        self.update_closed()
 
     def insert(self, index, value):
         self._segments.insert(index, value)
-        self.update_closed()
+
+    def reverse(self):
+        # Reversing the order of a path would require reversing each element
+        # as well. That's not implemented.
+        raise NotImplementedError
 
     def __len__(self):
         return len(self._segments)
@@ -352,17 +354,27 @@ class Path(MutableSequence):
         self._calc_lengths()
         return self._length
 
-    def is_closable(self):
-        """Checks that the end point is the same as the start point"""
-        return self[0].start == self[-1].end
+    def _is_closable(self):
+        """Returns true if the end is on the start of a segment"""
+        end = self[-1].end
+        for segment in self:
+            if segment.start == end:
+                return True
+        return False
 
-    def update_closed(self):
-        """Opens the path if it no longer can be closed"""
-        if self.closed and not self.is_closable():
-            self.closed = False
+    @property
+    def closed(self):
+        """Checks that the end point is the same as the start point"""
+        return self._closed and self._is_closable()
+
+    @closed.setter
+    def closed(self, value):
+        value = bool(value)
+        if value and not self._is_closable():
+            raise ValueError("End does not coincide with a segment start.")
+        self._closed = value
 
     def d(self):
-
         if self.closed:
             segments = self[:-1]
         else:
@@ -371,41 +383,45 @@ class Path(MutableSequence):
         current_pos = None
         parts = []
         previous_segment = None
+        end = self[-1].end
 
         for segment in segments:
             start = segment.start
-            if current_pos != start:
-                parts.append('M {:g},{:g}'.format(start.real, start.imag))
+            # If the start of this segment does not coincide with the end of
+            # the last segment or if this segment is actually the close point
+            # of a closed path, then we should start a new subpath here.
+            if current_pos != start or (self.closed and start == end):
+                parts.append('M {0:G},{1:G}'.format(start.real, start.imag))
 
             if isinstance(segment, Line):
-                parts.append('L {:g},{:g}'.format(
+                parts.append('L {0:G},{1:G}'.format(
                     segment.end.real, segment.end.imag)
                 )
             elif isinstance(segment, CubicBezier):
                 if segment.is_smooth_from(previous_segment):
-                    parts.append('S {:g},{:g} {:g},{:g}'.format(
+                    parts.append('S {0:G},{1:G} {2:G},{3:G}'.format(
                         segment.control2.real, segment.control2.imag,
                         segment.end.real, segment.end.imag)
                     )
                 else:
-                    parts.append('C {:g},{:g} {:g},{:g} {:g},{:g}'.format(
+                    parts.append('C {0:G},{1:G} {2:G},{3:G} {4:G},{5:G}'.format(
                         segment.control1.real, segment.control1.imag,
                         segment.control2.real, segment.control2.imag,
                         segment.end.real, segment.end.imag)
                     )
             elif isinstance(segment, QuadraticBezier):
                 if segment.is_smooth_from(previous_segment):
-                    parts.append('T {:g},{:g}'.format(
+                    parts.append('T {0:G},{1:G}'.format(
                         segment.end.real, segment.end.imag)
                     )
                 else:
-                    parts.append('Q {:g},{:g} {:g},{:g}'.format(
+                    parts.append('Q {0:G},{1:G} {2:G},{3:G}'.format(
                         segment.control.real, segment.control.imag,
                         segment.end.real, segment.end.imag)
                     )
 
             elif isinstance(segment, Arc):
-                parts.append('A {:g},{:g} {:g} {:d},{:d} {:g},{:g}'.format(
+                parts.append('A {0:G},{1:G} {2:G} {3:d},{4:d} {5:G},{6:G}'.format(
                     segment.radius.real, segment.radius.imag, segment.rotation,
                     int(segment.arc), int(segment.sweep),
                     segment.end.real, segment.end.imag)

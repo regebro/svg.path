@@ -4,6 +4,7 @@ svg.path
 svg.path is a collection of objects that implement the different path
 commands in SVG, and a parser for SVG path definitions.
 
+
 Usage
 -----
 
@@ -12,6 +13,10 @@ There are four path segment objects, ``Line``, ``Arc``, ``CubicBezier`` and
 collection of the path segment objects.
 
 All of these objects have a ``.point()`` and a ``.length()`` function.
+
+CubicBezier and QuadraticBezier also has ``is_smooth_from(previous)``
+methods, that check if the segment is a "smooth" segment compared to the
+given segment.
 
 All coordinate values for these functions are given as ``complex`` values,
 where the ``.real`` part represents the X coordinate, and the ``.imag`` part
@@ -27,6 +32,7 @@ very slow**.
 
 There is also a ``parse_path()`` function that will take an SVG path definition
 and return a ``Path`` object.
+
 
 Classes
 .......
@@ -63,6 +69,7 @@ SVG representation of the Path segments.
     >>> path.d()
     'M 200,100 L 300,100 Q 200,200 200,300'
 
+
 Examples
 ........
 
@@ -96,12 +103,45 @@ Paths are mutable sequences, you can slice and append:
     >>> len(path1[2:]) == 2
     True
 
+Paths also have a ``closed`` property, which defines if the path should be
+seen as a closed path or not.
 
-Todo
-----
+    >>> path = parse_path('M100,100L300,100L200,300z')
+    >>> path.closed
+    True
 
-This module should have a way to generate path definitions from a path, for
-completeness.
+If you modify the path in such a way that it is no longer closeable, it will
+not be closed.
+
+    >>> path[0].start = (100+150j)
+    >>> path.closed
+    False
+
+However, a path previously set as closed will automatically close if it it
+further modified to that it can be closed.
+
+    >>> path[-1].end = (300+100j)
+    >>> path.closed
+    True
+
+Trying to set a Path to be closed if the end does not coincide with the start
+of any segment will raise an error.
+
+    >>> path = parse_path('M100,100L300,100L200,300')
+    >>> path.closed = True
+    Traceback (most recent call last):
+    ...
+    ValueError: End does not coincide with a segment start.
+
+
+Future features
+---------------
+
+* Reversing paths. They should then reasonably be drawn "backwards" meaning each
+  path segment also needs to be reversed.
+
+* Mathematical transformations might make sense.
+
 
 Licence
 -------

@@ -21,12 +21,18 @@ class TestGeneration(unittest.TestCase):
             'M 600,500 C 600,350 900,650 900,500',
             'M 600,800 C 625,700 725,700 750,800 S 875,900 900,800',
             'M 200,300 Q 400,50 600,300 T 1000,300',
-            'M -3.4e+38,3.4e+38 L -3.4e-38,3.4e-38',
+            'M -3.4E+38,3.4E+38 L -3.4E-38,3.4E-38',
+            'M 0,0 L 50,20 M 50,20 L 200,100 Z',
         ]
 
         for path in paths:
             self.assertEqual(parse_path(path).d(), path)
 
+    def test_normalizing(self):
+        # Relative paths will be made absolute, subpaths merged if they can,
+        # and syntax will change.
+        self.assertEqual(parse_path('M0 0L3.4E2-10L100.0,100M100,100l100,-100').d(),
+                         'M 0,0 L 340,-10 L 100,100 L 200,0')
 
 if __name__ == '__main__':
     unittest.main()
