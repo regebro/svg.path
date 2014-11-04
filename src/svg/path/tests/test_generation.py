@@ -25,7 +25,7 @@ class TestGeneration(unittest.TestCase):
         ]
 
         for path in paths:
-            self.assertEqual(parse_path(path).to_svg(), path)
+            self.assertEqual(parse_path(path).d(), path)
 
 
 if __name__ == '__main__':

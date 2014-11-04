@@ -57,10 +57,10 @@ You can add to it and replace path segments etc.
     >>> path[0] = Line(200+100j,300+100j)
     >>> del path[1]
 
-The path object also has a ``to_svg()`` method that will return the
+The path object also has a ``d()`` method that will return the
 SVG representation of the Path segments.
 
-    >>> path.to_svg()
+    >>> path.d()
     'M 200,100 L 300,100 Q 200,200 200,300'
 
 Examples

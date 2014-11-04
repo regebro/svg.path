@@ -361,7 +361,7 @@ class Path(MutableSequence):
         if self.closed and not self.is_closable():
             self.closed = False
 
-    def to_svg(self):
+    def d(self):
 
         if self.closed:
             segments = self[:-1]
