@@ -430,10 +430,11 @@ class TestPath(unittest.TestCase):
         self.assertAlmostEqual(path.length(), 860.6756221710)
 
     def test_repr(self):
-        path = Path(Line(start=600 + 350j, end=650 + 325j),
-                    Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, arc=0, sweep=1, end=700 + 300j),
-                    CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
-                    QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
+        path = Path(
+            Line(start=600 + 350j, end=650 + 325j),
+            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, arc=0, sweep=1, end=700 + 300j),
+            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
+            QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
         self.assertEqual(eval(repr(path)), path)
 
 
