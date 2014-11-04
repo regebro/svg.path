@@ -48,15 +48,26 @@ with a sequence of path segments:
 
 * ``Path(*segments)``
 
-That ``Path`` class is a mutable sequence, so it behaves like a list.
+The ``Path`` class is a mutable sequence, so it behaves like a list.
+You can add to it and replace path segments etc.
 
+    >>> from svg.path import parse_path, Path, Line, QuadraticBezier
+    >>> path = Path(Line(100+100j,300+100j), Line(100+100j,300+100j))
+    >>> path.append(QuadraticBezier(300+100j, 200+200j, 200+300j))
+    >>> path[0] = Line(200+100j,300+100j)
+    >>> del path[1]
+
+The path object also has a ``to_svg()`` method that will return the
+SVG representation of the Path segments.
+
+    >>> path.to_svg()
+    'M 200,100 L 300,100 Q 200,200 200,300'
 
 Examples
 ........
 
 This SVG path example draws a triangle:
 
-    >>> from svg.path import parse_path, Path, Line, QuadraticBezier
 
     >>> path1 = parse_path('M 100 100 L 300 100 L 200 300 z')
 
