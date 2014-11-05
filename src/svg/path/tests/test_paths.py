@@ -253,7 +253,7 @@ class CubicBezierTest(unittest.TestCase):
         # We can't compare with pi*50 here, because this is just an
         # approximation of a circle arc. pi*50 is 157.079632679
         # So this is just yet another "warn if this changes" test.
-        # This value is not to be seens as verified as correct.
+        # This value is not verified to be correct.
         self.assertAlmostEqual(arc.length(), 157.1016698)
 
 
