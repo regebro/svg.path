@@ -293,12 +293,15 @@ class Path(MutableSequence):
 
     def __setitem__(self, index, value):
         self._segments[index] = value
+        self._lengths = None
 
     def __delitem__(self, index):
         del self._segments[index]
+        self._lengths = None
 
     def insert(self, index, value):
         self._segments.insert(index, value)
+        self._lengths = None
 
     def reverse(self):
         # Reversing the order of a path would require reversing each element
