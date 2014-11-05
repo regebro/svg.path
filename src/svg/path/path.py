@@ -6,6 +6,29 @@ from collections import MutableSequence
 # This file contains classes for the different types of SVG path segments as
 # well as a Path object that contains a sequence of path segments.
 
+MIN_DEPTH=5
+ERROR=1e-12
+
+def segment_length(curve, start, end, start_point, end_point, error, min_depth, depth):
+    """Recursively approximates the length by straight lines"""
+    mid = (start + end) / 2
+    mid_point = curve.point(mid)
+    length = abs(end_point - start_point)
+    first_half = abs(mid_point - start_point)
+    second_half = abs(end_point - mid_point)
+
+    length2 = first_half + second_half
+    if (length2 - length > error) or (depth < min_depth):
+        # Calculate the length of each segment:
+        depth += 1
+        return (segment_length(curve, start, mid, start_point, mid_point,
+                               error, min_depth, depth) +
+                segment_length(curve, mid, end, mid_point, end_point,
+                               error, min_depth, depth))
+    # This is accurate enough.
+    return length2
+
+
 class Line(object):
 
     def __init__(self, start, end):
@@ -29,7 +52,7 @@ class Line(object):
         distance = self.end - self.start
         return self.start + distance * pos
 
-    def length(self):
+    def length(self, error=None, min_depth=None):
         distance = (self.end - self.start)
         return sqrt(distance.real ** 2 + distance.imag ** 2)
 
@@ -71,27 +94,11 @@ class CubicBezier(object):
                (3 * (1 - pos) * pos ** 2 * self.control2) + \
                (pos ** 3 * self.end)
 
-    def length(self):
+    def length(self, error=ERROR, min_depth=MIN_DEPTH):
         """Calculate the length of the path up to a certain position"""
-        # Apparently it's impossible to integrate a Cubic Bezier, so
-        # this is a geometric approximation instead.
-
-        current_point = self.point(0)
-        # I needed 100,000 subdivisions to satisfy assertAlmostEqual on the
-        # Arc segment, so I go for the same here. Over 1,000,000 subdivisions
-        # makes no difference in accuracy at all.
-        subdivisions = 100000
-        lenght = 0
-        delta = 1 / subdivisions
-
-        for x in range(1, subdivisions + 1):
-            next_point = self.point(delta * x)
-            distance = sqrt((next_point.real - current_point.real) ** 2 +
-                            (next_point.imag - current_point.imag) ** 2)
-            lenght += distance
-            current_point = next_point
-
-        return lenght
+        start_point = self.point(0)
+        end_point = self.point(1)
+        return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
 
 
 class QuadraticBezier(object):
@@ -127,7 +134,7 @@ class QuadraticBezier(object):
         return (1 - pos) ** 2 * self.start + 2 * (1 - pos) * pos * self.control + \
                pos ** 2 * self.end
 
-    def length(self):
+    def length(self, error=None, min_depth=None):
         # http://www.malczak.info/blog/quadratic-bezier-curve-length/
         a = self.start - 2 * self.control + self.end
         b = 2 * (self.control - self.start)
@@ -251,28 +258,14 @@ class Arc(object):
              self.radius.imag + self.center.imag)
         return complex(x, y)
 
-    def length(self):
+    def length(self, error=ERROR, min_depth=MIN_DEPTH):
         """The length of an elliptical arc segment requires numerical
         integration, and in that case it's simpler to just do a geometric
         approximation, as for cubic bezier curves.
         """
-
-        current_point = self.point(0)
-        # Here I need 100,000 subdivisions to satisfy assertAlmostEqual. It's
-        # a bit slow, but I'm not in a hurry. Over 1,000,000 subdivisions
-        # makes no difference in accuracy at all.
-        subdivisions = 100000
-        lenght = 0
-        delta = 1 / subdivisions
-
-        for x in range(1, subdivisions + 1):
-            next_point = self.point(delta * x)
-            distance = sqrt((next_point.real - current_point.real) ** 2 +
-                            (next_point.imag - current_point.imag) ** 2)
-            lenght += distance
-            current_point = next_point
-
-        return lenght
+        start_point = self.point(0)
+        end_point = self.point(1)
+        return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
 
 
 class Path(MutableSequence):
@@ -330,11 +323,11 @@ class Path(MutableSequence):
             return NotImplemented
         return not self == other
 
-    def _calc_lengths(self):
+    def _calc_lengths(self, error=ERROR, min_depth=MIN_DEPTH):
         if self._length is not None:
             return
 
-        lengths = [each.length() for each in self._segments]
+        lengths = [each.length(error=error, min_depth=min_depth) for each in self._segments]
         self._length = sum(lengths)
         self._lengths = [each / self._length for each in lengths]
 
@@ -356,8 +349,8 @@ class Path(MutableSequence):
 
         return segment.point(segment_pos)
 
-    def length(self):
-        self._calc_lengths()
+    def length(self, error=ERROR, min_depth=MIN_DEPTH):
+        self._calc_lengths(error, min_depth)
         return self._length
 
     def _is_closable(self):
