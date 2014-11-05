@@ -267,7 +267,7 @@ class CubicBezierTest(unittest.TestCase):
             complex(900, 650),
             complex(900, 500)
         )
-        self.assertGreater(arc.length(), 300.0)
+        self.assertTrue(arc.length() > 300.0)
 
 
 class QuadraticBezierTest(unittest.TestCase):
