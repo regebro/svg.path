@@ -449,7 +449,3 @@ class TestPath(unittest.TestCase):
             CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
         self.assertEqual(eval(repr(path)), path)
-
-
-if __name__ == "__main__":
-    unittest.main()

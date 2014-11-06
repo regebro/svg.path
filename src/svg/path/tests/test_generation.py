@@ -33,6 +33,3 @@ class TestGeneration(unittest.TestCase):
         # and syntax will change.
         self.assertEqual(parse_path('M0 0L3.4E2-10L100.0,100M100,100l100,-100').d(),
                          'M 0,0 L 340,-10 L 100,100 L 200,0')
-
-if __name__ == '__main__':
-    unittest.main()

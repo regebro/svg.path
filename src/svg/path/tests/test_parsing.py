@@ -107,7 +107,3 @@ class TestParser(unittest.TestCase):
         path1 = parse_path('M-3.4e38 3.4E+38L-3.4E-38,3.4e-38')
         path2 = Path(Line(-3.4e+38 + 3.4e+38j, -3.4e-38 + 3.4e-38j))
         self.assertEqual(path1, path2)
-
-
-if __name__ == '__main__':
-    unittest.main()
