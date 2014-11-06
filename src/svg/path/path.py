@@ -333,6 +333,13 @@ class Path(MutableSequence):
         self._lengths = [each / self._length for each in lengths]
 
     def point(self, pos):
+
+        # Shortcuts
+        if pos == 0.0:
+            return self._segments[0].point(pos)
+        if pos == 1.0:
+            return self._segments[-1].point(pos)
+
         self._calc_lengths()
         # Find which segment the point we search for is located on:
         segment_start = 0
@@ -343,10 +350,6 @@ class Path(MutableSequence):
                 segment_pos = (pos - segment_start) / (segment_end - segment_start)
                 break
             segment_start = segment_end
-        else:
-            # This happens when pos is 1.0, and accumulated errors
-            # mean that segment_end of the last segment is not quite 1.0.
-            segment_pos = 1.0
 
         return segment.point(segment_pos)
 
