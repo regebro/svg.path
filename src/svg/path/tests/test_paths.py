@@ -71,7 +71,7 @@ class LineTest(unittest.TestCase):
         self.assertFalse(line == str(line))
         self.assertTrue(line != str(line))
         self.assertFalse(CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j) ==
-                        line)
+                         line)
 
 
 class CubicBezierTest(unittest.TestCase):
@@ -509,11 +509,11 @@ class TestPath(unittest.TestCase):
 
         self.assertTrue(path1 == path2)
         # Modify path2:
-        path2[0].start = 601+350j
+        path2[0].start = 601 + 350j
         self.assertTrue(path1 != path2)
 
         # Modify back:
-        path2[0].start = 600+350j
+        path2[0].start = 600 + 350j
         self.assertFalse(path1 != path2)
 
         # Get rid of the last segment:

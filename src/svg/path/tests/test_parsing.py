@@ -121,7 +121,6 @@ class TestParser(unittest.TestCase):
         self.assertEqual(path1,
                          Path(QuadraticBezier(100 + 200j, 100 + 200j, 250 + 200j)))
 
-
     def test_negative(self):
         """You don't need spaces before a minus-sign"""
         path1 = parse_path('M100,200c10-5,20-10,30-20')

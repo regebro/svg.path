@@ -6,8 +6,9 @@ from collections import MutableSequence
 # This file contains classes for the different types of SVG path segments as
 # well as a Path object that contains a sequence of path segments.
 
-MIN_DEPTH=5
-ERROR=1e-12
+MIN_DEPTH = 5
+ERROR = 1e-12
+
 
 def segment_length(curve, start, end, start_point, end_point, error, min_depth, depth):
     """Recursively approximates the length by straight lines"""
