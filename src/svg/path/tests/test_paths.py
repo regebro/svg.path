@@ -256,6 +256,19 @@ class CubicBezierTest(unittest.TestCase):
         # This value is not verified to be correct.
         self.assertAlmostEqual(arc.length(), 157.1016698)
 
+        # A recursive solution has also been suggested, but for CubicBezier
+        # curves it could get a false solution on curves where the midpoint is on a
+        # straight line between the start and end. For example, the following
+        # curve would get solved as a straight line and get the length 300.
+        # Make sure this is not the case.
+        arc = CubicBezier(
+            complex(600, 500),
+            complex(600, 350),
+            complex(900, 650),
+            complex(900, 500)
+        )
+        self.assertTrue(arc.length() > 300.0)
+
 
 class QuadraticBezierTest(unittest.TestCase):
 
@@ -355,7 +368,7 @@ class ArcTest(unittest.TestCase):
         self.assertAlmostEqual(arc4.point(0.9), (145.399049974 + 44.5503262094j))
         self.assertAlmostEqual(arc4.point(1.0), (100 + 50j))
 
-    def test_lenght(self):
+    def test_length(self):
         # I'll test the length calculations by making a circle, in two parts.
         arc1 = Arc(0j, 100 + 100j, 0, 0, 0, 200 + 0j)
         arc2 = Arc(200 + 0j, 100 + 100j, 0, 0, 0, 0j)

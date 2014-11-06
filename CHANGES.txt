@@ -12,6 +12,12 @@ Changelog
 
 - Fixed the representation so it's parseable.
 
+- The calculations for CubicBezier and Arc segments are now recursive,
+  and will end when a specific accuracy has been achieved.
+  This is somewhat faster for Arcs and somewhat slower for CubicBezier.
+  However, you can now specify an accuracy, so if you want faster but
+  looser calculations, you can have that.
+
 
 1.2 (2014-11-01)
 ----------------

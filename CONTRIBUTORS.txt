@@ -1,5 +1,8 @@
 Lennart Regebro <regebro@gmail.com>, Original Author
 
-Justin Gruenberg implemented the Quadradic Bezeier calculations.
+Justin Gruenberg implemented the Quadradic Bezier calculations.
+
+Michiel Schallig suggested calculating length by recursive straight-line
+approximations, which enables you to choose between accuracy or speed.
 
 Thanks also to bug fixers Martin R and abcjjy.

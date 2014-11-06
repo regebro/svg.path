@@ -12,26 +12,43 @@ There are four path segment objects, ``Line``, ``Arc``, ``CubicBezier`` and
 ``QuadraticBezier``.`There is also a ``Path`` object that acts as a
 collection of the path segment objects.
 
-All of these objects have a ``.point()`` and a ``.length()`` function.
+All coordinate values for these classes are given as ``complex`` values,
+where the ``.real`` part represents the X coordinate, and the ``.imag`` part
+representes the Y coordinate.
+
+    >>> from svg.path import Path, Line, Arc, CubicBezier, QuadraticBezier
+
+All of these objects have a ``.point()`` function which will return the
+coordinates of a point on the path, where the point is given as a floating
+point value where ``0.0`` is the start of the path and ``1.0`` is end end.
+
+You can calculate the length of a Path or it's segments with the
+``.length()`` function. For CubicBezier and Arc segments this is done by
+geometric approximation and for this reason **may be very slow**. You can
+make it faster by passing in an ``error`` option to the method. If you
+don't pass in error, it defaults to ``1e-12``.
+
+    >>> CubicBezier(300+100j, 100+100j, 200+200j, 200+300j).length(error=1e-5)
+    297.2208145656899
+
+CubicBezier and Arc also has a ``min_depth`` option that specifies the
+minimum recursion depth. This is set to 5 by default, resulting in using a
+minimum of 32 segments for the calculation. Setting it to 0 is a bad idea for
+CubicBeziers, as they may become approximated to a straight line.
+
+``Line.length()`` and ``QuadraticBezier.length()`` also takes these
+parameters, but they are ignored.
 
 CubicBezier and QuadraticBezier also has ``is_smooth_from(previous)``
 methods, that check if the segment is a "smooth" segment compared to the
 given segment.
 
-All coordinate values for these functions are given as ``complex`` values,
-where the ``.real`` part represents the X coordinate, and the ``.imag`` part
-representes the Y coordinate.
-
-The ``.point()`` function will return the X and Y coordinates of a point on
-the path, where the point is given as a floating point value where ``0.0`` is
-the start of the path and ``1.0`` is end end.
-
-The ``.length()`` function will return the path segment or paths length. This
-is in some cases done by geometric approximation and for this reason **may be
-very slow**.
-
 There is also a ``parse_path()`` function that will take an SVG path definition
 and return a ``Path`` object.
+
+    >>> from svg.path import parse_path
+    >>> parse_path('M 100 100 L 300 100')
+    Path(Line(start=(100+100j), end=(300+100j)), closed=False)
 
 
 Classes
@@ -57,7 +74,6 @@ with a sequence of path segments:
 The ``Path`` class is a mutable sequence, so it behaves like a list.
 You can add to it and replace path segments etc.
 
-    >>> from svg.path import parse_path, Path, Line, QuadraticBezier
     >>> path = Path(Line(100+100j,300+100j), Line(100+100j,300+100j))
     >>> path.append(QuadraticBezier(300+100j, 200+200j, 200+300j))
     >>> path[0] = Line(200+100j,300+100j)
