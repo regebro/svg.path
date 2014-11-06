@@ -72,6 +72,7 @@ def parse_path(pathdef, current_pos=0j):
             segments.closed = True
             current_pos = start_pos
             start_pos = None
+            command = None  # You can't have implicit commands after closing.
 
         elif command == 'L':
             x = elements.pop()
@@ -165,7 +166,6 @@ def parse_path(pathdef, current_pos=0j):
             end = float(elements.pop()) + float(elements.pop()) * 1j
 
             if not absolute:
-                control += current_pos
                 end += current_pos
 
             segments.append(path.QuadraticBezier(current_pos, control, end))

@@ -95,6 +95,33 @@ class TestParser(unittest.TestCase):
                               Arc(950 + 175j, 25 + 100j, -30, 0, 1, 1000 + 150j),
                               Line(1000 + 150j, 1050 + 125j)))
 
+    def test_others(self):
+        # Other paths that need testing:
+
+        # Relative moveto:
+        path1 = parse_path('M 0 0 L 50 20 m 50 80 L 300 100 L 200 300 z')
+        self.assertEqual(path1, Path(
+            Line(0 + 0j, 50 + 20j),
+            Line(100 + 100j, 300 + 100j),
+            Line(300 + 100j, 200 + 300j),
+            Line(200 + 300j, 100 + 100j)))
+
+        # Initial smooth and relative CubicBezier
+        path1 = parse_path("""M100,200 s 150,-100 150,0""")
+        self.assertEqual(path1,
+                         Path(CubicBezier(100 + 200j, 100 + 200j, 250 + 100j, 250 + 200j)))
+
+        # Initial smooth and relative QuadraticBezier
+        path1 = parse_path("""M100,200 t 150,0""")
+        self.assertEqual(path1,
+                         Path(QuadraticBezier(100 + 200j, 100 + 200j, 250 + 200j)))
+
+        # Relative QuadraticBezier
+        path1 = parse_path("""M100,200 q 0,0 150,0""")
+        self.assertEqual(path1,
+                         Path(QuadraticBezier(100 + 200j, 100 + 200j, 250 + 200j)))
+
+
     def test_negative(self):
         """You don't need spaces before a minus-sign"""
         path1 = parse_path('M100,200c10-5,20-10,30-20')
@@ -107,3 +134,6 @@ class TestParser(unittest.TestCase):
         path1 = parse_path('M-3.4e38 3.4E+38L-3.4E-38,3.4e-38')
         path2 = Path(Line(-3.4e+38 + 3.4e+38j, -3.4e-38 + 3.4e-38j))
         self.assertEqual(path1, path2)
+
+    def test_errors(self):
+        self.assertRaises(ValueError, parse_path, 'M 100 100 L 200 200 Z 100 200')

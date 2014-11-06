@@ -62,6 +62,17 @@ class LineTest(unittest.TestCase):
         self.assertAlmostEqual(line3.point(1), (0j))
         self.assertAlmostEqual(line3.length(), 500)
 
+    def test_equality(self):
+        # This is to test the __eq__ and __ne__ methods, so we can't use
+        # assertEqual and assertNotEqual
+        line = Line(0j, 400 + 0j)
+        self.assertTrue(line == Line(0, 400))
+        self.assertTrue(line != Line(100, 400))
+        self.assertFalse(line == str(line))
+        self.assertTrue(line != str(line))
+        self.assertFalse(CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j) ==
+                        line)
+
 
 class CubicBezierTest(unittest.TestCase):
     def test_approx_circle(self):
@@ -269,6 +280,18 @@ class CubicBezierTest(unittest.TestCase):
         )
         self.assertTrue(arc.length() > 300.0)
 
+    def test_equality(self):
+        # This is to test the __eq__ and __ne__ methods, so we can't use
+        # assertEqual and assertNotEqual
+        segment = CubicBezier(complex(600, 500), complex(600, 350),
+                              complex(900, 650), complex(900, 500))
+
+        self.assertTrue(segment ==
+                        CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j))
+        self.assertTrue(segment !=
+                        CubicBezier(600 + 501j, 600 + 350j, 900 + 650j, 900 + 500j))
+        self.assertTrue(segment != Line(0, 400))
+
 
 class QuadraticBezierTest(unittest.TestCase):
 
@@ -295,6 +318,15 @@ class QuadraticBezierTest(unittest.TestCase):
         # calculated with the cubic bezier length estimation
         path1 = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
         self.assertAlmostEqual(path1.length(), 487.7710938890204)
+
+    def test_equality(self):
+        # This is to test the __eq__ and __ne__ methods, so we can't use
+        # assertEqual and assertNotEqual
+        segment = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
+        self.assertTrue(segment == QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j))
+        self.assertTrue(segment != QuadraticBezier(200 + 301j, 400 + 50j, 600 + 300j))
+        self.assertFalse(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
+        self.assertTrue(Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j) != segment)
 
 
 class ArcTest(unittest.TestCase):
@@ -375,6 +407,13 @@ class ArcTest(unittest.TestCase):
         self.assertAlmostEqual(arc1.length(), pi * 100)
         self.assertAlmostEqual(arc2.length(), pi * 100)
 
+    def test_equality(self):
+        # This is to test the __eq__ and __ne__ methods, so we can't use
+        # assertEqual and assertNotEqual
+        segment = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
+        self.assertTrue(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
+        self.assertTrue(segment != Arc(0j, 100 + 50j, 0, 1, 0, 100 + 50j))
+
 
 class TestPath(unittest.TestCase):
 
@@ -449,3 +488,38 @@ class TestPath(unittest.TestCase):
             CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
         self.assertEqual(eval(repr(path)), path)
+
+    def test_reverse(self):
+        # Currently you can't reverse paths.
+        self.assertRaises(NotImplementedError, Path().reverse)
+
+    def test_equality(self):
+        # This is to test the __eq__ and __ne__ methods, so we can't use
+        # assertEqual and assertNotEqual
+        path1 = Path(
+            Line(start=600 + 350j, end=650 + 325j),
+            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, arc=0, sweep=1, end=700 + 300j),
+            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
+            QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
+        path2 = Path(
+            Line(start=600 + 350j, end=650 + 325j),
+            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, arc=0, sweep=1, end=700 + 300j),
+            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
+            QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
+
+        self.assertTrue(path1 == path2)
+        # Modify path2:
+        path2[0].start = 601+350j
+        self.assertTrue(path1 != path2)
+
+        # Modify back:
+        path2[0].start = 600+350j
+        self.assertFalse(path1 != path2)
+
+        # Get rid of the last segment:
+        del path2[-1]
+        self.assertFalse(path1 == path2)
+
+        # It's not equal to a list of it's segments
+        self.assertTrue(path1 != path1[:])
+        self.assertFalse(path1 == path1[:])

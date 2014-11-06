@@ -23,6 +23,7 @@ class TestGeneration(unittest.TestCase):
             'M 200,300 Q 400,50 600,300 T 1000,300',
             'M -3.4E+38,3.4E+38 L -3.4E-38,3.4E-38',
             'M 0,0 L 50,20 M 50,20 L 200,100 Z',
+            'M 600,350 L 650,325 A 25,25 -30 0,1 700,300 L 750,275',
         ]
 
         for path in paths:
