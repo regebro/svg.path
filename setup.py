@@ -38,7 +38,7 @@ setup(name='svg.path',
           'Topic :: Multimedia :: Graphics'
           ],
       keywords='svg path maths',
-      author='Lenart Regebro',
+      author='Lennart Regebro',
       author_email='regebro@gmail.com',
       url='https://github.com/regebro/svg.path',
       license='MIT',
