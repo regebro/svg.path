@@ -162,5 +162,4 @@ Future features
 Licence
 -------
 
-This module is under a CC0 1.0 Universal licence.
-http://creativecommons.org/publicdomain/zero/1.0/
+This module is under a MIT License.
