@@ -136,23 +136,34 @@ class QuadraticBezier(object):
                pos ** 2 * self.end
 
     def length(self, error=None, min_depth=None):
-        # http://www.malczak.info/blog/quadratic-bezier-curve-length/
-        a = self.start - 2 * self.control + self.end
-        b = 2 * (self.control - self.start)
+        a = self.start - 2*self.control + self.end
+        b = 2*(self.control - self.start)
+        a_dot_b = a.real*b.real + a.imag*b.imag
 
-        A = 4 * (a.real ** 2 + a.imag ** 2)
-        B = 4 * (a.real * b.real + a.imag * b.imag)
-        C = b.real ** 2 + b.imag ** 2
+        if abs(a) < 1e-12:
+            s = abs(b)
+        elif abs(a_dot_b + abs(a)*abs(b)) < 1e-12:
+            k = abs(b)/abs(a)
+            if k >= 2:
+                s = abs(b) - abs(a)
+            else:
+                s = abs(a)*(k**2/2 - k + 1)
+        else:
+            # For an explanation of this case, see
+            # http://www.malczak.info/blog/quadratic-bezier-curve-length/
+            A = 4 * (a.real ** 2 + a.imag ** 2)
+            B = 4 * (a.real * b.real + a.imag * b.imag)
+            C = b.real ** 2 + b.imag ** 2
 
-        Sabc = 2 * sqrt(A + B + C)
-        A2 = sqrt(A)
-        A32 = 2 * A * A2
-        C2 = 2 * sqrt(C)
-        BA = B / A2
+            Sabc = 2 * sqrt(A + B + C)
+            A2 = sqrt(A)
+            A32 = 2 * A * A2
+            C2 = 2 * sqrt(C)
+            BA = B / A2
 
-        return (A32 * Sabc + A2 * B * (Sabc - C2) + (4 * C * A - B ** 2) *
-                log((2 * A2 + BA + Sabc) / (BA + C2))) / (4 * A32)
-
+            s = (A32 * Sabc + A2 * B * (Sabc - C2) + (4 * C * A - B ** 2) *
+                    log((2 * A2 + BA + Sabc) / (BA + C2))) / (4 * A32)
+        return s
 
 class Arc(object):
 
