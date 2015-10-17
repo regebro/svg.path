@@ -6,6 +6,8 @@ Changelog
 
 - #20: The doctext for the closed() setter was incorrect.
 
+- #19: Fixed so tests didn't use relative paths. [danstender]
+
 
 2.0 (2015-05-15)
 ----------------
