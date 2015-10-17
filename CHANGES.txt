@@ -1,8 +1,8 @@
 Changelog
 =========
 
-2.1 (unreleased)
-----------------
+2.0.1 (2015-10-17)
+------------------
 
 - #20: The doctext for the closed() setter was incorrect.
 
