@@ -367,7 +367,7 @@ class Path(MutableSequence):
 
     @property
     def closed(self):
-        """Checks that the end point is the same as the start point"""
+        """Checks that the path is closed"""
         return self._closed and self._is_closable()
 
     @closed.setter
