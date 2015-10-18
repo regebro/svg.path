@@ -315,9 +315,22 @@ class QuadraticBezierTest(unittest.TestCase):
         self.assertAlmostEqual(path2.point(1), (1000 + 300j))
 
     def test_length(self):
-        # calculated with the cubic bezier length estimation
-        path1 = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
-        self.assertAlmostEqual(path1.length(), 487.7710938890204)
+        # expected results calculated with 
+        # svg.path.segment_length(q, 0, 1, q.start, q.end, 1e-14, 20, 0)
+        q1 = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
+        q2 = QuadraticBezier(200 + 300j, 400 + 50j, 500 + 200j)
+        closedq = QuadraticBezier(6+2j, 5-1j, 6+2j)
+        linq1 = QuadraticBezier(1, 2, 3)
+        linq2 = QuadraticBezier(1+3j, 2+5j, -9 - 17j)
+        nodalq = QuadraticBezier(1, 1, 1)
+        tests = [(q1, 487.77109389525975),
+                 (q2, 379.90458193489155),
+                 (closedq, 3.1622776601683795),
+                 (linq1, 2),
+                 (linq2, 22.73335777124786),
+                 (nodalq, 0)]
+        for q, exp_res in tests:
+            self.assertAlmostEqual(q.length(), exp_res)
 
     def test_equality(self):
         # This is to test the __eq__ and __ne__ methods, so we can't use
