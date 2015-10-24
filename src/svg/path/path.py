@@ -242,7 +242,7 @@ class Arc(object):
         vy = (-y1prim - cyprim) / ry
         n = sqrt(ux * ux + uy * uy)
         p = ux
-        theta = degrees(acos(p / n))
+        theta = degrees(acos((p/n - 1) % 2 + 1))
         if uy < 0:
             theta = -theta
         self.theta = theta % 360
@@ -252,7 +252,7 @@ class Arc(object):
         if p == 0:
             delta = degrees(acos(0))
         else:
-            delta = degrees(acos(p / n))
+            delta = degrees(acos((p/n - 1) % 2 + 1)
         if (ux * vy - uy * vx) < 0:
             delta = -delta
         self.delta = delta % 360
