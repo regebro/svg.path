@@ -6,4 +6,4 @@ provided suggestions and feedback about the d() function.
 Michiel Schallig suggested calculating length by recursive straight-line
 approximations, which enables you to choose between accuracy or speed.
 
-Thanks also to bug fixers Martin R, abcjjy, and Daniel Stender.
+Thanks also to Martin R, abcjjy, Daniel Stender, and Steve Schwarz.
