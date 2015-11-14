@@ -1,10 +1,11 @@
 Changelog
 =========
 
-2.0.2 (unreleased)
+2.1.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Accept an error parameter to Path.point() to be able to
+  control error vs performance setting. [saschwarz]
 
 
 2.0.1 (2015-10-17)
