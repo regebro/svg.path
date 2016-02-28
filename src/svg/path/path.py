@@ -249,10 +249,14 @@ class Arc(object):
 
         n = sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy))
         p = ux * vx + uy * vy
-        if p == 0:
-            delta = degrees(acos(0))
-        else:
-            delta = degrees(acos(p / n))
+        d = p/n
+        # In certain cases the above calculation can through inaccuracies
+        # become just slightly out of range, f ex -1.0000000000000002.
+        if d > 1.0:
+            d = 1.0
+        elif d < -1.0:
+            d = -1.0
+        delta = degrees(acos(d))
         if (ux * vy - uy * vx) < 0:
             delta = -delta
         self.delta = delta % 360

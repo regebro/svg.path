@@ -315,7 +315,7 @@ class QuadraticBezierTest(unittest.TestCase):
         self.assertAlmostEqual(path2.point(1), (1000 + 300j))
 
     def test_length(self):
-        # expected results calculated with 
+        # expected results calculated with
         # svg.path.segment_length(q, 0, 1, q.start, q.end, 1e-14, 20, 0)
         q1 = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
         q2 = QuadraticBezier(200 + 300j, 400 + 50j, 500 + 200j)
@@ -426,6 +426,13 @@ class ArcTest(unittest.TestCase):
         segment = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertTrue(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(segment != Arc(0j, 100 + 50j, 0, 1, 0, 100 + 50j))
+
+    def test_issue25(self):
+        # This raised a math domain error
+        Arc((725.307482225571-915.5548199281527j),
+            (202.79421639137703+148.77294617167183j),
+            225.6910319606926, 1, 1,
+            (-624.6375539637027+896.5483089399895j))
 
 
 class TestPath(unittest.TestCase):

@@ -4,8 +4,10 @@ Changelog
 2.0.2 (unreleased)
 ------------------
 
-- QuadraticBeziers could get a DivideByZero error under certain
+- #18: QuadraticBeziers could get a DivideByZero error under certain
   circumstances. [MTician]
+
+- #25: Arc's could create a MathDomain error under certain circumstances.
 
 
 2.0.1 (2015-10-17)
