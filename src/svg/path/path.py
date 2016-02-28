@@ -347,7 +347,7 @@ class Path(MutableSequence):
         self._length = sum(lengths)
         self._lengths = [each / self._length for each in lengths]
 
-    def point(self, pos):
+    def point(self, pos, error=ERROR):
 
         # Shortcuts
         if pos == 0.0:
@@ -355,7 +355,7 @@ class Path(MutableSequence):
         if pos == 1.0:
             return self._segments[-1].point(pos)
 
-        self._calc_lengths()
+        self._calc_lengths(error=error)
         # Find which segment the point we search for is located on:
         segment_start = 0
         for index, segment in enumerate(self._segments):
