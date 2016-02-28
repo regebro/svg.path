@@ -12,6 +12,8 @@ Changelog
 
 - #25: Arc's could create a MathDomain error under certain circumstances.
 
+- #17: Set last_command always.
+
 
 2.0.1 (2015-10-17)
 ------------------
