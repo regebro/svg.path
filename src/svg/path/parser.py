@@ -35,6 +35,7 @@ def parse_path(pathdef, current_pos=0j):
 
         if elements[-1] in COMMANDS:
             # New command.
+            last_command = command  # Used by S and T
             command = elements.pop()
             absolute = command in UPPERCASE
             command = command.upper()
@@ -44,8 +45,7 @@ def parse_path(pathdef, current_pos=0j):
             if command is None:
                 raise ValueError("Unallowed implicit command in %s, position %s" % (
                     pathdef, len(pathdef.split()) - len(elements)))
-
-        last_command = command  # Used by S and T
+            last_command = command  # Used by S and T
 
         if command == 'M':
             # Moveto command.

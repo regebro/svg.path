@@ -1,13 +1,8 @@
 Changelog
 =========
 
-2.1.1 (unreleased)
-------------------
 
-- Nothing changed yet.
-
-
-2.1.0 (2016-02-28)
+2.1.0 (unreleased)
 ------------------
 
 - #18: QuadraticBeziers could get a DivideByZero error under certain
