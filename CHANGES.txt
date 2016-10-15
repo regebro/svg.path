@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-2.1.2 (unreleased)
-------------------
+2.2 (2016-10-15)
+----------------
 
 - Don't add a line when closing a path if it's not needed.
 
