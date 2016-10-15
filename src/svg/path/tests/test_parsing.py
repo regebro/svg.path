@@ -79,6 +79,12 @@ class TestParser(unittest.TestCase):
                               Arc(275 + 25j, 150 + 150j, 0, 0, 0, 125 + 175j),
                               Line(125 + 175j, 275 + 175j)))
 
+        path1 = parse_path('M275,175 v-150 a150,150 0 0,0 -150,150 L 275,175 z')
+        self.assertEqual(path1,
+                         Path(Line(275 + 175j, 275 + 25j),
+                              Arc(275 + 25j, 150 + 150j, 0, 0, 0, 125 + 175j),
+                              Line(125 + 175j, 275 + 175j)))
+
         path1 = parse_path("""M600,350 l 50,-25
                               a25,25 -30 0,1 50,-25 l 50,-25
                               a25,50 -30 0,1 50,-25 l 50,-25
