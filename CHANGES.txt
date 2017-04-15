@@ -5,7 +5,9 @@ Changelog
 2.2.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Dropped support for Python 3.1 and 3.2. It still works, but it may stop.
+  Added support for Python 3.6. Dropped support for Jython, it's not
+  supported by Travis, and hasn't seen  a release in over a year.
 
 
 2.2 (2016-10-15)
