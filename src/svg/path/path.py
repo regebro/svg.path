@@ -374,11 +374,7 @@ class Path(MutableSequence):
 
     def _is_closable(self):
         """Returns true if the end is on the start of a segment"""
-        end = self[-1].end
-        for segment in self:
-            if segment.start == end:
-                return True
-        return False
+        return self[0].start == self[-1].end
 
     @property
     def closed(self):
