@@ -9,6 +9,7 @@ UPPERCASE = set('MZLHVCSQTA')
 COMMAND_RE = re.compile("([MmZzLlHhVvCcSsQqTtAa])")
 FLOAT_RE = re.compile("[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
 
+TRANSFORM_RE = re.compile("^translate\((?P<x>[+\-.\d]+),(?P<y>[+\-.\d]+)\)$")
 
 def _tokenize_path(pathdef):
     for x in COMMAND_RE.split(pathdef):
@@ -18,7 +19,7 @@ def _tokenize_path(pathdef):
             yield token
 
 
-def parse_path(pathdef, current_pos=0j):
+def parse_path(pathdef, transform='', current_pos=0j):
     # In the SVG specs, initial movetos are absolute, even if
     # specified as 'm'. This is the default behavior here as well.
     # But if you pass in a current_pos variable, the initial moveto
@@ -26,6 +27,14 @@ def parse_path(pathdef, current_pos=0j):
     elements = list(_tokenize_path(pathdef))
     # Reverse for easy use of .pop()
     elements.reverse()
+
+    if transform:
+        if TRANSFORM_RE.match(transform):
+            start_x,start_y = TRANSFORM_RE.match(transform).groups()
+            current_pos = complex(float(start_x), float(start_y))
+        else:
+            raise ValueError("transform %s not supported" % transform)
+
 
     segments = path.Path()
     start_pos = None
