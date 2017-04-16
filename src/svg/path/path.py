@@ -219,6 +219,7 @@ class Arc(object):
         if radius_check > 1:
             rx *= sqrt(radius_check)
             ry *= sqrt(radius_check)
+            self.radius = rx + 1j*ry
             rx_sq = rx * rx
             ry_sq = ry * ry
 
