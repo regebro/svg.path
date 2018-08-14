@@ -284,6 +284,34 @@ class Arc(object):
         return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
 
 
+class Move(object):
+    """Represents move commands. Does nothing, but is there to handle
+    paths that consist of only move commands, which is valid, but pointless.
+    """
+
+    def __init__(self, to):
+        self.start = self.end = to
+
+    def __repr__(self):
+        return 'Move(to=%s)' % self.start
+
+    def __eq__(self, other):
+        if not isinstance(other, Move):
+            return NotImplemented
+        return self.start == other.start
+
+    def __ne__(self, other):
+        if not isinstance(other, Move):
+            return NotImplemented
+        return not self == other
+
+    def point(self, pos):
+        return self.start
+
+    def length(self, error=ERROR, min_depth=MIN_DEPTH):
+        return 0
+
+
 class Path(MutableSequence):
     """A Path is a sequence of path segments"""
 
@@ -408,7 +436,8 @@ class Path(MutableSequence):
             # If the start of this segment does not coincide with the end of
             # the last segment or if this segment is actually the close point
             # of a closed path, then we should start a new subpath here.
-            if current_pos != start or (self.closed and start == end):
+            if isinstance(segment, Move) or (current_pos != start) or (
+               start == end and not isinstance(previous_segment, Move)):
                 parts.append('M {0:G},{1:G}'.format(start.real, start.imag))
 
             if isinstance(segment, Line):

@@ -56,7 +56,7 @@ def parse_path(pathdef, current_pos=0j):
                 current_pos = pos
             else:
                 current_pos += pos
-
+            segments.append(path.Move(current_pos))
             # when M is called, reset start_pos
             # This behavior of Z is defined in svg spec:
             # http://www.w3.org/TR/SVG/paths.html#PathDataClosePathCommand

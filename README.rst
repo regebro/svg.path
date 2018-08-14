@@ -48,7 +48,7 @@ and return a ``Path`` object.
 
     >>> from svg.path import parse_path
     >>> parse_path('M 100 100 L 300 100')
-    Path(Line(start=(100+100j), end=(300+100j)), closed=False)
+    Path(Move(to=(100+100j)), Line(start=(100+100j), end=(300+100j)), closed=False)
 
 
 Classes
@@ -116,7 +116,7 @@ And it should again be equal to the first path:
 Paths are mutable sequences, you can slice and append:
 
     >>> path1.append(QuadraticBezier(300+100j, 200+200j, 200+300j))
-    >>> len(path1[2:]) == 2
+    >>> len(path1[2:]) == 3
     True
 
 Paths also have a ``closed`` property, which defines if the path should be
@@ -129,7 +129,8 @@ seen as a closed path or not.
 If you modify the path in such a way that it is no longer closeable, it will
 not be closed.
 
-    >>> path[0].start = (100+150j)
+    >>> path[0].start = (100+105j)
+    >>> path[1].start = (100+105j)
     >>> path.closed
     False
 
