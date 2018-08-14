@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-2.2.1 (unreleased)
-------------------
+3.0 (2018-08-14)
+----------------
 
 - Dropped support for Python 3.1 and 3.2. It still works, but it may stop.
   Added support for Python 3.6. Dropped support for Jython, it's not
