@@ -543,3 +543,10 @@ class TestPath(unittest.TestCase):
         # It's not equal to a list of it's segments
         self.assertTrue(path1 != path1[:])
         self.assertFalse(path1 == path1[:])
+
+    def test_non_arc(self):
+        # And arc with the same start and end is a noop.
+        segment = Arc(0j + 70j, 35 + 35j, 0, 1, 0, 0 + 70j)
+        self.assertEqual(segment.length(), 0)
+        self.assertEqual(segment.point(0.5), segment.start)
+

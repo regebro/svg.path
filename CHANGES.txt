@@ -9,9 +9,13 @@ Changelog
   Added support for Python 3.6. Dropped support for Jython, it's not
   supported by Travis, and hasn't seen  a release in over a year.
 
-- Move commands are now preserved when parsed.
+- #33: Move commands are now preserved when parsed.
 
 - Subpaths are no longer merged even if they are joined.
+
+- #30: Arcs where the endpoint is the same as the start point caused a crash.
+  The SVG specs say that it instead should be the equavalent of skipping
+  that section, which now is the case.
 
 
 2.2 (2016-10-15)

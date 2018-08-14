@@ -199,6 +199,9 @@ class Arc(object):
     def _parameterize(self):
         # Conversion from endpoint to center parameterization
         # http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
+        if self.start == self.end:
+            # This is equivalent of omitting the segment, so do nothing
+            return
 
         cosr = cos(radians(self.rotation))
         sinr = sin(radians(self.rotation))
@@ -264,6 +267,9 @@ class Arc(object):
             self.delta -= 360
 
     def point(self, pos):
+        if self.start == self.end:
+            # This is equivalent of omitting the segment
+            return self.start
         angle = radians(self.theta + (self.delta * pos))
         cosr = cos(radians(self.rotation))
         sinr = sin(radians(self.rotation))
@@ -279,6 +285,9 @@ class Arc(object):
         integration, and in that case it's simpler to just do a geometric
         approximation, as for cubic bezier curves.
         """
+        if self.start == self.end:
+            # This is equivalent of omitting the segment
+            return 0
         start_point = self.point(0)
         end_point = self.point(1)
         return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
