@@ -43,7 +43,6 @@ setup(name='svg.path',
       license='MIT',
       packages=find_packages('src'),
       package_dir={'': 'src'},
-      namespace_packages=['svg'],
       include_package_data=True,
       zip_safe=True,
       install_requires=[
