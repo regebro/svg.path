@@ -1,6 +1,7 @@
 from __future__ import division
 from math import sqrt, cos, sin, acos, degrees, radians, log
 from collections import MutableSequence
+from bisect import bisect
 
 
 # This file contains classes for the different types of SVG path segments as
@@ -331,6 +332,8 @@ class Path(MutableSequence):
         self._segments = list(segments)
         self._length = None
         self._lengths = None
+        # Fractional distance from starting point through the end of each segment.
+        self._fractions = []
         if 'closed' in kw:
             self.closed = kw['closed']
 
@@ -383,6 +386,11 @@ class Path(MutableSequence):
         lengths = [each.length(error=error, min_depth=min_depth) for each in self._segments]
         self._length = sum(lengths)
         self._lengths = [each / self._length for each in lengths]
+        # Calculate the fractional distance for each segment to use in point()
+        fraction = 0
+        for each in self._lengths:
+          fraction += each
+          self._fractions.append(fraction)
 
     def point(self, pos, error=ERROR):
 
@@ -394,16 +402,9 @@ class Path(MutableSequence):
 
         self._calc_lengths(error=error)
         # Find which segment the point we search for is located on:
-        segment_start = 0
-        for index, segment in enumerate(self._segments):
-            segment_end = segment_start + self._lengths[index]
-            if segment_end >= pos:
-                # This is the segment! How far in on the segment is the point?
-                segment_pos = (pos - segment_start) / (segment_end - segment_start)
-                break
-            segment_start = segment_end
-
-        return segment.point(segment_pos)
+        i = bisect(self._fractions, pos)
+        segment_pos = (pos - self._fractions[i-1]) / (self._fractions[i]-self._fractions[i-1])
+        return self._segments[i].point(segment_pos)
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         self._calc_lengths(error, min_depth)
