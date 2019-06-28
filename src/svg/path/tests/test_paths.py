@@ -550,3 +550,62 @@ class TestPath(unittest.TestCase):
         self.assertEqual(segment.length(), 0)
         self.assertEqual(segment.point(0.5), segment.start)
 
+
+class TestTransform(unittest.TestCase):
+
+    def test_transforms(self):
+        """The paths that are in the SVG specs"""
+
+        path = Path(Line(300 + 200j, 300 + 50j),
+                    QuadraticBezier(300 + 50j, 0+0j, 75 + 100j),
+                    Line(75 + 100j, 300 + 200j))
+        self.assertAlmostEqual(path.point(0.0), (300 + 200j))
+        self.assertAlmostEqual(path.point(1.0), (300 + 200j))
+        self.assertAlmostEqual(path.point(0.5), (66.93528751308301 + 49.735092953567715j))
+        path.translate(300 + 0j)
+        self.assertAlmostEqual(path.point(0.0), (600 + 200j))
+        self.assertAlmostEqual(path.point(1.0), (600 + 200j))
+        path.rotate(90)
+        self.assertAlmostEqual(path.point(0.0), (-200 + 600j))
+        self.assertAlmostEqual(path.point(1.0), (-200 + 600j))
+        path.rotate(90)
+        self.assertAlmostEqual(path.point(0.0), (-600 + -200j))
+        self.assertAlmostEqual(path.point(1.0), (-600 + -200j))
+        path.rotate(90)
+        self.assertAlmostEqual(path.point(0.0), (200 + -600j))
+        self.assertAlmostEqual(path.point(1.0), (200 + -600j))
+        path.rotate(90)
+        self.assertAlmostEqual(path.point(0.0), (600 + 200j))
+        self.assertAlmostEqual(path.point(1.0), (600 + 200j))
+        path.translate(-300 + 0j)
+        self.assertAlmostEqual(path.point(0.0), (300 + 200j))
+        self.assertAlmostEqual(path.point(1.0), (300 + 200j))
+        path.scale(2)
+        self.assertAlmostEqual(path.point(0.0), (600 + 400j))
+        self.assertAlmostEqual(path.point(1.0), (600 + 400j))
+        path.scale(0.5)
+        self.assertAlmostEqual(path.point(0.0), (300 + 200j))
+        self.assertAlmostEqual(path.point(1.0), (300 + 200j))
+        self.assertAlmostEqual(path.point(0.5), (66.93528751308301+49.735092953567715j))
+        path.translate(-300 + -200j)
+        path.scale(2)
+        path.translate(300 + 200j)
+        self.assertAlmostEqual(path.point(0.0), (300 + 200j))
+        self.assertAlmostEqual(path.point(1.0), (300 + 200j))
+        self.assertAlmostEqual(path.point(0.5), (-166.12942497383398 - 100.52981409286478j))
+        path.translate(-300 + -200j)
+        path.scale(0.5)
+        path.translate(300 + 200j)
+        self.assertAlmostEqual(path.point(0.0), (300 + 200j))
+        self.assertAlmostEqual(path.point(1.0), (300 + 200j))
+        self.assertAlmostEqual(path.point(0.5), (66.93528751308301+49.735092953567715j))
+
+
+    def test_reverse(self):
+        path = Path(Line(300 + 200j, 300 + 50j),
+                    QuadraticBezier(300 + 50j, 0 + 0j, 75 + 100j),
+                    Line(75 + 100j, 300 + 200j))
+        rpath = path.reverse()
+        self.assertTrue(path != rpath)
+        rpath = rpath.reverse()
+        self.assertTrue(path == rpath)

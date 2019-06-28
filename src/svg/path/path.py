@@ -1,5 +1,5 @@
 from __future__ import division
-from math import sqrt, cos, sin, acos, degrees, radians, log
+from math import sqrt, cos, sin, acos, degrees, radians, log, atan2
 from collections import MutableSequence
 
 
@@ -49,6 +49,31 @@ class Line(object):
             return NotImplemented
         return not self == other
 
+    def __add__(self, other):
+        self.start += other
+        self.end += other
+
+    def __sub__(self, other):
+        self.start -= other
+        self.end -= other
+
+    def __mul__(self, other):
+        self.start *= other
+        self.end *= other
+
+    __rmul__ = __mul__
+
+    def __len__(self):
+        return 2
+
+    def __getitem__(self, item):
+        if item == 0:
+            return self.start
+        return self.end
+
+    def reverse(self):
+        return Line(self.end, self.start)
+
     def point(self, pos):
         distance = self.end - self.start
         return self.start + distance * pos
@@ -79,6 +104,41 @@ class CubicBezier(object):
         if not isinstance(other, CubicBezier):
             return NotImplemented
         return not self == other
+
+    def __add__(self, other):
+        self.start += other
+        self.control1 += other
+        self.control2 += other
+        self.end += other
+
+    def __sub__(self, other):
+        self.start -= other
+        self.control1 -= other
+        self.control2 -= other
+        self.end -= other
+
+    def __mul__(self, other):
+        self.start *= other
+        self.control1 *= other
+        self.control2 *= other
+        self.end *= other
+
+    __rmul__ = __mul__
+
+    def __len__(self):
+        return 4
+
+    def __getitem__(self, item):
+        if item == 0:
+            return self.start
+        elif item == 1:
+            return self.control1
+        elif item == 2:
+            return self.control2
+        return self.end
+
+    def reverse(self):
+        return CubicBezier(self.end, self.control2, self.control1, self.start)
 
     def is_smooth_from(self, previous):
         """Checks if this segment would be a smooth segment following the previous"""
@@ -123,6 +183,36 @@ class QuadraticBezier(object):
             return NotImplemented
         return not self == other
 
+    def __add__(self, other):
+        self.start += other
+        self.control += other
+        self.end += other
+
+    def __sub__(self, other):
+        self.start -= other
+        self.control -= other
+        self.end -= other
+
+    def __mul__(self, other):
+        self.start *= other
+        self.control *= other
+        self.end *= other
+
+    __rmul__ = __mul__
+
+    def __len__(self):
+        return 3
+
+    def __getitem__(self, item):
+        if item == 0:
+            return self.start
+        elif item == 1:
+            return self.control
+        return self.end
+
+    def reverse(self):
+        return QuadraticBezier(self.end, self.control, self.start)
+
     def is_smooth_from(self, previous):
         """Checks if this segment would be a smooth segment following the previous"""
         if isinstance(previous, QuadraticBezier):
@@ -165,6 +255,7 @@ class QuadraticBezier(object):
                     log((2 * A2 + BA + Sabc) / (BA + C2))) / (4 * A32)
         return s
 
+
 class Arc(object):
 
     def __init__(self, start, radius, rotation, arc, sweep, end):
@@ -195,6 +286,46 @@ class Arc(object):
         if not isinstance(other, Arc):
             return NotImplemented
         return not self == other
+
+    def __add__(self, other):
+        self.start += other
+        self.center += other
+        self.end += other
+
+    def __sub__(self, other):
+        self.start -= other
+        self.center -= other
+        self.end -= other
+
+    def __mul__(self, other):
+        # this will mess up non-centered parameterized info, especially with regard to radius and rotation.
+        self.start *= other
+        self.end *= other
+        self.center *= other
+        # this will fix radius
+        distance = (self.center - self.start)
+        self.radius = sqrt(distance.real ** 2 + distance.imag ** 2)
+        # this will fix rotation
+        cosr = cos(radians(self.rotation))
+        sinr = sin(radians(self.rotation))
+        zero_angle_point = cosr + sinr * 1j
+        zero_angle_point *= other
+        self.rotation = degrees((atan2(zero_angle_point.imag, zero_angle_point.real)))
+
+    __rmul__ = __mul__
+
+    def __len__(self):
+        return 3
+
+    def __getitem__(self, item):
+        if item == 0:
+            return self.start
+        if item == 1:
+            return self.center
+        return self.end
+
+    def reverse(self):
+        return Arc(self.end, self.radius, self.rotation, self.arc, self.sweep, self.start)
 
     def _parameterize(self):
         # Conversion from endpoint to center parameterization
@@ -314,6 +445,26 @@ class Move(object):
             return NotImplemented
         return not self == other
 
+    def __add__(self, other):
+        self.start += other
+
+    def __sub__(self, other):
+        self.start -= other
+
+    def __mul__(self, other):
+        self.start *= other
+
+    __rmul__ = __mul__
+
+    def __len__(self):
+        return 1
+
+    def __getitem__(self, item):
+        return self.start
+
+    def reverse(self):
+        return Move(self.start)
+
     def point(self, pos):
         return self.start
 
@@ -350,9 +501,16 @@ class Path(MutableSequence):
         self._length = None
 
     def reverse(self):
-        # Reversing the order of a path would require reversing each element
-        # as well. That's not implemented.
-        raise NotImplementedError
+        reversed_segments = self._segments[::-1]
+        for i in range(0, len(reversed_segments)):
+            reversed_segments[i] = reversed_segments[i].reverse()
+        path = Path()
+        path._segments = reversed_segments
+        return path
+
+    def __reversed__(self):
+        for segment in reversed(self._segments):
+            yield segment.reverse()
 
     def __len__(self):
         return len(self._segments)
@@ -428,6 +586,23 @@ class Path(MutableSequence):
         if value and not self._is_closable():
             raise ValueError("End does not coincide with a segment start.")
         self._closed = value
+
+    def translate(self, dx, dy=None):
+        if isinstance(dx, complex):
+            translate = dx
+        else:
+            translate = dx + dy * 1j
+        for segment in self:
+            segment += translate
+
+    def scale(self, scale):
+        for segment in self:
+            segment *= scale
+
+    def rotate(self, theta):
+        rotate = cos(radians(theta)) + sin(radians(theta)) * 1j
+        for segment in self:
+            segment *= rotate
 
     def d(self):
         if self.closed:
