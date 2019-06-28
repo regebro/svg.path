@@ -509,10 +509,6 @@ class TestPath(unittest.TestCase):
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
         self.assertEqual(eval(repr(path)), path)
 
-    def test_reverse(self):
-        # Currently you can't reverse paths.
-        self.assertRaises(NotImplementedError, Path().reverse)
-
     def test_equality(self):
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
