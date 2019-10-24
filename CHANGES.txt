@@ -10,6 +10,8 @@ Changelog
   package for ``svg`` to a `pkgutil style
   <https://packaging.python.org/guides/packaging-namespace-packages/#pkgutil-style-namespace-packages>`_
   namespace package.
+- A faster ``point()`` implementation for paths. [ClayJarCom]
+
 
 3.0 (2018-08-14)
 ----------------
