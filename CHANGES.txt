@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-3.1 (unreleased)
+3.1 (2019-10-25)
 ----------------
 
 - The Move null command was not imported into ``__init__.py`` [blokhin]
