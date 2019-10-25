@@ -5,7 +5,7 @@ Changelog
 3.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Moved all the information from setup.py into setup.cfg.
 
 
 3.1 (2019-10-25)
