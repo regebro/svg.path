@@ -1,3 +1,6 @@
+Contributors
+============
+
 Lennart Regebro <regebro@gmail.com>, Original Author
 
 Justin Gruenberg implemented the Quadradic Bezier calculations and
@@ -9,5 +12,5 @@ Steve Schwarz added an error argument to make that choice an argument.
 
 ClayJarCom speeded up `point()` calculations for paths.
 
-Thanks also to bug fixers Martin R, abcjjy, Daniel Stender, MTician, 
+Thanks also to bug fixers Martin R, abcjjy, Daniel Stender, MTician,
 blokhin and jaraco.
