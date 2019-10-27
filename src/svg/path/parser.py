@@ -69,9 +69,7 @@ def parse_path(pathdef, current_pos=0j):
 
         elif command == 'Z':
             # Close path
-            if current_pos != start_pos:
-                segments.append(path.Line(current_pos, start_pos))
-            segments.closed = True
+            segments.append(path.Close(current_pos, start_pos))
             current_pos = start_pos
             start_pos = None
             command = None  # You can't have implicit commands after closing.

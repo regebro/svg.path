@@ -30,19 +30,15 @@ def segment_length(curve, start, end, start_point, end_point, error, min_depth, 
     return length2
 
 
-class Line(object):
+class Linear(object):
+    """A straight line
+
+    The base for Line() and Close().
+    """
 
     def __init__(self, start, end):
         self.start = start
         self.end = end
-
-    def __repr__(self):
-        return 'Line(start=%s, end=%s)' % (self.start, self.end)
-
-    def __eq__(self, other):
-        if not isinstance(other, Line):
-            return NotImplemented
-        return self.start == other.start and self.end == other.end
 
     def __ne__(self, other):
         if not isinstance(other, Line):
@@ -56,6 +52,16 @@ class Line(object):
     def length(self, error=None, min_depth=None):
         distance = (self.end - self.start)
         return sqrt(distance.real ** 2 + distance.imag ** 2)
+
+
+class Line(Linear):
+    def __repr__(self):
+        return 'Line(start=%s, end=%s)' % (self.start, self.end)
+
+    def __eq__(self, other):
+        if not isinstance(other, Line):
+            return NotImplemented
+        return self.start == other.start and self.end == other.end
 
 
 class CubicBezier(object):
@@ -321,6 +327,21 @@ class Move(object):
         return 0
 
 
+class Close(Linear):
+    """Represents the closepath command
+
+    It's implemented as a Line
+    """
+
+    def __eq__(self, other):
+        if not isinstance(other, Close):
+            return NotImplemented
+        return self.start == other.start and self.end == other.end
+
+    def __repr__(self):
+        return 'Close(start=%s, end=%s)' % (self.start, self.end)
+
+
 class Path(MutableSequence):
     """A Path is a sequence of path segments"""
 
@@ -364,6 +385,7 @@ class Path(MutableSequence):
             ', '.join(repr(x) for x in self._segments), self.closed)
 
     def __eq__(self, other):
+
         if not isinstance(other, Path):
             return NotImplemented
         if len(self) != len(other):
@@ -433,17 +455,12 @@ class Path(MutableSequence):
         self._closed = value
 
     def d(self):
-        if self.closed:
-            segments = self[:-1]
-        else:
-            segments = self[:]
-
         current_pos = None
         parts = []
         previous_segment = None
         end = self[-1].end
 
-        for segment in segments:
+        for segment in self:
             start = segment.start
             # If the start of this segment does not coincide with the end of
             # the last segment or if this segment is actually the close point
@@ -452,7 +469,9 @@ class Path(MutableSequence):
                start == end and not isinstance(previous_segment, Move)):
                 parts.append('M {0:G},{1:G}'.format(start.real, start.imag))
 
-            if isinstance(segment, Line):
+            if isinstance(segment, Close):
+                parts.append('Z')
+            elif isinstance(segment, Line):
                 parts.append('L {0:G},{1:G}'.format(
                     segment.end.real, segment.end.imag)
                 )
@@ -478,17 +497,14 @@ class Path(MutableSequence):
                         segment.control.real, segment.control.imag,
                         segment.end.real, segment.end.imag)
                     )
-
             elif isinstance(segment, Arc):
                 parts.append('A {0:G},{1:G} {2:G} {3:d},{4:d} {5:G},{6:G}'.format(
                     segment.radius.real, segment.radius.imag, segment.rotation,
                     int(segment.arc), int(segment.sweep),
                     segment.end.real, segment.end.imag)
                 )
+
             current_pos = segment.end
             previous_segment = segment
-
-        if self.closed:
-            parts.append('Z')
 
         return ' '.join(parts)

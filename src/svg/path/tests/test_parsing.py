@@ -1,6 +1,6 @@
 from __future__ import division
 import unittest
-from ..path import CubicBezier, QuadraticBezier, Line, Arc, Path, Move
+from ..path import CubicBezier, QuadraticBezier, Line, Arc, Path, Move, Close
 from ..parser import parse_path
 
 
@@ -12,7 +12,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(path1, Path(Move(100 + 100j),
                                      Line(100 + 100j, 300 + 100j),
                                      Line(300 + 100j, 200 + 300j),
-                                     Line(200 + 300j, 100 + 100j)))
+                                     Close(200 + 300j, 100 + 100j)))
         self.assertTrue(path1.closed)
 
         # for Z command behavior when there is multiple subpaths
@@ -23,7 +23,7 @@ class TestParser(unittest.TestCase):
             Move(100+100j),
             Line(100 + 100j, 300 + 100j),
             Line(300 + 100j, 200 + 300j),
-            Line(200 + 300j, 100 + 100j)))
+            Close(200 + 300j, 100 + 100j)))
 
         path1 = parse_path('M 100 100 L 200 200')
         path2 = parse_path('M100 100L200 200')
@@ -83,21 +83,22 @@ class TestParser(unittest.TestCase):
                          Path(Move(300 + 200j),
                               Line(300 + 200j, 150 + 200j),
                               Arc(150 + 200j, 150 + 150j, 0, 1, 0, 300 + 50j),
-                              Line(300 + 50j, 300 + 200j)))
+                              Close(300 + 50j, 300 + 200j)))
 
         path1 = parse_path('M275,175 v-150 a150,150 0 0,0 -150,150 z')
         self.assertEqual(path1,
                          Path(Move(275 + 175j),
                               Line(275 + 175j, 275 + 25j),
                               Arc(275 + 25j, 150 + 150j, 0, 0, 0, 125 + 175j),
-                              Line(125 + 175j, 275 + 175j)))
+                              Close(125 + 175j, 275 + 175j)))
 
         path1 = parse_path('M275,175 v-150 a150,150 0 0,0 -150,150 L 275,175 z')
         self.assertEqual(path1,
                          Path(Move(275 + 175j),
                               Line(275 + 175j, 275 + 25j),
                               Arc(275 + 25j, 150 + 150j, 0, 0, 0, 125 + 175j),
-                              Line(125 + 175j, 275 + 175j)))
+                              Line(125 + 175j, 275 + 175j),
+                              Close(275 + 175j, 275 + 175j)))
 
         path1 = parse_path("""M600,350 l 50,-25
                               a25,25 -30 0,1 50,-25 l 50,-25
@@ -127,7 +128,7 @@ class TestParser(unittest.TestCase):
             Move(100 + 100j),
             Line(100 + 100j, 300 + 100j),
             Line(300 + 100j, 200 + 300j),
-            Line(200 + 300j, 100 + 100j)))
+            Close(200 + 300j, 100 + 100j)))
 
         # Initial smooth and relative CubicBezier
         path1 = parse_path("""M100,200 s 150,-100 150,0""")
