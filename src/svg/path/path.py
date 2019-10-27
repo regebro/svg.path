@@ -328,10 +328,7 @@ class Move(object):
 
 
 class Close(Linear):
-    """Represents the closepath command
-
-    It's implemented as a Line
-    """
+    """Represents the closepath command"""
 
     def __eq__(self, other):
         if not isinstance(other, Close):
@@ -345,17 +342,12 @@ class Close(Linear):
 class Path(MutableSequence):
     """A Path is a sequence of path segments"""
 
-    # Put it here, so there is a default if unpickled.
-    _closed = False
-
-    def __init__(self, *segments, **kw):
+    def __init__(self, *segments):
         self._segments = list(segments)
         self._length = None
         self._lengths = None
         # Fractional distance from starting point through the end of each segment.
         self._fractions = []
-        if 'closed' in kw:
-            self.closed = kw['closed']
 
     def __getitem__(self, index):
         return self._segments[index]
@@ -381,8 +373,8 @@ class Path(MutableSequence):
         return len(self._segments)
 
     def __repr__(self):
-        return 'Path(%s, closed=%s)' % (
-            ', '.join(repr(x) for x in self._segments), self.closed)
+        return 'Path(%s)' % (
+            ', '.join(repr(x) for x in self._segments))
 
     def __eq__(self, other):
 
@@ -433,26 +425,6 @@ class Path(MutableSequence):
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         self._calc_lengths(error, min_depth)
         return self._length
-
-    def _is_closable(self):
-        """Returns true if the end is on the start of a segment"""
-        end = self[-1].end
-        for segment in self:
-            if segment.start == end:
-                return True
-        return False
-
-    @property
-    def closed(self):
-        """Checks that the path is closed"""
-        return self._closed and self._is_closable()
-
-    @closed.setter
-    def closed(self, value):
-        value = bool(value)
-        if value and not self._is_closable():
-            raise ValueError("End does not coincide with a segment start.")
-        self._closed = value
 
     def d(self):
         current_pos = None
