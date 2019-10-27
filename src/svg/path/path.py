@@ -437,13 +437,13 @@ class Path(MutableSequence):
             # If the start of this segment does not coincide with the end of
             # the last segment or if this segment is actually the close point
             # of a closed path, then we should start a new subpath here.
-            if isinstance(segment, Move) or (current_pos != start) or (
+            if isinstance(segment, Close):
+                parts.append('Z')
+            elif isinstance(segment, Move) or (current_pos != start) or (
                start == end and not isinstance(previous_segment, Move)):
                 parts.append('M {0:G},{1:G}'.format(start.real, start.imag))
 
-            if isinstance(segment, Close):
-                parts.append('Z')
-            elif isinstance(segment, Line):
+            if isinstance(segment, Line):
                 parts.append('L {0:G},{1:G}'.format(
                     segment.end.real, segment.end.imag)
                 )
