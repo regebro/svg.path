@@ -2,10 +2,15 @@ Changelog
 =========
 
 
-3.2 (unreleased)
+4.0 (unreleased)
 ----------------
 
 - Moved all the information from setup.py into setup.cfg.
+
+- Added a Close() command which is different from a Line() command in
+  no way at all, to simplify the handling of closepath commands and subpaths.
+
+- Path()'s no longer have a `closed` attribute.
 
 
 3.1 (2019-10-25)

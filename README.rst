@@ -14,9 +14,9 @@ collection of the path segment objects.
 
 All coordinate values for these classes are given as ``complex`` values,
 where the ``.real`` part represents the X coordinate, and the ``.imag`` part
-representes the Y coordinate.
+representes the Y coordinate::
 
-    >>> from svg.path import Path, Line, Arc, CubicBezier, QuadraticBezier
+    >>> from svg.path import Path, Line, Arc, CubicBezier, QuadraticBezier, Close
 
 All of these objects have a ``.point()`` function which will return the
 coordinates of a point on the path, where the point is given as a floating
@@ -26,7 +26,7 @@ You can calculate the length of a Path or it's segments with the
 ``.length()`` function. For CubicBezier and Arc segments this is done by
 geometric approximation and for this reason **may be very slow**. You can
 make it faster by passing in an ``error`` option to the method. If you
-don't pass in error, it defaults to ``1e-12``.
+don't pass in error, it defaults to ``1e-12``::
 
     >>> CubicBezier(300+100j, 100+100j, 200+200j, 200+300j).length(error=1e-5)
     297.2208145656899
@@ -44,11 +44,11 @@ methods, that check if the segment is a "smooth" segment compared to the
 given segment.
 
 There is also a ``parse_path()`` function that will take an SVG path definition
-and return a ``Path`` object.
+and return a ``Path`` object::
 
     >>> from svg.path import parse_path
     >>> parse_path('M 100 100 L 300 100')
-    Path(Move(to=(100+100j)), Line(start=(100+100j), end=(300+100j)), closed=False)
+    Path(Move(to=(100+100j)), Line(start=(100+100j), end=(300+100j)))
 
 
 Classes
@@ -72,7 +72,7 @@ with a sequence of path segments:
 * ``Path(*segments)``
 
 The ``Path`` class is a mutable sequence, so it behaves like a list.
-You can add to it and replace path segments etc.
+You can add to it and replace path segments etc::
 
     >>> path = Path(Line(100+100j,300+100j), Line(100+100j,300+100j))
     >>> path.append(QuadraticBezier(300+100j, 200+200j, 200+300j))
@@ -80,7 +80,7 @@ You can add to it and replace path segments etc.
     >>> del path[1]
 
 The path object also has a ``d()`` method that will return the
-SVG representation of the Path segments.
+SVG representation of the Path segments::
 
     >>> path.d()
     'M 200,100 L 300,100 Q 200,200 200,300'
@@ -89,66 +89,40 @@ SVG representation of the Path segments.
 Examples
 ........
 
-This SVG path example draws a triangle:
+This SVG path example draws a triangle::
 
 
     >>> path1 = parse_path('M 100 100 L 300 100 L 200 300 z')
 
 You can format SVG paths in many different ways, all valid paths should be
-accepted:
+accepted::
 
     >>> path2 = parse_path('M100,100L300,100L200,300z')
 
-And these paths should be equal:
+And these paths should be equal::
 
     >>> path1 == path2
     True
 
-You can also build a path from objects:
+You can also build a path from objects::
 
     >>> path3 = Path(Line(100+100j,300+100j), Line(300+100j, 200+300j), Line(200+300j, 100+100j))
 
-And it should again be equal to the first path:
+And it should again be equal to the first path::
 
     >>> path1 == path2
     True
 
-Paths are mutable sequences, you can slice and append:
+Paths are mutable sequences, you can slice and append::
 
     >>> path1.append(QuadraticBezier(300+100j, 200+200j, 200+300j))
     >>> len(path1[2:]) == 3
     True
 
-Paths also have a ``closed`` property, which defines if the path should be
-seen as a closed path or not.
+Note that there is no protection against you creating paths that are invalid.
+You can for example have a Close command that doesn't end at the path start::
 
-    >>> path = parse_path('M100,100L300,100L200,300z')
-    >>> path.closed
-    True
-
-If you modify the path in such a way that it is no longer closeable, it will
-not be closed.
-
-    >>> path[0].start = (100+105j)
-    >>> path[1].start = (100+105j)
-    >>> path.closed
-    False
-
-However, a path previously set as closed will automatically close if it it
-further modified to that it can be closed.
-
-    >>> path[-1].end = (300+100j)
-    >>> path.closed
-    True
-
-Trying to set a Path to be closed if the end does not coincide with the start
-of any segment will raise an error.
-
-    >>> path = parse_path('M100,100L300,100L200,300')
-    >>> path.closed = True
-    Traceback (most recent call last):
-    ...
-    ValueError: End does not coincide with a segment start.
+    >>> wrong = Path(Line(100+100j,200+100j), Close(200+300j, 0))
 
 
 Future features
@@ -159,8 +133,10 @@ Future features
 
 * Mathematical transformations might make sense.
 
+* Verifying that paths are correct, or protection against creating incorrect paths.
 
-Licence
+
+License
 -------
 
 This module is under a MIT License.
