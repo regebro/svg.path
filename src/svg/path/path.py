@@ -1,5 +1,5 @@
 from __future__ import division
-from math import sqrt, cos, sin, acos, degrees, radians, log
+from math import sqrt, cos, sin, acos, degrees, radians, log, pi
 from collections import MutableSequence
 from bisect import bisect
 
@@ -209,6 +209,10 @@ class Arc(object):
             # This is equivalent of omitting the segment, so do nothing
             return
 
+        if self.radius.real == 0 or self.radius.imag == 0:
+            # This should be treated as a straight line
+            return
+
         cosr = cos(radians(self.rotation))
         sinr = sin(radians(self.rotation))
         dx = (self.start.real - self.end.real) / 2
@@ -224,12 +228,17 @@ class Arc(object):
         ry_sq = ry * ry
 
         # Correct out of range radii
-        radius_check = (x1prim_sq / rx_sq) + (y1prim_sq / ry_sq)
-        if radius_check > 1:
-            rx *= sqrt(radius_check)
-            ry *= sqrt(radius_check)
+        radius_scale = (x1prim_sq / rx_sq) + (y1prim_sq / ry_sq)
+        if radius_scale > 1:
+            radius_scale = sqrt(radius_scale)
+            rx *= radius_scale
+            ry *= radius_scale
             rx_sq = rx * rx
             ry_sq = ry * ry
+            self.radius_scale = radius_scale
+        else:
+            # SVG spec only scales UP
+            self.radius_scale = 1
 
         t1 = rx_sq * y1prim_sq
         t2 = ry_sq * x1prim_sq
@@ -276,14 +285,21 @@ class Arc(object):
         if self.start == self.end:
             # This is equivalent of omitting the segment
             return self.start
+
+        if self.radius.real == 0 or self.radius.imag == 0:
+            # This should be treated as a straight line
+            distance = self.end - self.start
+            return self.start + distance * pos
+
         angle = radians(self.theta + (self.delta * pos))
         cosr = cos(radians(self.rotation))
         sinr = sin(radians(self.rotation))
+        radius = self.radius * self.radius_scale
 
-        x = (cosr * cos(angle) * self.radius.real - sinr * sin(angle) *
-             self.radius.imag + self.center.real)
-        y = (sinr * cos(angle) * self.radius.real + cosr * sin(angle) *
-             self.radius.imag + self.center.imag)
+        x = (cosr * cos(angle) * radius.real - sinr * sin(angle) *
+             radius.imag + self.center.real)
+        y = (sinr * cos(angle) * radius.real + cosr * sin(angle) *
+             radius.imag + self.center.imag)
         return complex(x, y)
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
@@ -294,6 +310,17 @@ class Arc(object):
         if self.start == self.end:
             # This is equivalent of omitting the segment
             return 0
+
+        if self.radius.real == 0 or self.radius.imag == 0:
+            # This should be treated as a straight line
+            distance = (self.end - self.start)
+            return sqrt(distance.real ** 2 + distance.imag ** 2)
+
+        if self.radius.real == self.radius.imag:
+            # It's a circle, which simplifies this a LOT.
+            radius = self.radius.real * self.radius_scale
+            return abs(radius * self.delta * pi / 180)
+
         start_point = self.point(0)
         end_point = self.point(1)
         return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
