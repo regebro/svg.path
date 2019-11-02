@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-4.0 (unreleased)
+4.0 (2019-11-02)
 ----------------
 
 - Moved all the information from setup.py into setup.cfg.
