@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 from __future__ import division
 import unittest
 from math import sqrt, pi
@@ -420,6 +421,35 @@ class ArcTest(unittest.TestCase):
         self.assertAlmostEqual(arc1.length(), pi * 100)
         self.assertAlmostEqual(arc2.length(), pi * 100)
 
+    def test_length_out_of_range(self):
+        # See F.6.2 Out-of-range parameters
+
+        # If the endpoints (x1, y1) and (x2, y2) are identical, then this is
+        # equivalent to omitting the elliptical arc segment entirely.
+        arc = Arc(0j, 100 + 100j, 0, 0, 0, 0j)
+        self.assertAlmostEqual(arc.length(), 0)
+
+        # If rx = 0 or ry = 0 then this arc is treated as a straight
+        # line segment (a "lineto") joining the endpoints.
+        arc = Arc(0j, 0j, 0, 0, 0, 200 + 0j)
+        self.assertAlmostEqual(arc.length(), 200)
+
+        # If rx or ry have negative signs, these are dropped;
+        # the absolute value is used instead.
+        arc = Arc(200 + 0j, -100 - 100j, 0, 0, 0, 0j)
+        self.assertAlmostEqual(arc.length(), pi * 100)
+
+        # If rx, ry and φ are such that there is no solution (basically,
+        # the ellipse is not big enough to reach from (x1, y1) to (x2, y2))
+        # then the ellipse is scaled up uniformly until there is exactly
+        # one solution (until the ellipse is just big enough).
+        arc = Arc(0j, 1 + 1j, 0, 0, 0, 200 + 0j)
+        self.assertAlmostEqual(arc.length(), pi * 100)
+
+        # φ is taken mod 360 degrees.
+        arc = Arc(200 + 0j, -100 - 100j, 720, 0, 0, 0j)
+        self.assertAlmostEqual(arc.length(), pi * 100)
+
     def test_equality(self):
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
@@ -492,14 +522,14 @@ class TestPath(unittest.TestCase):
                     Arc(950 + 175j, 25 + 100j, -30, 0, 1, 1000 + 150j),
                     Line(1000 + 150j, 1050 + 125j),
                     )
+
         # These are *not* calculated, but just regression tests. Be skeptical.
         self.assertAlmostEqual(path.point(0.0), (600 + 350j))
-        self.assertAlmostEqual(path.point(0.3), (755.31526434 + 217.51578768j))
-        self.assertAlmostEqual(path.point(0.5), (832.23324151 + 156.33454892j))
-        self.assertAlmostEqual(path.point(0.9), (974.00559321 + 115.26473532j))
+        self.assertAlmostEqual(path.point(0.3), (755.23979927+212.1820209585j))
+        self.assertAlmostEqual(path.point(0.5), (827.73074926+147.8241574162j))
+        self.assertAlmostEqual(path.point(0.9), (971.28435780+106.3023526073j))
         self.assertAlmostEqual(path.point(1.0), (1050 + 125j))
-        # The errors seem to accumulate. Still 6 decimal places is more than good enough.
-        self.assertAlmostEqual(path.length(), 860.6756221710)
+        self.assertAlmostEqual(path.length(), 928.388639381)
 
     def test_repr(self):
         path = Path(
@@ -549,4 +579,3 @@ class TestPath(unittest.TestCase):
         segment = Arc(0j + 70j, 35 + 35j, 0, 1, 0, 0 + 70j)
         self.assertEqual(segment.length(), 0)
         self.assertEqual(segment.point(0.5), segment.start)
-
