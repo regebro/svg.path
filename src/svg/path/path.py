@@ -1,5 +1,5 @@
 from __future__ import division
-from math import sqrt, cos, sin, acos, degrees, radians, log
+from math import sqrt, cos, sin, acos, degrees, radians, log, pi
 from collections import MutableSequence
 from bisect import bisect
 
@@ -230,8 +230,9 @@ class Arc(object):
         # Correct out of range radii
         radius_scale = (x1prim_sq / rx_sq) + (y1prim_sq / ry_sq)
         if radius_scale > 1:
-            rx *= sqrt(radius_scale)
-            ry *= sqrt(radius_scale)
+            radius_scale = sqrt(radius_scale)
+            rx *= radius_scale
+            ry *= radius_scale
             rx_sq = rx * rx
             ry_sq = ry * ry
             self.radius_scale = radius_scale
@@ -293,7 +294,7 @@ class Arc(object):
         angle = radians(self.theta + (self.delta * pos))
         cosr = cos(radians(self.rotation))
         sinr = sin(radians(self.rotation))
-        radius = self.radius * sqrt(self.radius_scale)
+        radius = self.radius * self.radius_scale
 
         x = (cosr * cos(angle) * radius.real - sinr * sin(angle) *
              radius.imag + self.center.real)
@@ -314,6 +315,11 @@ class Arc(object):
             # This should be treated as a straight line
             distance = (self.end - self.start)
             return sqrt(distance.real ** 2 + distance.imag ** 2)
+
+        if self.radius.real == self.radius.imag:
+            # It's a circle, which simplifies this a LOT.
+            radius = self.radius.real * self.radius_scale
+            return abs(radius * self.delta * pi / 180)
 
         start_point = self.point(0)
         end_point = self.point(1)

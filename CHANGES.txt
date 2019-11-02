@@ -14,6 +14,9 @@ Changelog
 
 - Now fully supports the SVG 1.1 "F.6.2 Out-of-range parameters" list.
 
+- Uses circular maths to calculate the length of circular arcs,
+  more accurate and much faster.
+
 
 3.1 (2019-10-25)
 ----------------
