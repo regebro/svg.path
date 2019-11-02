@@ -185,3 +185,9 @@ class TestParser(unittest.TestCase):
         self.assertIn(
             "A 14.5445,14.5445 0 0,0 1672.24,-54.8161 Z",
             path.d())
+
+    def test_out_of_range_arc_flags(self):
+        # Any non-zero value is "true"
+        arc = parse_path("M600,350 a25,25 -30 0.1,-3 50,-25")[1]
+        self.assertTrue(arc.sweep)
+        self.assertTrue(arc.arc)

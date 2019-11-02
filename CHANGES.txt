@@ -12,6 +12,8 @@ Changelog
 
 - Path()'s no longer have a `closed` attribute.
 
+- Now fully supports the SVG 1.1 "F.6.2 Out-of-range parameters" list.
+
 
 3.1 (2019-10-25)
 ----------------
