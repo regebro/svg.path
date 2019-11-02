@@ -22,10 +22,11 @@ def segment_length(curve, start, end, start_point, end_point, error, min_depth, 
     if (length2 - length > error) or (depth < min_depth):
         # Calculate the length of each segment:
         depth += 1
-        return (segment_length(curve, start, mid, start_point, mid_point,
-                               error, min_depth, depth) +
-                segment_length(curve, mid, end, mid_point, end_point,
-                               error, min_depth, depth))
+        return segment_length(
+            curve, start, mid, start_point, mid_point, error, min_depth, depth
+        ) + segment_length(
+            curve, mid, end, mid_point, end_point, error, min_depth, depth
+        )
     # This is accurate enough.
     return length2
 
@@ -50,13 +51,13 @@ class Linear(object):
         return self.start + distance * pos
 
     def length(self, error=None, min_depth=None):
-        distance = (self.end - self.start)
+        distance = self.end - self.start
         return sqrt(distance.real ** 2 + distance.imag ** 2)
 
 
 class Line(Linear):
     def __repr__(self):
-        return 'Line(start=%s, end=%s)' % (self.start, self.end)
+        return "Line(start=%s, end=%s)" % (self.start, self.end)
 
     def __eq__(self, other):
         if not isinstance(other, Line):
@@ -72,14 +73,22 @@ class CubicBezier(object):
         self.end = end
 
     def __repr__(self):
-        return 'CubicBezier(start=%s, control1=%s, control2=%s, end=%s)' % (
-               self.start, self.control1, self.control2, self.end)
+        return "CubicBezier(start=%s, control1=%s, control2=%s, end=%s)" % (
+            self.start,
+            self.control1,
+            self.control2,
+            self.end,
+        )
 
     def __eq__(self, other):
         if not isinstance(other, CubicBezier):
             return NotImplemented
-        return self.start == other.start and self.end == other.end and \
-               self.control1 == other.control1 and self.control2 == other.control2
+        return (
+            self.start == other.start
+            and self.end == other.end
+            and self.control1 == other.control1
+            and self.control2 == other.control2
+        )
 
     def __ne__(self, other):
         if not isinstance(other, CubicBezier):
@@ -89,17 +98,20 @@ class CubicBezier(object):
     def is_smooth_from(self, previous):
         """Checks if this segment would be a smooth segment following the previous"""
         if isinstance(previous, CubicBezier):
-            return (self.start == previous.end and
-                    (self.control1 - self.start) == (previous.end - previous.control2))
+            return self.start == previous.end and (self.control1 - self.start) == (
+                previous.end - previous.control2
+            )
         else:
             return self.control1 == self.start
 
     def point(self, pos):
         """Calculate the x,y position at a certain position of the path"""
-        return ((1 - pos) ** 3 * self.start) + \
-               (3 * (1 - pos) ** 2 * pos * self.control1) + \
-               (3 * (1 - pos) * pos ** 2 * self.control2) + \
-               (pos ** 3 * self.end)
+        return (
+            ((1 - pos) ** 3 * self.start)
+            + (3 * (1 - pos) ** 2 * pos * self.control1)
+            + (3 * (1 - pos) * pos ** 2 * self.control2)
+            + (pos ** 3 * self.end)
+        )
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         """Calculate the length of the path up to a certain position"""
@@ -115,14 +127,20 @@ class QuadraticBezier(object):
         self.control = control
 
     def __repr__(self):
-        return 'QuadraticBezier(start=%s, control=%s, end=%s)' % (
-               self.start, self.control, self.end)
+        return "QuadraticBezier(start=%s, control=%s, end=%s)" % (
+            self.start,
+            self.control,
+            self.end,
+        )
 
     def __eq__(self, other):
         if not isinstance(other, QuadraticBezier):
             return NotImplemented
-        return self.start == other.start and self.end == other.end and \
-               self.control == other.control
+        return (
+            self.start == other.start
+            and self.end == other.end
+            and self.control == other.control
+        )
 
     def __ne__(self, other):
         if not isinstance(other, QuadraticBezier):
@@ -132,28 +150,32 @@ class QuadraticBezier(object):
     def is_smooth_from(self, previous):
         """Checks if this segment would be a smooth segment following the previous"""
         if isinstance(previous, QuadraticBezier):
-            return (self.start == previous.end and
-                    (self.control - self.start) == (previous.end - previous.control))
+            return self.start == previous.end and (self.control - self.start) == (
+                previous.end - previous.control
+            )
         else:
             return self.control == self.start
 
     def point(self, pos):
-        return (1 - pos) ** 2 * self.start + 2 * (1 - pos) * pos * self.control + \
-               pos ** 2 * self.end
+        return (
+            (1 - pos) ** 2 * self.start
+            + 2 * (1 - pos) * pos * self.control
+            + pos ** 2 * self.end
+        )
 
     def length(self, error=None, min_depth=None):
-        a = self.start - 2*self.control + self.end
-        b = 2*(self.control - self.start)
-        a_dot_b = a.real*b.real + a.imag*b.imag
+        a = self.start - 2 * self.control + self.end
+        b = 2 * (self.control - self.start)
+        a_dot_b = a.real * b.real + a.imag * b.imag
 
         if abs(a) < 1e-12:
             s = abs(b)
-        elif abs(a_dot_b + abs(a)*abs(b)) < 1e-12:
-            k = abs(b)/abs(a)
+        elif abs(a_dot_b + abs(a) * abs(b)) < 1e-12:
+            k = abs(b) / abs(a)
             if k >= 2:
                 s = abs(b) - abs(a)
             else:
-                s = abs(a)*(k**2/2 - k + 1)
+                s = abs(a) * (k ** 2 / 2 - k + 1)
         else:
             # For an explanation of this case, see
             # http://www.malczak.info/blog/quadratic-bezier-curve-length/
@@ -167,12 +189,15 @@ class QuadraticBezier(object):
             C2 = 2 * sqrt(C)
             BA = B / A2
 
-            s = (A32 * Sabc + A2 * B * (Sabc - C2) + (4 * C * A - B ** 2) *
-                    log((2 * A2 + BA + Sabc) / (BA + C2))) / (4 * A32)
+            s = (
+                A32 * Sabc
+                + A2 * B * (Sabc - C2)
+                + (4 * C * A - B ** 2) * log((2 * A2 + BA + Sabc) / (BA + C2))
+            ) / (4 * A32)
         return s
 
-class Arc(object):
 
+class Arc(object):
     def __init__(self, start, radius, rotation, arc, sweep, end):
         """radius is complex, rotation is in degrees,
            large and sweep are 1 or 0 (True/False also work)"""
@@ -187,15 +212,26 @@ class Arc(object):
         self._parameterize()
 
     def __repr__(self):
-        return 'Arc(start=%s, radius=%s, rotation=%s, arc=%s, sweep=%s, end=%s)' % (
-               self.start, self.radius, self.rotation, self.arc, self.sweep, self.end)
+        return "Arc(start=%s, radius=%s, rotation=%s, arc=%s, sweep=%s, end=%s)" % (
+            self.start,
+            self.radius,
+            self.rotation,
+            self.arc,
+            self.sweep,
+            self.end,
+        )
 
     def __eq__(self, other):
         if not isinstance(other, Arc):
             return NotImplemented
-        return self.start == other.start and self.end == other.end and \
-               self.radius == other.radius and self.rotation == other.rotation and \
-               self.arc == other.arc and self.sweep == other.sweep
+        return (
+            self.start == other.start
+            and self.end == other.end
+            and self.radius == other.radius
+            and self.rotation == other.rotation
+            and self.arc == other.arc
+            and self.sweep == other.sweep
+        )
 
     def __ne__(self, other):
         if not isinstance(other, Arc):
@@ -249,10 +285,10 @@ class Arc(object):
         cxprim = c * rx * y1prim / ry
         cyprim = -c * ry * x1prim / rx
 
-        self.center = complex((cosr * cxprim - sinr * cyprim) +
-                              ((self.start.real + self.end.real) / 2),
-                              (sinr * cxprim + cosr * cyprim) +
-                              ((self.start.imag + self.end.imag) / 2))
+        self.center = complex(
+            (cosr * cxprim - sinr * cyprim) + ((self.start.real + self.end.real) / 2),
+            (sinr * cxprim + cosr * cyprim) + ((self.start.imag + self.end.imag) / 2),
+        )
 
         ux = (x1prim - cxprim) / rx
         uy = (y1prim - cyprim) / ry
@@ -267,7 +303,7 @@ class Arc(object):
 
         n = sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy))
         p = ux * vx + uy * vy
-        d = p/n
+        d = p / n
         # In certain cases the above calculation can through inaccuracies
         # become just slightly out of range, f ex -1.0000000000000002.
         if d > 1.0:
@@ -296,10 +332,16 @@ class Arc(object):
         sinr = sin(radians(self.rotation))
         radius = self.radius * self.radius_scale
 
-        x = (cosr * cos(angle) * radius.real - sinr * sin(angle) *
-             radius.imag + self.center.real)
-        y = (sinr * cos(angle) * radius.real + cosr * sin(angle) *
-             radius.imag + self.center.imag)
+        x = (
+            cosr * cos(angle) * radius.real
+            - sinr * sin(angle) * radius.imag
+            + self.center.real
+        )
+        y = (
+            sinr * cos(angle) * radius.real
+            + cosr * sin(angle) * radius.imag
+            + self.center.imag
+        )
         return complex(x, y)
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
@@ -313,7 +355,7 @@ class Arc(object):
 
         if self.radius.real == 0 or self.radius.imag == 0:
             # This should be treated as a straight line
-            distance = (self.end - self.start)
+            distance = self.end - self.start
             return sqrt(distance.real ** 2 + distance.imag ** 2)
 
         if self.radius.real == self.radius.imag:
@@ -335,7 +377,7 @@ class Move(object):
         self.start = self.end = to
 
     def __repr__(self):
-        return 'Move(to=%s)' % self.start
+        return "Move(to=%s)" % self.start
 
     def __eq__(self, other):
         if not isinstance(other, Move):
@@ -363,7 +405,7 @@ class Close(Linear):
         return self.start == other.start and self.end == other.end
 
     def __repr__(self):
-        return 'Close(start=%s, end=%s)' % (self.start, self.end)
+        return "Close(start=%s, end=%s)" % (self.start, self.end)
 
 
 class Path(MutableSequence):
@@ -400,8 +442,7 @@ class Path(MutableSequence):
         return len(self._segments)
 
     def __repr__(self):
-        return 'Path(%s)' % (
-            ', '.join(repr(x) for x in self._segments))
+        return "Path(%s)" % (", ".join(repr(x) for x in self._segments))
 
     def __eq__(self, other):
 
@@ -423,14 +464,16 @@ class Path(MutableSequence):
         if self._length is not None:
             return
 
-        lengths = [each.length(error=error, min_depth=min_depth) for each in self._segments]
+        lengths = [
+            each.length(error=error, min_depth=min_depth) for each in self._segments
+        ]
         self._length = sum(lengths)
         self._lengths = [each / self._length for each in lengths]
         # Calculate the fractional distance for each segment to use in point()
         fraction = 0
         for each in self._lengths:
-          fraction += each
-          self._fractions.append(fraction)
+            fraction += each
+            self._fractions.append(fraction)
 
     def point(self, pos, error=ERROR):
 
@@ -444,9 +487,11 @@ class Path(MutableSequence):
         # Find which segment the point we search for is located on:
         i = bisect(self._fractions, pos)
         if i == 0:
-          segment_pos = pos / self._fractions[0]
+            segment_pos = pos / self._fractions[0]
         else:
-          segment_pos = (pos - self._fractions[i-1]) / (self._fractions[i]-self._fractions[i-1])
+            segment_pos = (pos - self._fractions[i - 1]) / (
+                self._fractions[i] - self._fractions[i - 1]
+            )
         return self._segments[i].point(segment_pos)
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
@@ -465,45 +510,65 @@ class Path(MutableSequence):
             # the last segment or if this segment is actually the close point
             # of a closed path, then we should start a new subpath here.
             if isinstance(segment, Close):
-                parts.append('Z')
-            elif isinstance(segment, Move) or (current_pos != start) or (
-               start == end and not isinstance(previous_segment, Move)):
-                parts.append('M {0:G},{1:G}'.format(start.real, start.imag))
+                parts.append("Z")
+            elif (
+                isinstance(segment, Move)
+                or (current_pos != start)
+                or (start == end and not isinstance(previous_segment, Move))
+            ):
+                parts.append("M {0:G},{1:G}".format(start.real, start.imag))
 
             if isinstance(segment, Line):
-                parts.append('L {0:G},{1:G}'.format(
-                    segment.end.real, segment.end.imag)
-                )
+                parts.append("L {0:G},{1:G}".format(segment.end.real, segment.end.imag))
             elif isinstance(segment, CubicBezier):
                 if segment.is_smooth_from(previous_segment):
-                    parts.append('S {0:G},{1:G} {2:G},{3:G}'.format(
-                        segment.control2.real, segment.control2.imag,
-                        segment.end.real, segment.end.imag)
+                    parts.append(
+                        "S {0:G},{1:G} {2:G},{3:G}".format(
+                            segment.control2.real,
+                            segment.control2.imag,
+                            segment.end.real,
+                            segment.end.imag,
+                        )
                     )
                 else:
-                    parts.append('C {0:G},{1:G} {2:G},{3:G} {4:G},{5:G}'.format(
-                        segment.control1.real, segment.control1.imag,
-                        segment.control2.real, segment.control2.imag,
-                        segment.end.real, segment.end.imag)
+                    parts.append(
+                        "C {0:G},{1:G} {2:G},{3:G} {4:G},{5:G}".format(
+                            segment.control1.real,
+                            segment.control1.imag,
+                            segment.control2.real,
+                            segment.control2.imag,
+                            segment.end.real,
+                            segment.end.imag,
+                        )
                     )
             elif isinstance(segment, QuadraticBezier):
                 if segment.is_smooth_from(previous_segment):
-                    parts.append('T {0:G},{1:G}'.format(
-                        segment.end.real, segment.end.imag)
+                    parts.append(
+                        "T {0:G},{1:G}".format(segment.end.real, segment.end.imag)
                     )
                 else:
-                    parts.append('Q {0:G},{1:G} {2:G},{3:G}'.format(
-                        segment.control.real, segment.control.imag,
-                        segment.end.real, segment.end.imag)
+                    parts.append(
+                        "Q {0:G},{1:G} {2:G},{3:G}".format(
+                            segment.control.real,
+                            segment.control.imag,
+                            segment.end.real,
+                            segment.end.imag,
+                        )
                     )
             elif isinstance(segment, Arc):
-                parts.append('A {0:G},{1:G} {2:G} {3:d},{4:d} {5:G},{6:G}'.format(
-                    segment.radius.real, segment.radius.imag, segment.rotation,
-                    int(segment.arc), int(segment.sweep),
-                    segment.end.real, segment.end.imag)
+                parts.append(
+                    "A {0:G},{1:G} {2:G} {3:d},{4:d} {5:G},{6:G}".format(
+                        segment.radius.real,
+                        segment.radius.imag,
+                        segment.rotation,
+                        int(segment.arc),
+                        int(segment.sweep),
+                        segment.end.real,
+                        segment.end.imag,
+                    )
                 )
 
             current_pos = segment.end
             previous_segment = segment
 
-        return ' '.join(parts)
+        return " ".join(parts)

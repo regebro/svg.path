@@ -3,11 +3,11 @@
 import re
 from . import path
 
-COMMANDS = set('MmZzLlHhVvCcSsQqTtAa')
-UPPERCASE = set('MZLHVCSQTA')
+COMMANDS = set("MmZzLlHhVvCcSsQqTtAa")
+UPPERCASE = set("MZLHVCSQTA")
 
-COMMAND_RE = re.compile("([MmZzLlHhVvCcSsQqTtAa])")
-FLOAT_RE = re.compile("[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
+COMMAND_RE = re.compile(r"([MmZzLlHhVvCcSsQqTtAa])")
+FLOAT_RE = re.compile(r"[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
 
 
 def _tokenize_path(pathdef):
@@ -43,11 +43,13 @@ def parse_path(pathdef, current_pos=0j):
             # If this element starts with numbers, it is an implicit command
             # and we don't change the command. Check that it's allowed:
             if command is None:
-                raise ValueError("Unallowed implicit command in %s, position %s" % (
-                    pathdef, len(pathdef.split()) - len(elements)))
+                raise ValueError(
+                    "Unallowed implicit command in %s, position %s"
+                    % (pathdef, len(pathdef.split()) - len(elements))
+                )
             last_command = command  # Used by S and T
 
-        if command == 'M':
+        if command == "M":
             # Moveto command.
             x = elements.pop()
             y = elements.pop()
@@ -65,16 +67,16 @@ def parse_path(pathdef, current_pos=0j):
             # Implicit moveto commands are treated as lineto commands.
             # So we set command to lineto here, in case there are
             # further implicit commands after this moveto.
-            command = 'L'
+            command = "L"
 
-        elif command == 'Z':
+        elif command == "Z":
             # Close path
             segments.append(path.Close(current_pos, start_pos))
             current_pos = start_pos
             start_pos = None
             command = None  # You can't have implicit commands after closing.
 
-        elif command == 'L':
+        elif command == "L":
             x = elements.pop()
             y = elements.pop()
             pos = float(x) + float(y) * 1j
@@ -83,7 +85,7 @@ def parse_path(pathdef, current_pos=0j):
             segments.append(path.Line(current_pos, pos))
             current_pos = pos
 
-        elif command == 'H':
+        elif command == "H":
             x = elements.pop()
             pos = float(x) + current_pos.imag * 1j
             if not absolute:
@@ -91,7 +93,7 @@ def parse_path(pathdef, current_pos=0j):
             segments.append(path.Line(current_pos, pos))
             current_pos = pos
 
-        elif command == 'V':
+        elif command == "V":
             y = elements.pop()
             pos = current_pos.real + float(y) * 1j
             if not absolute:
@@ -99,7 +101,7 @@ def parse_path(pathdef, current_pos=0j):
             segments.append(path.Line(current_pos, pos))
             current_pos = pos
 
-        elif command == 'C':
+        elif command == "C":
             control1 = float(elements.pop()) + float(elements.pop()) * 1j
             control2 = float(elements.pop()) + float(elements.pop()) * 1j
             end = float(elements.pop()) + float(elements.pop()) * 1j
@@ -112,11 +114,11 @@ def parse_path(pathdef, current_pos=0j):
             segments.append(path.CubicBezier(current_pos, control1, control2, end))
             current_pos = end
 
-        elif command == 'S':
+        elif command == "S":
             # Smooth curve. First control point is the "reflection" of
             # the second control point in the previous path.
 
-            if last_command not in 'CS':
+            if last_command not in "CS":
                 # If there is no previous command or if the previous command
                 # was not an C, c, S or s, assume the first control point is
                 # coincident with the current point.
@@ -137,7 +139,7 @@ def parse_path(pathdef, current_pos=0j):
             segments.append(path.CubicBezier(current_pos, control1, control2, end))
             current_pos = end
 
-        elif command == 'Q':
+        elif command == "Q":
             control = float(elements.pop()) + float(elements.pop()) * 1j
             end = float(elements.pop()) + float(elements.pop()) * 1j
 
@@ -148,11 +150,11 @@ def parse_path(pathdef, current_pos=0j):
             segments.append(path.QuadraticBezier(current_pos, control, end))
             current_pos = end
 
-        elif command == 'T':
+        elif command == "T":
             # Smooth curve. Control point is the "reflection" of
             # the second control point in the previous path.
 
-            if last_command not in 'QT':
+            if last_command not in "QT":
                 # If there is no previous command or if the previous command
                 # was not an Q, q, T or t, assume the first control point is
                 # coincident with the current point.
@@ -171,7 +173,7 @@ def parse_path(pathdef, current_pos=0j):
             segments.append(path.QuadraticBezier(current_pos, control, end))
             current_pos = end
 
-        elif command == 'A':
+        elif command == "A":
             radius = float(elements.pop()) + float(elements.pop()) * 1j
             rotation = float(elements.pop())
             arc = float(elements.pop())
