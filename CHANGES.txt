@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-4.1 (unreleased)
-----------------
+4.0.1 (2019-11-03)
+------------------
 
 - A pure setup.cfg config doesn't seem to work with namespaces. All the tests pass fine,
   but when installing the package somewhere else, nothing gets installed.
