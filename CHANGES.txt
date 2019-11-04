@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-4.0.2 (unreleased)
+4.0.2 (2019-11-04)
 ------------------
 
 - A solution for the setup.cfg [Alex Grönholm]
