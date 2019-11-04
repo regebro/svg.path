@@ -1,3 +1,6 @@
+Contributors
+============
+
 Lennart Regebro <regebro@gmail.com>, Original Author
 
 Justin Gruenberg implemented the Quadradic Bezier calculations and
