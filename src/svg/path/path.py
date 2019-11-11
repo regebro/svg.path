@@ -346,8 +346,7 @@ class Arc(object):
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         """The length of an elliptical arc segment requires numerical
-        integration, and in that case it's simpler to just do a geometric
-        approximation, as for cubic bezier curves.
+        integration.
         """
         if self.start == self.end:
             # This is equivalent of omitting the segment
@@ -363,9 +362,18 @@ class Arc(object):
             radius = self.radius.real * self.radius_scale
             return abs(radius * self.delta * pi / 180)
 
-        start_point = self.point(0)
-        end_point = self.point(1)
-        return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
+        def ellipse_part_integral(t1, t2, a, b, n=1000):
+            # function to integrate
+            def f(t):
+                return sqrt(1 - (1 - a ** 2 / b ** 2) * sin(t) ** 2)
+
+            start = min(t1, t2)
+            seg_len = abs(t1 - t2) / n
+            return b * sum(f(start + seg_len * (i + 1)) * seg_len for i in range(n))
+
+        rx = self.radius.real * self.radius_scale
+        ry = self.radius.imag * self.radius_scale
+        return ellipse_part_integral(radians(self.theta), radians(self.theta + self.delta), rx, ry)
 
 
 class Move(object):
