@@ -13,5 +13,5 @@ Steve Schwarz added an error argument to make that choice an argument.
 ClayJarCom speeded up `point()` calculations for paths.
 
 Thanks also to bug fixers Martin R, abcjjy, Daniel Stender, MTician,
-blokhin and jaraco, and thanks to tatarize for help with investigating
+blokhin, Karthikeyan and jaraco, and thanks to tatarize for help with investigating
 the subpath issues.

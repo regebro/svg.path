@@ -1,7 +1,11 @@
 from __future__ import division
 from math import sqrt, cos, sin, acos, degrees, radians, log, pi
-from collections import MutableSequence
 from bisect import bisect
+
+try:
+    from collections.abc import MutableSequence
+except ImportError:
+    from collections import MutableSequence
 
 # This file contains classes for the different types of SVG path segments as
 # well as a Path object that contains a sequence of path segments.

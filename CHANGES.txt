@@ -5,7 +5,7 @@ Changelog
 4.0.3 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Use collections.abc for ABC import to add Python 3.9 compatibility.
 
 
 4.0.2 (2019-11-04)
