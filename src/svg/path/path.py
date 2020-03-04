@@ -502,7 +502,8 @@ class Path(MutableSequence):
         self._calc_lengths(error, min_depth)
         return self._length
 
-    def d(self):
+    def d(self, smoothen_output=True):
+        # if smoothen_output is set to True, 'S' and 'T' will be used when possible
         current_pos = None
         parts = []
         previous_segment = None
@@ -525,7 +526,7 @@ class Path(MutableSequence):
             if isinstance(segment, Line):
                 parts.append("L {0:G},{1:G}".format(segment.end.real, segment.end.imag))
             elif isinstance(segment, CubicBezier):
-                if segment.is_smooth_from(previous_segment):
+                if smoothen_output and segment.is_smooth_from(previous_segment):
                     parts.append(
                         "S {0:G},{1:G} {2:G},{3:G}".format(
                             segment.control2.real,
@@ -546,7 +547,7 @@ class Path(MutableSequence):
                         )
                     )
             elif isinstance(segment, QuadraticBezier):
-                if segment.is_smooth_from(previous_segment):
+                if smoothen_output and segment.is_smooth_from(previous_segment):
                     parts.append(
                         "T {0:G},{1:G}".format(segment.end.real, segment.end.imag)
                     )
