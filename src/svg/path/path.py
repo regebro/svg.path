@@ -472,7 +472,7 @@ class Path(MutableSequence):
             each.length(error=error, min_depth=min_depth) for each in self._segments
         ]
         self._length = sum(lengths)
-        self._lengths = [each / self._length for each in lengths]
+        self._lengths = [each / self._length if self._length != 0.0 else 0.0 for each in lengths]
         # Calculate the fractional distance for each segment to use in point()
         fraction = 0
         for each in self._lengths:
@@ -488,6 +488,11 @@ class Path(MutableSequence):
             return self._segments[-1].point(pos)
 
         self._calc_lengths(error=error)
+
+        # Fix for paths of length 0 (i.e. points)
+        if self._length == 0.0:
+            return self._segments[0].point(0.0)
+
         # Find which segment the point we search for is located on:
         i = bisect(self._fractions, pos)
         if i == 0:
