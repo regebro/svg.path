@@ -168,6 +168,14 @@ class QuadraticBezier(object):
         )
 
     def length(self, error=None, min_depth=None):
+        # Special case: start, control and end are colinear (ie. area of the triangle == 0)
+        cs = self.start - self.control # control to start
+        ec = self.control - self.end # end to control 
+        area = cs.real * ec.imag - ec.real * cs.imag # actually double the area of the triangle (start, control, end)
+        if area == 0.0:
+            # start, control and end are on the same line, so just add the length of the two line segments
+            return abs(cs) + abs(ec)
+        
         a = self.start - 2 * self.control + self.end
         b = 2 * (self.control - self.start)
         a_dot_b = a.real * b.real + a.imag * b.imag
