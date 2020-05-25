@@ -172,7 +172,7 @@ class QuadraticBezier(object):
         cs = self.start - self.control # control to start
         ec = self.control - self.end # end to control 
         area = cs.real * ec.imag - ec.real * cs.imag # actually double the area of the triangle (start, control, end)
-        if area == 0.0:
+        if area == 0.0 or abs(area) < 1e-10:
             # start, control and end are on the same line, so just add the length of the two line segments
             return abs(cs) + abs(ec)
         
