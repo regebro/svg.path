@@ -264,3 +264,32 @@ class TestParser(unittest.TestCase):
         arc = parse_path("M600,350 a25,25 -30 0.1,-3 50,-25")[1]
         self.assertTrue(arc.sweep)
         self.assertTrue(arc.arc)
+
+    def test_pathd_init(self):
+        path1 = parse_path("M 100 100 L 300 100 L 200 300 z")
+        path2 = Path("M 100 100 L 300 100 L 200 300 z")
+        self.assertEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z", current_pos=50+50j)
+        path2 = Path("m 100 100 L 300 100 L 200 300 z")
+        self.assertNotEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z")
+        path2 = Path("m 100 100 L 300 100 L 200 300 z", current_pos=50 + 50j)
+        self.assertNotEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z", current_pos=50 + 50j)
+        path2 = Path("m 100 100 L 300 100 L 200 300 z", current_pos=50 + 50j)
+        self.assertEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z", 50+50j)
+        path2 = Path("m 100 100 L 300 100 L 200 300 z")
+        self.assertNotEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z")
+        path2 = Path("m 100 100 L 300 100 L 200 300 z", 50 + 50j)
+        self.assertNotEqual(path1, path2)
+
+        path1 = parse_path("m 100 100 L 300 100 L 200 300 z", 50 + 50j)
+        path2 = Path("m 100 100 L 300 100 L 200 300 z", 50 + 50j)
+        self.assertEqual(path1, path2)
