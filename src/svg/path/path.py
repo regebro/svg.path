@@ -69,12 +69,29 @@ class Line(Linear):
         return self.start == other.start and self.end == other.end
 
 
-class CubicBezier(object):
-    def __init__(self, start, control1, control2, end):
+class Curve(object):
+    """A curved line.
+
+    Base class for all non-linear curves.
+    """
+    def __init__(self, start, end):
         self.start = start
+        self.end = end
+
+    def point(self, pos):
+        """Calculate the x,y position at a certain position of the path"""
+        raise NotImplementedError
+
+    def length(self, error=ERROR, min_depth=MIN_DEPTH):
+        """Calculate the length of the path up to a certain position"""
+        raise NotImplementedError
+
+
+class CubicBezier(Curve):
+    def __init__(self, start, control1, control2, end):
+        Curve.__init__(self, start, end)
         self.control1 = control1
         self.control2 = control2
-        self.end = end
 
     def __repr__(self):
         return "CubicBezier(start=%s, control1=%s, control2=%s, end=%s)" % (
@@ -124,10 +141,9 @@ class CubicBezier(object):
         return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
 
 
-class QuadraticBezier(object):
+class QuadraticBezier(Curve):
     def __init__(self, start, control, end):
-        self.start = start
-        self.end = end
+        Curve.__init__(self, start, end)
         self.control = control
 
     def __repr__(self):
@@ -201,17 +217,15 @@ class QuadraticBezier(object):
         return s
 
 
-class Arc(object):
+class Arc(Curve):
     def __init__(self, start, radius, rotation, arc, sweep, end):
         """radius is complex, rotation is in degrees,
            large and sweep are 1 or 0 (True/False also work)"""
-
-        self.start = start
+        Curve.__init__(self, start, end)
         self.radius = radius
         self.rotation = rotation
         self.arc = bool(arc)
         self.sweep = bool(sweep)
-        self.end = end
 
         self._parameterize()
 
