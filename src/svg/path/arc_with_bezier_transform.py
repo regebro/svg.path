@@ -146,9 +146,18 @@ if __name__ == '__main__':
     radius = 100 + 50 * 1j
     arc = Arc_with_to_Bezier(start, radius, 0, False, False, end)
     arc.draw(t)
-
     curves = list((curve for curve in arc.as_cubic_curves()))
     for curve in curves:
         curve.draw(t, coords)
+    _ = input('tupe enter to go to the next test')
+    t.clear()
+    t.reset()
+
+    arc = Arc_with_to_Bezier(start, radius, 40, 0, 0, end)
+    arc.draw(t)
+    curves = list((curve for curve in arc.as_cubic_curves()))
+    for curve in curves:
+        curve.draw(t, coords)
+
 
 
