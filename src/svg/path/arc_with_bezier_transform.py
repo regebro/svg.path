@@ -31,29 +31,31 @@ class Arc_with_to_Bezier (Arc):
         We can denote these arc events but not as a single command.
 
         start_t + sweep = end_t
-        
+
         comparaison between svgelements and regebro's Arc attributes :
-        self.rx, self.ry are regebro's self.radius real and imag 
+        self.rx, self.ry are regebro's self.radius real and imag
         ?get_rotation() returns regebro's self.rotation which needs to be converted in radians or is it a different angle?
         self.sweep is aa boolean in regebro's and something different in svgelements
-    
+
         """
 
     def as_cubic_curves(self):
         sweep_limit = tau / 12
-        othersweep =
-        arc_required = int(ceil(abs(self.sweep) / sweep_limit))
+        end_t = self.get_end_t()
+        start_t = self.get_start_t()
+        sweep = end_t - start_t
+        arc_required = int(ceil(abs(sweep) / sweep_limit))
         if arc_required == 0:
             return
-        slice = self.sweep / float(arc_required)
+        slice = sweep / float(arc_required)
 
         theta = self.theta
         rx = self.radius.real
         ry = self.radius.imag
         p_start = self.start
-        current_t = self.get_start_t()
-        x0 = self.center[0]
-        y0 = self.center[1]
+        current_t = start_t
+        x0 = self.center.real
+        y0 = self.center.imag
         cos_theta = cos(theta)
         sin_theta = sin(theta)
         arc_end = (self.end.real, self.end.imag)
@@ -100,6 +102,11 @@ class Arc_with_to_Bezier (Arc):
             t += tau / 2
         return t
 
+    def get_end_t(self):
+        angle = radians(self.rotation + self.delta)
+        t = atan2(self.radius.real * tan(angle), self.radius.imag)
+        return t
+
     def draw(self, turtle):
         t.penup()
         t.pencolor('black')
@@ -119,13 +126,13 @@ class Cubic_with_draw (CubicBezier):
     def draw(self, turtle, coords):
         t.penup()
         t.goto(self.start.real + coords.real, self.start.imag + coords.imag)
-        t.pencolor = self.color
+        t.pencolor('red')
         t.dot(3, 'red')
         t.pendown()
         for x in range(1, 101):
             p = self.point(x * 0.01)
             t.goto(p.real + coords.real, p.imag + coords.imag)
-        t.dot(3, red)
+        t.dot(3, 'red')
         t.penup()
 
 
@@ -133,7 +140,7 @@ if __name__ == '__main__':
 
     import turtle
     t = turtle.Turtle()
-    coords = 500 + 300 * 1j
+    coords = 0 + 0 * 1j
     start = 300 + 100 * 1j
     end = 300 + 300 * 1j
     radius = 100 + 50 * 1j
