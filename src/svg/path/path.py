@@ -88,10 +88,10 @@ class CubicBezier(object):
         if not isinstance(other, CubicBezier):
             return NotImplemented
         return (
-            self.start == other.start
-            and self.end == other.end
-            and self.control1 == other.control1
-            and self.control2 == other.control2
+            self.start == other.start and
+            self.end == other.end and
+            self.control1 == other.control1 and
+            self.control2 == other.control2
         )
 
     def __ne__(self, other):
@@ -111,10 +111,10 @@ class CubicBezier(object):
     def point(self, pos):
         """Calculate the x,y position at a certain position of the path"""
         return (
-            ((1 - pos) ** 3 * self.start)
-            + (3 * (1 - pos) ** 2 * pos * self.control1)
-            + (3 * (1 - pos) * pos ** 2 * self.control2)
-            + (pos ** 3 * self.end)
+            ((1 - pos) ** 3 * self.start) +
+            (3 * (1 - pos) ** 2 * pos * self.control1) +
+            (3 * (1 - pos) * pos ** 2 * self.control2) +
+            (pos ** 3 * self.end)
         )
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
@@ -141,9 +141,9 @@ class QuadraticBezier(object):
         if not isinstance(other, QuadraticBezier):
             return NotImplemented
         return (
-            self.start == other.start
-            and self.end == other.end
-            and self.control == other.control
+            self.start == other.start and
+            self.end == other.end and
+            self.control == other.control
         )
 
     def __ne__(self, other):
@@ -162,9 +162,9 @@ class QuadraticBezier(object):
 
     def point(self, pos):
         return (
-            (1 - pos) ** 2 * self.start
-            + 2 * (1 - pos) * pos * self.control
-            + pos ** 2 * self.end
+            (1 - pos) ** 2 * self.start +
+            2 * (1 - pos) * pos * self.control +
+            pos ** 2 * self.end
         )
 
     def length(self, error=None, min_depth=None):
@@ -194,9 +194,9 @@ class QuadraticBezier(object):
             BA = B / A2
 
             s = (
-                A32 * Sabc
-                + A2 * B * (Sabc - C2)
-                + (4 * C * A - B ** 2) * log((2 * A2 + BA + Sabc) / (BA + C2))
+                A32 * Sabc +
+                A2 * B * (Sabc - C2) +
+                (4 * C * A - B ** 2) * log((2 * A2 + BA + Sabc) / (BA + C2))
             ) / (4 * A32)
         return s
 
@@ -229,12 +229,12 @@ class Arc(object):
         if not isinstance(other, Arc):
             return NotImplemented
         return (
-            self.start == other.start
-            and self.end == other.end
-            and self.radius == other.radius
-            and self.rotation == other.rotation
-            and self.arc == other.arc
-            and self.sweep == other.sweep
+            self.start == other.start and
+            self.end == other.end and
+            self.radius == other.radius and
+            self.rotation == other.rotation and
+            self.arc == other.arc and
+            self.sweep == other.sweep
         )
 
     def __ne__(self, other):
@@ -321,6 +321,84 @@ class Arc(object):
         if not self.sweep:
             self.delta -= 360
 
+    def as_quad_curves(self, curves=1):
+        slice_t = radians(self.delta) / float(curves)
+
+        current_t = radians(self.theta)
+        a = self.radius.real * self.radius_scale
+        b = self.radius.imag * self.radius_scale
+        p_start = self.start
+
+        theta = radians(self.rotation)
+        cx = self.center.real
+        cy = self.center.imag
+
+        cos_theta = cos(theta)
+        sin_theta = sin(theta)
+
+        for i in range(curves):
+            next_t = current_t + slice_t
+            mid_t = (next_t + current_t) / 2
+            cos_end_t = cos(next_t)
+            sin_end_t = sin(next_t)
+            p2En2x = cx + a * cos_end_t * cos_theta - b * sin_end_t * sin_theta
+            p2En2y = cy + a * cos_end_t * sin_theta + b * sin_end_t * cos_theta
+            p_end = p2En2x + p2En2y * 1j
+            if i == curves - 1:
+                p_end = self.end
+            cos_mid_t = cos(mid_t)
+            sin_mid_t = sin(mid_t)
+            alpha = (4.0 - cos(slice_t)) / 3.0
+            px = cx + alpha * (a * cos_mid_t * cos_theta - b * sin_mid_t * sin_theta)
+            py = cy + alpha * (a * cos_mid_t * sin_theta + b * sin_mid_t * cos_theta)
+            yield QuadraticBezier(p_start, px + py * 1j, p_end)
+            p_start = p_end
+            current_t = next_t
+
+    def as_cubic_curves(self, curves=1):
+        slice_t = radians(self.delta) / float(curves)
+
+        current_t = radians(self.theta)
+        rx = self.radius.real * self.radius_scale
+        ry = self.radius.imag * self.radius_scale
+        p_start = self.start
+
+        theta = radians(self.rotation)
+        x0 = self.center.real
+        y0 = self.center.imag
+        cos_theta = cos(theta)
+        sin_theta = sin(theta)
+
+        for i in range(curves):
+            next_t = current_t + slice_t
+
+            alpha = sin(slice_t) * (sqrt(4 + 3 * pow(tan((slice_t) / 2.0), 2)) - 1) / 3.0
+
+            cos_start_t = cos(current_t)
+            sin_start_t = sin(current_t)
+
+            ePrimen1x = -rx * cos_theta * sin_start_t - ry * sin_theta * cos_start_t
+            ePrimen1y = -rx * sin_theta * sin_start_t + ry * cos_theta * cos_start_t
+
+            cos_end_t = cos(next_t)
+            sin_end_t = sin(next_t)
+
+            p2En2x = x0 + rx * cos_end_t * cos_theta - ry * sin_end_t * sin_theta
+            p2En2y = y0 + rx * cos_end_t * sin_theta + ry * sin_end_t * cos_theta
+            p_end = p2En2x + p2En2y * 1j
+            if i == curves - 1:
+                p_end = self.end
+
+            ePrimen2x = -rx * cos_theta * sin_end_t - ry * sin_theta * cos_end_t
+            ePrimen2y = -rx * sin_theta * sin_end_t + ry * cos_theta * cos_end_t
+
+            p_c1 = (p_start.real + alpha * ePrimen1x) + (p_start.imag + alpha * ePrimen1y) * 1j
+            p_c2 = (p_end.real - alpha * ePrimen2x) + (p_end.imag - alpha * ePrimen2y) * 1j
+
+            yield CubicBezier(p_start, p_c1, p_c2, p_end)
+            p_start = p_end
+            current_t = next_t
+
     def point(self, pos):
         if self.start == self.end:
             # This is equivalent of omitting the segment
@@ -337,14 +415,14 @@ class Arc(object):
         radius = self.radius * self.radius_scale
 
         x = (
-            cosr * cos(angle) * radius.real
-            - sinr * sin(angle) * radius.imag
-            + self.center.real
+            cosr * cos(angle) * radius.real -
+            sinr * sin(angle) * radius.imag +
+            self.center.real
         )
         y = (
-            sinr * cos(angle) * radius.real
-            + cosr * sin(angle) * radius.imag
-            + self.center.imag
+            sinr * cos(angle) * radius.real +
+            cosr * sin(angle) * radius.imag +
+            self.center.imag
         )
         return complex(x, y)
 
@@ -516,9 +594,9 @@ class Path(MutableSequence):
             if isinstance(segment, Close):
                 parts.append("Z")
             elif (
-                isinstance(segment, Move)
-                or (current_pos != start)
-                or (start == end and not isinstance(previous_segment, Move))
+                isinstance(segment, Move) or
+                (current_pos != start) or
+                (start == end and not isinstance(previous_segment, Move))
             ):
                 parts.append("M {0:G},{1:G}".format(start.real, start.imag))
 
