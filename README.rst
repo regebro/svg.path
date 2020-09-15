@@ -20,7 +20,7 @@ representes the Y coordinate::
 
 All of these objects have a ``.point()`` function which will return the
 coordinates of a point on the path, where the point is given as a floating
-point value where ``0.0`` is the start of the path and ``1.0`` is end end.
+point value where ``0.0`` is the start of the path and ``1.0`` is the end.
 
 You can calculate the length of a Path or it's segments with the
 ``.length()`` function. For CubicBezier and Arc segments this is done by
