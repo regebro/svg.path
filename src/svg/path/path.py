@@ -1,4 +1,3 @@
-from __future__ import division
 from math import sqrt, cos, sin, acos, degrees, radians, log, pi
 from bisect import bisect
 
@@ -35,7 +34,7 @@ def segment_length(curve, start, end, start_point, end_point, error, min_depth, 
     return length2
 
 
-class Linear(object):
+class Linear:
     """A straight line
 
     The base for Line() and Close().
@@ -61,7 +60,7 @@ class Linear(object):
 
 class Line(Linear):
     def __repr__(self):
-        return "Line(start=%s, end=%s)" % (self.start, self.end)
+        return f"Line(start={self.start}, end={self.end})"
 
     def __eq__(self, other):
         if not isinstance(other, Line):
@@ -69,7 +68,7 @@ class Line(Linear):
         return self.start == other.start and self.end == other.end
 
 
-class CubicBezier(object):
+class CubicBezier:
     def __init__(self, start, control1, control2, end):
         self.start = start
         self.control1 = control1
@@ -77,11 +76,9 @@ class CubicBezier(object):
         self.end = end
 
     def __repr__(self):
-        return "CubicBezier(start=%s, control1=%s, control2=%s, end=%s)" % (
-            self.start,
-            self.control1,
-            self.control2,
-            self.end,
+        return (
+            f"CubicBezier(start={self.start}, control1={self.control1}, "
+            f"control2={self.control2}, end={self.end})"
         )
 
     def __eq__(self, other):
@@ -124,18 +121,14 @@ class CubicBezier(object):
         return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
 
 
-class QuadraticBezier(object):
+class QuadraticBezier:
     def __init__(self, start, control, end):
         self.start = start
         self.end = end
         self.control = control
 
     def __repr__(self):
-        return "QuadraticBezier(start=%s, control=%s, end=%s)" % (
-            self.start,
-            self.control,
-            self.end,
-        )
+        return f"QuadraticBezier(start={self.start}, control={self.control}, end={self.end})"
 
     def __eq__(self, other):
         if not isinstance(other, QuadraticBezier):
@@ -201,7 +194,7 @@ class QuadraticBezier(object):
         return s
 
 
-class Arc(object):
+class Arc:
     def __init__(self, start, radius, rotation, arc, sweep, end):
         """radius is complex, rotation is in degrees,
         large and sweep are 1 or 0 (True/False also work)"""
@@ -216,13 +209,9 @@ class Arc(object):
         self._parameterize()
 
     def __repr__(self):
-        return "Arc(start=%s, radius=%s, rotation=%s, arc=%s, sweep=%s, end=%s)" % (
-            self.start,
-            self.radius,
-            self.rotation,
-            self.arc,
-            self.sweep,
-            self.end,
+        return (
+            f"Arc(start={self.start}, radius={self.radius}, rotation={self.rotation}, "
+            f"arc={self.arc}, sweep={self.sweep}, end={self.end})"
         )
 
     def __eq__(self, other):
@@ -372,7 +361,7 @@ class Arc(object):
         return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
 
 
-class Move(object):
+class Move:
     """Represents move commands. Does nothing, but is there to handle
     paths that consist of only move commands, which is valid, but pointless.
     """
@@ -409,7 +398,7 @@ class Close(Linear):
         return self.start == other.start and self.end == other.end
 
     def __repr__(self):
-        return "Close(start=%s, end=%s)" % (self.start, self.end)
+        return f"Close(start={self.start}, end={self.end})"
 
 
 class Path(MutableSequence):
@@ -520,56 +509,34 @@ class Path(MutableSequence):
                 or (current_pos != start)
                 or (start == end and not isinstance(previous_segment, Move))
             ):
-                parts.append("M {0:G},{1:G}".format(start.real, start.imag))
+                parts.append(f"M {start.real:G},{start.imag:G}")
 
             if isinstance(segment, Line):
-                parts.append("L {0:G},{1:G}".format(segment.end.real, segment.end.imag))
+                parts.append(f"L {segment.end.real:G},{segment.end.imag:G}")
             elif isinstance(segment, CubicBezier):
                 if segment.is_smooth_from(previous_segment):
                     parts.append(
-                        "S {0:G},{1:G} {2:G},{3:G}".format(
-                            segment.control2.real,
-                            segment.control2.imag,
-                            segment.end.real,
-                            segment.end.imag,
-                        )
+                        f"S {segment.control2.real:G},{segment.control2.imag:G} "
+                        f"{segment.end.real:G},{segment.end.imag:G}"
                     )
                 else:
                     parts.append(
-                        "C {0:G},{1:G} {2:G},{3:G} {4:G},{5:G}".format(
-                            segment.control1.real,
-                            segment.control1.imag,
-                            segment.control2.real,
-                            segment.control2.imag,
-                            segment.end.real,
-                            segment.end.imag,
-                        )
+                        f"C {segment.control1.real:G},{segment.control1.imag:G} "
+                        f"{segment.control2.real:G},{segment.control2.imag:G} "
+                        f"{segment.end.real:G},{segment.end.imag:G}"
                     )
             elif isinstance(segment, QuadraticBezier):
                 if segment.is_smooth_from(previous_segment):
-                    parts.append(
-                        "T {0:G},{1:G}".format(segment.end.real, segment.end.imag)
-                    )
+                    parts.append(f"T {segment.end.real:G},{segment.end.imag:G}")
                 else:
                     parts.append(
-                        "Q {0:G},{1:G} {2:G},{3:G}".format(
-                            segment.control.real,
-                            segment.control.imag,
-                            segment.end.real,
-                            segment.end.imag,
-                        )
+                        f"Q {segment.control.real:G},{segment.control.imag:G} "
+                        f"{segment.end.real:G},{segment.end.imag:G}"
                     )
             elif isinstance(segment, Arc):
                 parts.append(
-                    "A {0:G},{1:G} {2:G} {3:d},{4:d} {5:G},{6:G}".format(
-                        segment.radius.real,
-                        segment.radius.imag,
-                        segment.rotation,
-                        int(segment.arc),
-                        int(segment.sweep),
-                        segment.end.real,
-                        segment.end.imag,
-                    )
+                    f"A {segment.radius.real:G},{segment.radius.imag:G} {segment.rotation:G} "
+                    f"{int(segment.arc):d},{int(segment.sweep):d} {segment.end.real:G},{segment.end.imag:G}"
                 )
 
             current_pos = segment.end
