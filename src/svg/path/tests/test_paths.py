@@ -1,7 +1,7 @@
 import unittest
 from math import sqrt, pi
 
-from ..path import CubicBezier, QuadraticBezier, Line, Arc, Path
+from ..path import CubicBezier, QuadraticBezier, Line, Arc, Move, Close, Path
 
 
 # Most of these test points are not calculated serparately, as that would
@@ -623,3 +623,28 @@ class TestPath(unittest.TestCase):
         segment = Arc(0j + 70j, 35 + 35j, 0, 1, 0, 0 + 70j)
         self.assertEqual(segment.length(), 0)
         self.assertEqual(segment.point(0.5), segment.start)
+
+    def test_zero_paths(self):
+        move_only = Path(Move(0))
+        self.assertEqual(move_only.point(0), 0 + 0j)
+        self.assertEqual(move_only.point(0.5), 0 + 0j)
+        self.assertEqual(move_only.point(1), 0 + 0j)
+        self.assertEqual(move_only.length(), 0)
+
+        move_onlyz = Path(Move(0), Close(0, 0))
+        self.assertEqual(move_onlyz.point(0), 0 + 0j)
+        self.assertEqual(move_onlyz.point(0.5), 0 + 0j)
+        self.assertEqual(move_onlyz.point(1), 0 + 0j)
+        self.assertEqual(move_onlyz.length(), 0)
+
+        zero_line = Path(Move(0), Line(0, 0))
+        self.assertEqual(zero_line.point(0), 0 + 0j)
+        self.assertEqual(zero_line.point(0.5), 0 + 0j)
+        self.assertEqual(zero_line.point(1), 0 + 0j)
+        self.assertEqual(zero_line.length(), 0)
+
+        only_line = Path(Line(1 + 1j, 1 + 1j))
+        self.assertEqual(only_line.point(0), 1 + 1j)
+        self.assertEqual(only_line.point(0.5), 1 + 1j)
+        self.assertEqual(only_line.point(1), 1 + 1j)
+        self.assertEqual(only_line.length(), 0)
