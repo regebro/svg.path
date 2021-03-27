@@ -10,6 +10,8 @@ Changelog
 - New parser that solves the issue with Arc flags and whitespace.
   See Issues #53 and #69.
 
+- Fixed #60: Handle paths that are length 0 [Thanks to martinleopold and tatarize]
+
 
 4.1 (2021-02-16)
 ----------------
