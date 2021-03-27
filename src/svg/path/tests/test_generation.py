@@ -1,4 +1,3 @@
-from __future__ import division
 import unittest
 from ..parser import parse_path
 

@@ -1,4 +1,3 @@
-from __future__ import division
 import unittest
 from ..path import CubicBezier, QuadraticBezier, Line, Arc, Path, Move, Close
 from ..parser import parse_path

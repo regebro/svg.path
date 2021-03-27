@@ -2,10 +2,10 @@ Changelog
 =========
 
 
-4.1.1 (unreleased)
+5.0.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Drop Python 2 support
 
 
 4.1 (2021-02-16)

@@ -1,5 +1,3 @@
-# -*- coding: UTF-8 -*-
-from __future__ import division
 import unittest
 from math import sqrt, pi
 
