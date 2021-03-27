@@ -204,7 +204,7 @@ class QuadraticBezier(object):
 class Arc(object):
     def __init__(self, start, radius, rotation, arc, sweep, end):
         """radius is complex, rotation is in degrees,
-           large and sweep are 1 or 0 (True/False also work)"""
+        large and sweep are 1 or 0 (True/False also work)"""
 
         self.start = start
         self.radius = radius
