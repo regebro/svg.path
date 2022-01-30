@@ -53,6 +53,9 @@ class Linear:
         distance = self.end - self.start
         return self.start + distance * pos
 
+    def derivative(self, pos):
+        return self.end - self.start
+
     def length(self, error=None, min_depth=None):
         distance = self.end - self.start
         return sqrt(distance.real ** 2 + distance.imag ** 2)
@@ -114,6 +117,16 @@ class CubicBezier:
             + (pos ** 3 * self.end)
         )
 
+    def derivative(self, pos):
+        return (
+            -3 * (1 - pos) ** 2 * self.start
+            + 3 * (1 - pos) ** 2 * self.control1
+            - 6 * pos * (1 - pos) * self.control1
+            - 3 * pos**2 * self.control2
+            + 6 * pos * (1 - pos) * self.control2
+            + 3 * pos**2 * self.end
+        )
+
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         """Calculate the length of the path up to a certain position"""
         start_point = self.point(0)
@@ -158,6 +171,13 @@ class QuadraticBezier:
             (1 - pos) ** 2 * self.start
             + 2 * (1 - pos) * pos * self.control
             + pos ** 2 * self.end
+        )
+
+    def derivative(self, pos):
+        return (
+            self.start * (2 * pos - 2)
+            + (2 * self.end - 4 * self.control) * pos
+            + 2 * self.control
         )
 
     def length(self, error=None, min_depth=None):
@@ -337,6 +357,9 @@ class Arc:
         )
         return complex(x, y)
 
+    def derivative(self, pos):
+        raise NotImplementedError
+
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         """The length of an elliptical arc segment requires numerical
         integration, and in that case it's simpler to just do a geometric
@@ -384,6 +407,9 @@ class Move:
 
     def point(self, pos):
         return self.start
+
+    def derivative(self, pos):
+        return 0
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         return 0
@@ -494,6 +520,30 @@ class Path(MutableSequence):
                 self._fractions[i] - self._fractions[i - 1]
             )
         return self._segments[i].point(segment_pos)
+
+    def derivative(self, pos, error=ERROR):
+
+        # Shortcuts
+        if pos == 0.0:
+            return self._segments[0].derivative(pos)
+        if pos == 1.0:
+            return self._segments[-1].derivative(pos)
+
+        self._calc_lengths(error=error)
+
+        # Fix for paths of length 0 (i.e. points)
+        if self._length == 0:
+            return self._segments[0].derivative(0.0)
+
+        # Find which segment the derivative we search for is located on:
+        i = bisect(self._fractions, pos)
+        if i == 0:
+            segment_pos = pos / self._fractions[0]
+        else:
+            segment_pos = (pos - self._fractions[i - 1]) / (
+                self._fractions[i] - self._fractions[i - 1]
+            )
+        return self._segments[i].derivative(segment_pos)
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         self._calc_lengths(error, min_depth)

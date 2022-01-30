@@ -648,3 +648,16 @@ class TestPath(unittest.TestCase):
         self.assertEqual(only_line.point(0.5), 1 + 1j)
         self.assertEqual(only_line.point(1), 1 + 1j)
         self.assertEqual(only_line.length(), 0)
+
+    def test_derivative(self):
+        path = Path(
+            Line(start=600 + 350j, end=650 + 325j),
+            #Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, arc=0, sweep=1, end=700 + 300j),
+            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
+            QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
+
+        self.assertEqual(path.derivative(0), 50 - 25j)
+        self.assertAlmostEqual(path.derivative(0.25), 34.89470471 - 143.36041517j)
+        self.assertAlmostEqual(path.derivative(0.5), -314.77713088 - 373.43874121j)
+        self.assertAlmostEqual(path.derivative(0.75), 83.87896605j)
+        self.assertAlmostEqual(path.derivative(1), 600j)
