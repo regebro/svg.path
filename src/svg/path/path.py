@@ -497,19 +497,18 @@ class Path(MutableSequence):
             fraction += each
             self._fractions.append(fraction)
 
-    def point(self, pos, error=ERROR):
-
+    def _find_segment(self, pos, error=ERROR):
         # Shortcuts
         if pos == 0.0:
-            return self._segments[0].point(pos)
+            return self._segments[0], pos
         if pos == 1.0:
-            return self._segments[-1].point(pos)
+            return self._segments[-1], pos
 
         self._calc_lengths(error=error)
 
         # Fix for paths of length 0 (i.e. points)
         if self._length == 0:
-            return self._segments[0].point(0.0)
+            return self._segments[0], 0.0
 
         # Find which segment the point we search for is located on:
         i = bisect(self._fractions, pos)
@@ -519,31 +518,15 @@ class Path(MutableSequence):
             segment_pos = (pos - self._fractions[i - 1]) / (
                 self._fractions[i] - self._fractions[i - 1]
             )
-        return self._segments[i].point(segment_pos)
+        return self._segments[i], segment_pos
+
+    def point(self, pos, error=ERROR):
+        segment, pos = self._find_segment(pos, error)
+        return segment.point(pos)
 
     def derivative(self, pos, error=ERROR):
-
-        # Shortcuts
-        if pos == 0.0:
-            return self._segments[0].derivative(pos)
-        if pos == 1.0:
-            return self._segments[-1].derivative(pos)
-
-        self._calc_lengths(error=error)
-
-        # Fix for paths of length 0 (i.e. points)
-        if self._length == 0:
-            return self._segments[0].derivative(0.0)
-
-        # Find which segment the derivative we search for is located on:
-        i = bisect(self._fractions, pos)
-        if i == 0:
-            segment_pos = pos / self._fractions[0]
-        else:
-            segment_pos = (pos - self._fractions[i - 1]) / (
-                self._fractions[i] - self._fractions[i - 1]
-            )
-        return self._segments[i].derivative(segment_pos)
+        segment, pos = self._find_segment(pos, error)
+        return segment.derivative(pos)
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         self._calc_lengths(error, min_depth)
