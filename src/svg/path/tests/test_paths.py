@@ -649,16 +649,16 @@ class TestPath(unittest.TestCase):
         self.assertEqual(only_line.point(1), 1 + 1j)
         self.assertEqual(only_line.length(), 0)
 
-    def test_derivative(self):
+    def test_tangent(self):
         path = Path(
             Line(start=600 + 350j, end=650 + 325j),
             Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, arc=0, sweep=1, end=700 + 300j),
             CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
             QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
 
-        self.assertEqual(path.derivative(0), 50 - 25j)
+        self.assertEqual(path.tangent(0), 50 - 25j)
         # These are *not* calculated, but just regression tests. Be skeptical.
-        self.assertAlmostEqual(path.derivative(0.25), 197.17077123205894+106.56022001841387j)
-        self.assertAlmostEqual(path.derivative(0.5), -226.30788045372367-364.5433357646594j)
-        self.assertAlmostEqual(path.derivative(0.75), 13.630819414210208j)
-        self.assertAlmostEqual(path.derivative(1), 600j)
+        self.assertAlmostEqual(path.tangent(0.25), 197.17077123205894+106.56022001841387j)
+        self.assertAlmostEqual(path.tangent(0.5), -226.30788045372367-364.5433357646594j)
+        self.assertAlmostEqual(path.tangent(0.75), 13.630819414210208j)
+        self.assertAlmostEqual(path.tangent(1), 600j)
