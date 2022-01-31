@@ -358,7 +358,20 @@ class Arc:
         return complex(x, y)
 
     def derivative(self, pos):
-        raise NotImplementedError
+        angle = radians(self.theta + (self.delta * pos))
+        cosr = cos(radians(self.rotation))
+        sinr = sin(radians(self.rotation))
+        radius = self.radius * self.radius_scale
+
+        x = (
+            cosr * cos(angle) * radius.real
+            - sinr * sin(angle) * radius.imag
+        )
+        y = (
+            sinr * cos(angle) * radius.real
+            + cosr * sin(angle) * radius.imag
+        )
+        return complex(x, y) * complex(0, 1)
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         """The length of an elliptical arc segment requires numerical
@@ -584,3 +597,4 @@ class Path(MutableSequence):
             previous_segment = segment
 
         return " ".join(parts)
+
