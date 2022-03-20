@@ -4,7 +4,7 @@ from math import sqrt, pi
 from ..path import CubicBezier, QuadraticBezier, Line, Arc, Move, Close, Path
 
 
-# Most of these test points are not calculated serparately, as that would
+# Most of these test points are not calculated separately, as that would
 # take too long and be too error prone. Instead the curves have been verified
 # to be correct visually, by drawing them with the turtle module, with code
 # like this:
@@ -652,13 +652,77 @@ class TestPath(unittest.TestCase):
     def test_tangent(self):
         path = Path(
             Line(start=600 + 350j, end=650 + 325j),
-            Arc(start=650 + 325j, radius=25 + 25j, rotation=-30, arc=0, sweep=1, end=700 + 300j),
-            CubicBezier(start=700 + 300j, control1=800 + 400j, control2=750 + 200j, end=600 + 100j),
-            QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j))
+            Arc(
+                start=650 + 325j,
+                radius=25 + 25j,
+                rotation=-30,
+                arc=0,
+                sweep=1,
+                end=700 + 300j,
+            ),
+            CubicBezier(
+                start=700 + 300j,
+                control1=800 + 400j,
+                control2=750 + 200j,
+                end=600 + 100j,
+            ),
+            QuadraticBezier(start=600 + 100j, control=600, end=600 + 300j),
+        )
 
         self.assertEqual(path.tangent(0), 50 - 25j)
         # These are *not* calculated, but just regression tests. Be skeptical.
-        self.assertAlmostEqual(path.tangent(0.25), 197.17077123205894+106.56022001841387j)
-        self.assertAlmostEqual(path.tangent(0.5), -226.30788045372367-364.5433357646594j)
+        self.assertAlmostEqual(
+            path.tangent(0.25), 197.17077123205894 + 106.56022001841387j
+        )
+        self.assertAlmostEqual(
+            path.tangent(0.5), -226.30788045372367 - 364.5433357646594j
+        )
         self.assertAlmostEqual(path.tangent(0.75), 13.630819414210208j)
         self.assertAlmostEqual(path.tangent(1), 600j)
+
+    def test_tangent_magnitude(self):
+
+        line1 = Line(start=6 + 3.5j, end=6.5 + 3.25j)
+        line2 = Line(start=6 + 3.5j, end=7 + 3j)
+        # line2 is twice as long as line1, the tangent should have twice the magnitude:
+        self.assertAlmostEqual(line2.tangent(0.5) / line1.tangent(0.5), 2)
+
+        arc1 = Arc(
+            start=0 - 2.5j, radius=2.5 + 2.5j, rotation=0, arc=0, sweep=1, end=0 + 2.5j
+        )
+        arc2 = Arc(start=0 - 5j, radius=5 + 5j, rotation=0, arc=0, sweep=1, end=0 + 5j)
+        # The radius is twice as large, so the magnitude is twice as large
+        self.assertAlmostEqual(arc2.tangent(0.5) / arc1.tangent(0.5), 2)
+
+        bez1 = CubicBezier(start=0, control1=1 + 1j, control2=2 - 1j, end=3)
+        bez2 = CubicBezier(start=0, control1=2 + 2j, control2=4 - 2j, end=6)
+        # Length should be double, tangent is double.
+        self.assertAlmostEqual(bez2.tangent(0.5) / bez1.tangent(0.5), 2)
+
+        qb1 = QuadraticBezier(start=0, control=1 + 1j, end=2)
+        qb2 = QuadraticBezier(start=0, control=2 + 2j, end=4)
+        # Length should be double, tangent is double.
+        self.assertAlmostEqual(qb2.tangent(0.5) / qb1.tangent(0.5), 2)
+
+        # Code for visually verifying these tangents. I should make a test of this.
+        # import turtle
+        # t = turtle.Turtle()
+        # t.penup()
+
+        # for arc in (line1, line2, arc1, arc2, bez1, bez2):
+        # p = arc.point(0)
+        # t.goto(p.real*20, -p.imag*20)
+        # t.dot(3, 'black')
+        # t.pendown()
+        # for x in range(1, 101):
+        # p = arc.point(x * 0.01)
+        # t.goto(p.real*20,-p.imag*20)
+        # t.penup()
+        # t.dot(3, 'black')
+        # p = arc.point(0.5)
+        # t.goto(p.real*20,-p.imag*20)
+        # t.dot(3, 'red')
+        # t.pendown()
+        # p += arc.tangent(0.5)
+        # t.goto(p.real*20,-p.imag*20)
+        # t.penup()

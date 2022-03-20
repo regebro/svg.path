@@ -58,7 +58,7 @@ class Linear:
 
     def length(self, error=None, min_depth=None):
         distance = self.end - self.start
-        return sqrt(distance.real ** 2 + distance.imag ** 2)
+        return sqrt(distance.real**2 + distance.imag**2)
 
 
 class Line(Linear):
@@ -113,8 +113,8 @@ class CubicBezier:
         return (
             ((1 - pos) ** 3 * self.start)
             + (3 * (1 - pos) ** 2 * pos * self.control1)
-            + (3 * (1 - pos) * pos ** 2 * self.control2)
-            + (pos ** 3 * self.end)
+            + (3 * (1 - pos) * pos**2 * self.control2)
+            + (pos**3 * self.end)
         )
 
     def tangent(self, pos):
@@ -170,7 +170,7 @@ class QuadraticBezier:
         return (
             (1 - pos) ** 2 * self.start
             + 2 * (1 - pos) * pos * self.control
-            + pos ** 2 * self.end
+            + pos**2 * self.end
         )
 
     def tangent(self, pos):
@@ -192,13 +192,13 @@ class QuadraticBezier:
             if k >= 2:
                 s = abs(b) - abs(a)
             else:
-                s = abs(a) * (k ** 2 / 2 - k + 1)
+                s = abs(a) * (k**2 / 2 - k + 1)
         else:
             # For an explanation of this case, see
             # http://www.malczak.info/blog/quadratic-bezier-curve-length/
-            A = 4 * (a.real ** 2 + a.imag ** 2)
+            A = 4 * (a.real**2 + a.imag**2)
             B = 4 * (a.real * b.real + a.imag * b.imag)
-            C = b.real ** 2 + b.imag ** 2
+            C = b.real**2 + b.imag**2
 
             Sabc = 2 * sqrt(A + B + C)
             A2 = sqrt(A)
@@ -209,7 +209,7 @@ class QuadraticBezier:
             s = (
                 A32 * Sabc
                 + A2 * B * (Sabc - C2)
-                + (4 * C * A - B ** 2) * log((2 * A2 + BA + Sabc) / (BA + C2))
+                + (4 * C * A - B**2) * log((2 * A2 + BA + Sabc) / (BA + C2))
             ) / (4 * A32)
         return s
 
@@ -363,14 +363,8 @@ class Arc:
         sinr = sin(radians(self.rotation))
         radius = self.radius * self.radius_scale
 
-        x = (
-            cosr * cos(angle) * radius.real
-            - sinr * sin(angle) * radius.imag
-        )
-        y = (
-            sinr * cos(angle) * radius.real
-            + cosr * sin(angle) * radius.imag
-        )
+        x = cosr * cos(angle) * radius.real - sinr * sin(angle) * radius.imag
+        y = sinr * cos(angle) * radius.real + cosr * sin(angle) * radius.imag
         return complex(x, y) * complex(0, 1)
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
@@ -385,7 +379,7 @@ class Arc:
         if self.radius.real == 0 or self.radius.imag == 0:
             # This should be treated as a straight line
             distance = self.end - self.start
-            return sqrt(distance.real ** 2 + distance.imag ** 2)
+            return sqrt(distance.real**2 + distance.imag**2)
 
         if self.radius.real == self.radius.imag:
             # It's a circle, which simplifies this a LOT.
@@ -597,4 +591,3 @@ class Path(MutableSequence):
             previous_segment = segment
 
         return " ".join(parts)
-
