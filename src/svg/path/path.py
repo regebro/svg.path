@@ -53,6 +53,9 @@ class Linear:
         distance = self.end - self.start
         return self.start + distance * pos
 
+    def tangent(self, pos):
+        return self.end - self.start
+
     def length(self, error=None, min_depth=None):
         distance = self.end - self.start
         return sqrt(distance.real ** 2 + distance.imag ** 2)
@@ -114,6 +117,16 @@ class CubicBezier:
             + (pos ** 3 * self.end)
         )
 
+    def tangent(self, pos):
+        return (
+            -3 * (1 - pos) ** 2 * self.start
+            + 3 * (1 - pos) ** 2 * self.control1
+            - 6 * pos * (1 - pos) * self.control1
+            - 3 * pos**2 * self.control2
+            + 6 * pos * (1 - pos) * self.control2
+            + 3 * pos**2 * self.end
+        )
+
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         """Calculate the length of the path up to a certain position"""
         start_point = self.point(0)
@@ -158,6 +171,13 @@ class QuadraticBezier:
             (1 - pos) ** 2 * self.start
             + 2 * (1 - pos) * pos * self.control
             + pos ** 2 * self.end
+        )
+
+    def tangent(self, pos):
+        return (
+            self.start * (2 * pos - 2)
+            + (2 * self.end - 4 * self.control) * pos
+            + 2 * self.control
         )
 
     def length(self, error=None, min_depth=None):
@@ -337,6 +357,22 @@ class Arc:
         )
         return complex(x, y)
 
+    def tangent(self, pos):
+        angle = radians(self.theta + (self.delta * pos))
+        cosr = cos(radians(self.rotation))
+        sinr = sin(radians(self.rotation))
+        radius = self.radius * self.radius_scale
+
+        x = (
+            cosr * cos(angle) * radius.real
+            - sinr * sin(angle) * radius.imag
+        )
+        y = (
+            sinr * cos(angle) * radius.real
+            + cosr * sin(angle) * radius.imag
+        )
+        return complex(x, y) * complex(0, 1)
+
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         """The length of an elliptical arc segment requires numerical
         integration, and in that case it's simpler to just do a geometric
@@ -384,6 +420,9 @@ class Move:
 
     def point(self, pos):
         return self.start
+
+    def tangent(self, pos):
+        return 0
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         return 0
@@ -471,19 +510,18 @@ class Path(MutableSequence):
             fraction += each
             self._fractions.append(fraction)
 
-    def point(self, pos, error=ERROR):
-
+    def _find_segment(self, pos, error=ERROR):
         # Shortcuts
         if pos == 0.0:
-            return self._segments[0].point(pos)
+            return self._segments[0], pos
         if pos == 1.0:
-            return self._segments[-1].point(pos)
+            return self._segments[-1], pos
 
         self._calc_lengths(error=error)
 
         # Fix for paths of length 0 (i.e. points)
         if self._length == 0:
-            return self._segments[0].point(0.0)
+            return self._segments[0], 0.0
 
         # Find which segment the point we search for is located on:
         i = bisect(self._fractions, pos)
@@ -493,7 +531,15 @@ class Path(MutableSequence):
             segment_pos = (pos - self._fractions[i - 1]) / (
                 self._fractions[i] - self._fractions[i - 1]
             )
-        return self._segments[i].point(segment_pos)
+        return self._segments[i], segment_pos
+
+    def point(self, pos, error=ERROR):
+        segment, pos = self._find_segment(pos, error)
+        return segment.point(pos)
+
+    def tangent(self, pos, error=ERROR):
+        segment, pos = self._find_segment(pos, error)
+        return segment.tangent(pos)
 
     def length(self, error=ERROR, min_depth=MIN_DEPTH):
         self._calc_lengths(error, min_depth)
@@ -551,3 +597,4 @@ class Path(MutableSequence):
             previous_segment = segment
 
         return " ".join(parts)
+
