@@ -5,7 +5,7 @@ Changelog
 5.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Two new test files were omitted from the distributions.
 
 
 5.0.0 (2022-03-21)

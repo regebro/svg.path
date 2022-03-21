@@ -1,2 +1,6 @@
 include *.rst
 include *.txt
+
+# added by check-manifest
+recursive-include src *.png
+recursive-include src *.ttf
