@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-5.0.0 (unreleased)
+5.0.0 (2022-03-21)
 ------------------
 
 - Drop Python 2 support, also 3.4 to 3.6. New minimum Python version is 3.7.
