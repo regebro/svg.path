@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-5.0.1 (unreleased)
+5.0.1 (2022-03-21)
 ------------------
 
 - Two new test files were omitted from the distributions.
