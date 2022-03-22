@@ -115,17 +115,21 @@ def _tokenize_path(pathdef):
         # yield one command per full set of arguments
         arg_sequence = ARGUMENT_SEQUENCE[command.upper()]
         arguments = bytearray(args, "ascii")
+        implicit = False
         while arguments:
             command_arguments = []
-            for arg in arg_sequence:
+            for i, arg in enumerate(arg_sequence):
                 try:
                     command_arguments.append(FIELD_POPPERS[arg](arguments))
                 except InvalidPathError as e:
+                    if i == 0 and implicit:
+                        return  # Invalid character in path, treat like a comment
                     raise InvalidPathError(
                         f"Invalid path element {command} {args}"
                     ) from e
 
             yield (command,) + tuple(command_arguments)
+            implicit = True
 
             # Implicit Moveto commands should be treated as Lineto commands.
             if command == "m":

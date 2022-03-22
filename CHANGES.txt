@@ -5,7 +5,9 @@ Changelog
 5.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added SVG standard tests [tatarize]
+
+- Allow random characters to end parsing
 
 
 5.0.1 (2022-03-21)
