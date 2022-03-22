@@ -184,7 +184,7 @@ class TestParser(unittest.TestCase):
         Test using multiple coord sets to build a polybeizer, and implicit values for initial S.
         """
         path12 = parse_path(
-            """M  100 100    C  100 20   200 20   200 100   S   300 180   300 100"""
+            "M  100 100    C  100 20   200 20   200 100   S   300 180   300 100"
         )
         self.assertEqual(
             path12,
@@ -205,9 +205,7 @@ class TestParser(unittest.TestCase):
             ),
         )
 
-        path12 = parse_path(
-            """M  100 250    S  200 200   200 250     300 300   300 250"""
-        )
+        path12 = parse_path("M  100 250    S  200 200   200 250     300 300   300 250")
         self.assertEqual(
             path12,
             Path(
@@ -235,7 +233,7 @@ class TestParser(unittest.TestCase):
         """
         #
         path13 = parse_path(
-            """   M  240.00000  56.00000    H  270.00000         300.00000 320.00000 400.00000   """
+            "   M  240.00000  56.00000    H  270.00000         300.00000 320.00000 400.00000   "
         )
         self.assertEqual(
             path13,
@@ -249,7 +247,7 @@ class TestParser(unittest.TestCase):
         )
 
         path13 = parse_path(
-            """   M  240.00000  156.00000    V  180.00000         200.00000 260.00000 300.00000   """
+            "   M  240.00000  156.00000    V  180.00000         200.00000 260.00000 300.00000   "
         )
         self.assertEqual(
             path13,
@@ -270,7 +268,9 @@ class TestParser(unittest.TestCase):
         plus implicit lineto.
         """
         path14 = parse_path(
-            """   m   62.00000  56.00000    51.96152   90.00000   -103.92304         0.00000    51.96152  -90.00000   z    m    0.00000   15.00000   38.97114   67.50000   -77.91228         0.00000   38.97114  -67.50000   z  """
+            "   m   62.00000  56.00000    51.96152   90.00000   -103.92304         0.00000    51.96152  "
+            "-90.00000   z    m    0.00000   15.00000   38.97114   67.50000   -77.91228         0.00000   "
+            "38.97114  -67.50000   z  "
         )
         self.assertEqual(
             path14,
@@ -295,7 +295,9 @@ class TestParser(unittest.TestCase):
             ),
         )
         path14 = parse_path(
-            """   M  177.00000   56.00000    228.96152         146.00000   125.03848  146.00000    177.00000   56.00000   Z    M  177.00000  71.00000   215.97114         138.50000   138.02886  138.50000   177.00000  71.00000   Z  """
+            "M  177.00000   56.00000    228.96152         146.00000   125.03848  146.00000    177.00000   "
+            "56.00000   Z    M  177.00000  71.00000   215.97114         138.50000   138.02886  138.50000   "
+            "177.00000  71.00000   Z  "
         )
 
         self.assertEqual(
@@ -322,7 +324,7 @@ class TestParser(unittest.TestCase):
         if the moveto was specified with 'M' and relative if the moveto was
         specified with 'm'.
         """
-        path15 = parse_path("""M100,120 L160,220 L40,220 z""")
+        path15 = parse_path("M100,120 L160,220 L40,220 z")
         self.assertEqual(
             path15,
             Path(
@@ -332,7 +334,7 @@ class TestParser(unittest.TestCase):
                 Close(start=(40 + 220j), end=(100 + 120j)),
             ),
         )
-        path15 = parse_path("""M350,120 L410,220 L290,220 z""")
+        path15 = parse_path("M350,120 L410,220 L290,220 z")
         self.assertEqual(
             path15,
             Path(
@@ -342,7 +344,7 @@ class TestParser(unittest.TestCase):
                 Close(start=(290 + 220j), end=(350 + 120j)),
             ),
         )
-        path15 = parse_path("""M100,120 160,220 40,220 z""")
+        path15 = parse_path("M100,120 160,220 40,220 z")
         self.assertEqual(
             path15,
             Path(
@@ -352,7 +354,7 @@ class TestParser(unittest.TestCase):
                 Close(start=(40 + 220j), end=(100 + 120j)),
             ),
         )
-        path15 = parse_path("""m350,120 60,100 -120,0 z""")
+        path15 = parse_path("m350,120 60,100 -120,0 z")
         self.assertEqual(
             path15,
             Path(
@@ -369,11 +371,11 @@ class TestParser(unittest.TestCase):
 
         Test that the 'z' and 'Z' command have the same effect.
         """
-        path17a = parse_path("""M 50 50 L 50 150 L 150 150 L 150 50 z""")
-        path17b = parse_path("""M 50 50 L 50 150 L 150 150 L 150 50 Z""")
+        path17a = parse_path("M 50 50 L 50 150 L 150 150 L 150 50 z")
+        path17b = parse_path("M 50 50 L 50 150 L 150 150 L 150 50 Z")
         self.assertEqual(path17a, path17b)
-        path17a = parse_path("""M 250 50 L 250 150 L 350 150 L 350 50 Z""")
-        path17b = parse_path("""M 250 50 L 250 150 L 350 150 L 350 50 z""")
+        path17a = parse_path("M 250 50 L 250 150 L 350 150 L 350 50 Z")
+        path17b = parse_path("M 250 50 L 250 150 L 350 150 L 350 50 z")
         self.assertEqual(path17a, path17b)
 
     def test_wc3_examples18(self):
@@ -384,13 +386,13 @@ class TestParser(unittest.TestCase):
         and BNF processing consumes as much content as possible, stopping as soon as a character that doesn't
         satisfy the production is encountered.
         """
-        path18a = parse_path("""M 20 40 H 40""")
+        path18a = parse_path("M 20 40 H 40")
         path18b = parse_path(
             """M 20 40
                  H 40"""
         )
         self.assertEqual(path18a, path18b)
-        path18a = parse_path("""M 20 60 H 40""")
+        path18a = parse_path("M 20 60 H 40")
         path18b = parse_path(
             """
                   M
@@ -401,20 +403,20 @@ class TestParser(unittest.TestCase):
                   """
         )
         self.assertEqual(path18a, path18b)
-        path18a = parse_path("""M 20 80 H40""")
-        path18b = parse_path("""M       20,80          H    40""")
+        path18a = parse_path("M 20 80 H40")
+        path18b = parse_path("M       20,80          H    40")
         self.assertEqual(path18a, path18b)
-        path18a = parse_path("""M 20 100 H 40#90""")
-        path18b = parse_path("""M 20 100 H 40""")
+        path18a = parse_path("M 20 100 H 40#90")
+        path18b = parse_path("M 20 100 H 40")
         self.assertEqual(path18a, path18b)
-        path18a = parse_path("""M 20 120 H 40.5 0.6""")
-        path18b = parse_path("""M 20 120 H 40.5.6""")
+        path18a = parse_path("M 20 120 H 40.5 0.6")
+        path18b = parse_path("M 20 120 H 40.5.6")
         self.assertEqual(path18a, path18b)
-        path18a = parse_path("""M 20 140 h 10 -20""")
-        path18b = parse_path("""M 20 140 h 10-20""")
+        path18a = parse_path("M 20 140 h 10 -20")
+        path18b = parse_path("M 20 140 h 10-20")
         self.assertEqual(path18a, path18b)
-        path18a = parse_path("""M 20 160 H 40""")
-        path18b = parse_path("""M 20 160 H 40#90""")
+        path18a = parse_path("M 20 160 H 40")
+        path18b = parse_path("M 20 160 H 40#90")
         self.assertEqual(path18a, path18b)
 
     def test_wc3_examples19(self):
@@ -423,57 +425,53 @@ class TestParser(unittest.TestCase):
 
         Test that additional parameters to pathdata commands are treated as additional calls to the most recent command.
         """
-        path19a = parse_path("""M20 20 H40 H60""")
-        path19b = parse_path("""M20 20 H40 60""")
+        path19a = parse_path("M20 20 H40 H60")
+        path19b = parse_path("M20 20 H40 60")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M20 40 h20 h20""")
-        path19b = parse_path("""M20 40 h20 20""")
+        path19a = parse_path("M20 40 h20 h20")
+        path19b = parse_path("M20 40 h20 20")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M120 20 V40 V60""")
-        path19b = parse_path("""M120 20 V40 60""")
+        path19a = parse_path("M120 20 V40 V60")
+        path19b = parse_path("M120 20 V40 60")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M140 20 v20 v20""")
-        path19b = parse_path("""M140 20 v20 20""")
+        path19a = parse_path("M140 20 v20 v20")
+        path19b = parse_path("M140 20 v20 20")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M220 20 L 240 20 L260 20""")
-        path19b = parse_path("""M220 20 L 240 20 260 20 """)
+        path19a = parse_path("M220 20 L 240 20 L260 20")
+        path19b = parse_path("M220 20 L 240 20 260 20 ")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M220 40 l 20 0 l 20 0""")
-        path19b = parse_path("""M220 40 l 20 0 20 0""")
+        path19a = parse_path("M220 40 l 20 0 l 20 0")
+        path19b = parse_path("M220 40 l 20 0 20 0")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M50 150 C50 50 200 50 200 150 C200 50 350 50 350 150""")
-        path19b = parse_path("""M50 150 C50 50 200 50 200 150 200 50 350 50 350 150""")
+        path19a = parse_path("M50 150 C50 50 200 50 200 150 C200 50 350 50 350 150")
+        path19b = parse_path("M50 150 C50 50 200 50 200 150 200 50 350 50 350 150")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path(
-            """M50, 200 c0,-100 150,-100 150,0 c0,-100 150,-100 150,0"""
-        )
-        path19b = parse_path(
-            """M50, 200 c0,-100 150,-100 150,0 0,-100 150,-100 150,0"""
-        )
+        path19a = parse_path("M50, 200 c0,-100 150,-100 150,0 c0,-100 150,-100 150,0")
+        path19b = parse_path("M50, 200 c0,-100 150,-100 150,0 0,-100 150,-100 150,0")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M50 250 S125 200 200 250 S275, 200 350 250""")
-        path19b = parse_path("""M50 250 S125 200 200 250 275, 200 350 250""")
+        path19a = parse_path("M50 250 S125 200 200 250 S275, 200 350 250")
+        path19b = parse_path("M50 250 S125 200 200 250 275, 200 350 250")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M50 275 s75 -50 150 0 s75, -50 150 0""")
-        path19b = parse_path("""M50 275 s75 -50 150 0 75, -50 150 0""")
+        path19a = parse_path("M50 275 s75 -50 150 0 s75, -50 150 0")
+        path19b = parse_path("M50 275 s75 -50 150 0 75, -50 150 0")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M50 300 Q 125 275 200 300 Q 275 325 350 300""")
-        path19b = parse_path("""M50 300 Q 125 275 200 300 275 325 350 300""")
+        path19a = parse_path("M50 300 Q 125 275 200 300 Q 275 325 350 300")
+        path19b = parse_path("M50 300 Q 125 275 200 300 275 325 350 300")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M50 325 q 75 -25 150 0 q 75 25 150 0""")
-        path19b = parse_path("""M50 325 q 75 -25 150 0 75 25 150 0""")
+        path19a = parse_path("M50 325 q 75 -25 150 0 q 75 25 150 0")
+        path19b = parse_path("M50 325 q 75 -25 150 0 75 25 150 0")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M425 25 T 425 75 T 425 125""")
-        path19b = parse_path("""M425 25 T 425 75 425 125""")
+        path19a = parse_path("M425 25 T 425 75 T 425 125")
+        path19b = parse_path("M425 25 T 425 75 425 125")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M450 25 t 0 50 t 0 50""")
-        path19b = parse_path("""M450 25 t 0 50 0 50""")
+        path19a = parse_path("M450 25 t 0 50 t 0 50")
+        path19b = parse_path("M450 25 t 0 50 0 50")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M400,200 A25 25 0 0 0 425 150 A25 25 0 0 0 400 200""")
-        path19b = parse_path("""M400,200 A25 25 0 0 0 425 150 25 25 0 0 0 400 200""")
+        path19a = parse_path("M400,200 A25 25 0 0 0 425 150 A25 25 0 0 0 400 200")
+        path19b = parse_path("M400,200 A25 25 0 0 0 425 150 25 25 0 0 0 400 200")
         self.assertEqual(path19a, path19b)
-        path19a = parse_path("""M400,300 a25 25 0 0 0 25 -50 a25 25 0 0 0 -25 50""")
-        path19b = parse_path("""M400,300 a25 25 0 0 0 25 -50 25 25 0 0 0 -25 50""")
+        path19a = parse_path("M400,300 a25 25 0 0 0 25 -50 a25 25 0 0 0 -25 50")
+        path19b = parse_path("M400,300 a25 25 0 0 0 25 -50 25 25 0 0 0 -25 50")
         self.assertEqual(path19a, path19b)
 
     def test_wc3_examples20(self):
@@ -481,34 +479,30 @@ class TestParser(unittest.TestCase):
         W3C_SVG_11_TestSuite Paths
         Tests parsing of the elliptical arc path syntax.
         """
-        path20a = parse_path("""M120,120 h25 a25,25 0 1,0 -25,25 z""")
-        path20b = parse_path("""M120,120 h25 a25,25 0 10 -25,25z""")
+        path20a = parse_path("M120,120 h25 a25,25 0 1,0 -25,25 z")
+        path20b = parse_path("M120,120 h25 a25,25 0 10 -25,25z")
         self.assertEqual(path20a, path20b)
-        path20a = parse_path("""M200,120 h-25 a25,25 0 1,1 25,25 z""")
-        path20b = parse_path("""M200,120 h-25 a25,25 0 1125,25 z""")
+        path20a = parse_path("M200,120 h-25 a25,25 0 1,1 25,25 z")
+        path20b = parse_path("M200,120 h-25 a25,25 0 1125,25 z")
         self.assertEqual(path20a, path20b)
-        path20a = parse_path("""M280,120 h25 a25,25 0 1,0 -25,25 z""")
+        path20a = parse_path("M280,120 h25 a25,25 0 1,0 -25,25 z")
+        self.assertRaises(Exception, 'parse_path("M280,120 h25 a25,25 0 6 0 -25,25 z")')
+        path20a = parse_path("M360,120 h-25 a25,25 0 1,1 25,25 z")
         self.assertRaises(
-            Exception, 'parse_path("""M280,120 h25 a25,25 0 6 0 -25,25 z""")'
+            Exception, 'parse_path("M360,120 h-25 a25,25 0 1 -1 25,25 z")'
         )
-        path20a = parse_path("""M360,120 h-25 a25,25 0 1,1 25,25 z""")
-        self.assertRaises(
-            Exception, 'parse_path("""M360,120 h-25 a25,25 0 1 -1 25,25 z""")'
-        )
-        path20a = parse_path("""M120,200 h25 a25,25 0 1,1 -25,-25 z""")
-        path20b = parse_path("""M120,200 h25 a25,25 0 1 1-25,-25 z""")
+        path20a = parse_path("M120,200 h25 a25,25 0 1,1 -25,-25 z")
+        path20b = parse_path("M120,200 h25 a25,25 0 1 1-25,-25 z")
         self.assertEqual(path20a, path20b)
-        path20a = parse_path("""M200,200 h-25 a25,25 0 1,0 25,-25 z""")
+        path20a = parse_path("M200,200 h-25 a25,25 0 1,0 25,-25 z")
+        self.assertRaises(Exception, 'parse_path("M200,200 h-25 a25,2501 025,-25 z")')
+        path20a = parse_path("M280,200 h25 a25,25 0 1,1 -25,-25 z")
         self.assertRaises(
-            Exception, 'parse_path("""M200,200 h-25 a25,2501 025,-25 z""")'
+            Exception, 'parse_path("M280,200 h25 a25 25 0 1 7 -25 -25 z")'
         )
-        path20a = parse_path("""M280,200 h25 a25,25 0 1,1 -25,-25 z""")
+        path20a = parse_path("M360,200 h-25 a25,25 0 1,0 25,-25 z")
         self.assertRaises(
-            Exception, 'parse_path("""M280,200 h25 a25 25 0 1 7 -25 -25 z""")'
-        )
-        path20a = parse_path("""M360,200 h-25 a25,25 0 1,0 25,-25 z""")
-        self.assertRaises(
-            Exception, 'parse_path("""M360,200 h-25 a25,25 0 -1 0 25,-25 z""")'
+            Exception, 'parse_path("M360,200 h-25 a25,25 0 -1 0 25,-25 z")'
         )
 
     def test_others(self):
@@ -529,7 +523,7 @@ class TestParser(unittest.TestCase):
         )
 
         # Initial smooth and relative CubicBezier
-        path1 = parse_path("""M100,200 s 150,-100 150,0""")
+        path1 = parse_path("M100,200 s 150,-100 150,0")
         self.assertEqual(
             path1,
             Path(
@@ -539,14 +533,14 @@ class TestParser(unittest.TestCase):
         )
 
         # Initial smooth and relative QuadraticBezier
-        path1 = parse_path("""M100,200 t 150,0""")
+        path1 = parse_path("M100,200 t 150,0")
         self.assertEqual(
             path1,
             Path(Move(100 + 200j), QuadraticBezier(100 + 200j, 100 + 200j, 250 + 200j)),
         )
 
         # Relative QuadraticBezier
-        path1 = parse_path("""M100,200 q 0,0 150,0""")
+        path1 = parse_path("M100,200 q 0,0 150,0")
         self.assertEqual(
             path1,
             Path(Move(100 + 200j), QuadraticBezier(100 + 200j, 100 + 200j, 250 + 200j)),
