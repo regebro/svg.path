@@ -177,6 +177,340 @@ class TestParser(unittest.TestCase):
             ),
         )
 
+    def test_wc3_examples12(self):
+        """
+        W3C_SVG_11_TestSuite Paths
+
+        Test using multiple coord sets to build a polybeizer, and implicit values for initial S.
+        """
+        path12 = parse_path(
+            """M  100 100    C  100 20   200 20   200 100   S   300 180   300 100"""
+        )
+        self.assertEqual(
+            path12,
+            Path(
+                Move(to=(100 + 100j)),
+                CubicBezier(
+                    start=(100 + 100j),
+                    control1=(100 + 20j),
+                    control2=(200 + 20j),
+                    end=(200 + 100j),
+                ),
+                CubicBezier(
+                    start=(200 + 100j),
+                    control1=(200 + 180j),
+                    control2=(300 + 180j),
+                    end=(300 + 100j),
+                ),
+            ),
+        )
+
+        path12 = parse_path(
+            """M  100 250    S  200 200   200 250     300 300   300 250"""
+        )
+        self.assertEqual(
+            path12,
+            Path(
+                Move(to=(100 + 250j)),
+                CubicBezier(
+                    start=(100 + 250j),
+                    control1=(100 + 250j),
+                    control2=(200 + 200j),
+                    end=(200 + 250j),
+                ),
+                CubicBezier(
+                    start=(200 + 250j),
+                    control1=(200 + 300j),
+                    control2=(300 + 300j),
+                    end=(300 + 250j),
+                ),
+            ),
+        )
+
+    def test_wc3_examples13(self):
+        """
+        W3C_SVG_11_TestSuite Paths
+
+        Test multiple coordinates for V and H.
+        """
+        #
+        path13 = parse_path(
+            """   M  240.00000  56.00000    H  270.00000         300.00000 320.00000 400.00000   """
+        )
+        self.assertEqual(
+            path13,
+            Path(
+                Move(to=(240 + 56j)),
+                Line(start=(240 + 56j), end=(270 + 56j)),
+                Line(start=(270 + 56j), end=(300 + 56j)),
+                Line(start=(300 + 56j), end=(320 + 56j)),
+                Line(start=(320 + 56j), end=(400 + 56j)),
+            ),
+        )
+
+        path13 = parse_path(
+            """   M  240.00000  156.00000    V  180.00000         200.00000 260.00000 300.00000   """
+        )
+        self.assertEqual(
+            path13,
+            Path(
+                Move(to=(240 + 156j)),
+                Line(start=(240 + 156j), end=(240 + 180j)),
+                Line(start=(240 + 180j), end=(240 + 200j)),
+                Line(start=(240 + 200j), end=(240 + 260j)),
+                Line(start=(240 + 260j), end=(240 + 300j)),
+            ),
+        )
+
+    def test_wc3_examples14(self):
+        """
+        W3C_SVG_11_TestSuite Paths
+
+        Test implicit values for moveto. If the first command is 'm' it should be taken as an absolute moveto,
+        plus implicit lineto.
+        """
+        path14 = parse_path(
+            """   m   62.00000  56.00000    51.96152   90.00000   -103.92304         0.00000    51.96152  -90.00000   z    m    0.00000   15.00000   38.97114   67.50000   -77.91228         0.00000   38.97114  -67.50000   z  """
+        )
+        self.assertEqual(
+            path14,
+            Path(
+                Move(to=(62 + 56j)),
+                Line(start=(62 + 56j), end=(113.96152000000001 + 146j)),
+                Line(
+                    start=(113.96152000000001 + 146j), end=(10.038480000000007 + 146j)
+                ),
+                Line(start=(10.038480000000007 + 146j), end=(62.00000000000001 + 56j)),
+                Close(start=(62.00000000000001 + 56j), end=(62 + 56j)),
+                Move(to=(62 + 71j)),
+                Line(start=(62 + 71j), end=(100.97113999999999 + 138.5j)),
+                Line(
+                    start=(100.97113999999999 + 138.5j),
+                    end=(23.058859999999996 + 138.5j),
+                ),
+                Line(
+                    start=(23.058859999999996 + 138.5j), end=(62.029999999999994 + 71j)
+                ),
+                Close(start=(62.029999999999994 + 71j), end=(62 + 71j)),
+            ),
+        )
+        path14 = parse_path(
+            """   M  177.00000   56.00000    228.96152         146.00000   125.03848  146.00000    177.00000   56.00000   Z    M  177.00000  71.00000   215.97114         138.50000   138.02886  138.50000   177.00000  71.00000   Z  """
+        )
+
+        self.assertEqual(
+            path14,
+            Path(
+                Move(to=(177 + 56j)),
+                Line(start=(177 + 56j), end=(228.96152 + 146j)),
+                Line(start=(228.96152 + 146j), end=(125.03848 + 146j)),
+                Line(start=(125.03848 + 146j), end=(177 + 56j)),
+                Close(start=(177 + 56j), end=(177 + 56j)),
+                Move(to=(177 + 71j)),
+                Line(start=(177 + 71j), end=(215.97114 + 138.5j)),
+                Line(start=(215.97114 + 138.5j), end=(138.02886 + 138.5j)),
+                Line(start=(138.02886 + 138.5j), end=(177 + 71j)),
+                Close(start=(177 + 71j), end=(177 + 71j)),
+            ),
+        )
+
+    def test_wc3_examples15(self):
+        """
+        W3C_SVG_11_TestSuite Paths
+
+        'M' or 'm' command with more than one pair of coordinates are absolute
+        if the moveto was specified with 'M' and relative if the moveto was
+        specified with 'm'.
+        """
+        path15 = parse_path("""M100,120 L160,220 L40,220 z""")
+        self.assertEqual(
+            path15,
+            Path(
+                Move(to=(100 + 120j)),
+                Line(start=(100 + 120j), end=(160 + 220j)),
+                Line(start=(160 + 220j), end=(40 + 220j)),
+                Close(start=(40 + 220j), end=(100 + 120j)),
+            ),
+        )
+        path15 = parse_path("""M350,120 L410,220 L290,220 z""")
+        self.assertEqual(
+            path15,
+            Path(
+                Move(to=(350 + 120j)),
+                Line(start=(350 + 120j), end=(410 + 220j)),
+                Line(start=(410 + 220j), end=(290 + 220j)),
+                Close(start=(290 + 220j), end=(350 + 120j)),
+            ),
+        )
+        path15 = parse_path("""M100,120 160,220 40,220 z""")
+        self.assertEqual(
+            path15,
+            Path(
+                Move(to=(100 + 120j)),
+                Line(start=(100 + 120j), end=(160 + 220j)),
+                Line(start=(160 + 220j), end=(40 + 220j)),
+                Close(start=(40 + 220j), end=(100 + 120j)),
+            ),
+        )
+        path15 = parse_path("""m350,120 60,100 -120,0 z""")
+        self.assertEqual(
+            path15,
+            Path(
+                Move(to=(350 + 120j)),
+                Line(start=(350 + 120j), end=(410 + 220j)),
+                Line(start=(410 + 220j), end=(290 + 220j)),
+                Close(start=(290 + 220j), end=(350 + 120j)),
+            ),
+        )
+
+    def test_wc3_examples17(self):
+        """
+        W3C_SVG_11_TestSuite Paths
+
+        Test that the 'z' and 'Z' command have the same effect.
+        """
+        path17a = parse_path("""M 50 50 L 50 150 L 150 150 L 150 50 z""")
+        path17b = parse_path("""M 50 50 L 50 150 L 150 150 L 150 50 Z""")
+        self.assertEqual(path17a, path17b)
+        path17a = parse_path("""M 250 50 L 250 150 L 350 150 L 350 50 Z""")
+        path17b = parse_path("""M 250 50 L 250 150 L 350 150 L 350 50 z""")
+        self.assertEqual(path17a, path17b)
+
+    def test_wc3_examples18(self):
+        """
+        W3C_SVG_11_TestSuite Paths
+
+        The 'path' element's 'd' attribute ignores additional whitespace, newline characters, and commas,
+        and BNF processing consumes as much content as possible, stopping as soon as a character that doesn't
+        satisfy the production is encountered.
+        """
+        path18a = parse_path("""M 20 40 H 40""")
+        path18b = parse_path(
+            """M 20 40
+                 H 40"""
+        )
+        self.assertEqual(path18a, path18b)
+        path18a = parse_path("""M 20 60 H 40""")
+        path18b = parse_path(
+            """
+                  M
+                  20
+                  60
+                  H
+                  40
+                  """
+        )
+        self.assertEqual(path18a, path18b)
+        path18a = parse_path("""M 20 80 H40""")
+        path18b = parse_path("""M       20,80          H    40""")
+        self.assertEqual(path18a, path18b)
+        path18a = parse_path("""M 20 100 H 40#90""")
+        path18b = parse_path("""M 20 100 H 40""")
+        self.assertEqual(path18a, path18b)
+        path18a = parse_path("""M 20 120 H 40.5 0.6""")
+        path18b = parse_path("""M 20 120 H 40.5.6""")
+        self.assertEqual(path18a, path18b)
+        path18a = parse_path("""M 20 140 h 10 -20""")
+        path18b = parse_path("""M 20 140 h 10-20""")
+        self.assertEqual(path18a, path18b)
+        path18a = parse_path("""M 20 160 H 40""")
+        path18b = parse_path("""M 20 160 H 40#90""")
+        self.assertEqual(path18a, path18b)
+
+    def test_wc3_examples19(self):
+        """
+        W3C_SVG_11_TestSuite Paths
+
+        Test that additional parameters to pathdata commands are treated as additional calls to the most recent command.
+        """
+        path19a = parse_path("""M20 20 H40 H60""")
+        path19b = parse_path("""M20 20 H40 60""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M20 40 h20 h20""")
+        path19b = parse_path("""M20 40 h20 20""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M120 20 V40 V60""")
+        path19b = parse_path("""M120 20 V40 60""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M140 20 v20 v20""")
+        path19b = parse_path("""M140 20 v20 20""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M220 20 L 240 20 L260 20""")
+        path19b = parse_path("""M220 20 L 240 20 260 20 """)
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M220 40 l 20 0 l 20 0""")
+        path19b = parse_path("""M220 40 l 20 0 20 0""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M50 150 C50 50 200 50 200 150 C200 50 350 50 350 150""")
+        path19b = parse_path("""M50 150 C50 50 200 50 200 150 200 50 350 50 350 150""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path(
+            """M50, 200 c0,-100 150,-100 150,0 c0,-100 150,-100 150,0"""
+        )
+        path19b = parse_path(
+            """M50, 200 c0,-100 150,-100 150,0 0,-100 150,-100 150,0"""
+        )
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M50 250 S125 200 200 250 S275, 200 350 250""")
+        path19b = parse_path("""M50 250 S125 200 200 250 275, 200 350 250""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M50 275 s75 -50 150 0 s75, -50 150 0""")
+        path19b = parse_path("""M50 275 s75 -50 150 0 75, -50 150 0""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M50 300 Q 125 275 200 300 Q 275 325 350 300""")
+        path19b = parse_path("""M50 300 Q 125 275 200 300 275 325 350 300""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M50 325 q 75 -25 150 0 q 75 25 150 0""")
+        path19b = parse_path("""M50 325 q 75 -25 150 0 75 25 150 0""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M425 25 T 425 75 T 425 125""")
+        path19b = parse_path("""M425 25 T 425 75 425 125""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M450 25 t 0 50 t 0 50""")
+        path19b = parse_path("""M450 25 t 0 50 0 50""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M400,200 A25 25 0 0 0 425 150 A25 25 0 0 0 400 200""")
+        path19b = parse_path("""M400,200 A25 25 0 0 0 425 150 25 25 0 0 0 400 200""")
+        self.assertEqual(path19a, path19b)
+        path19a = parse_path("""M400,300 a25 25 0 0 0 25 -50 a25 25 0 0 0 -25 50""")
+        path19b = parse_path("""M400,300 a25 25 0 0 0 25 -50 25 25 0 0 0 -25 50""")
+        self.assertEqual(path19a, path19b)
+
+    def test_wc3_examples20(self):
+        """
+        W3C_SVG_11_TestSuite Paths
+        Tests parsing of the elliptical arc path syntax.
+        """
+        path20a = parse_path("""M120,120 h25 a25,25 0 1,0 -25,25 z""")
+        path20b = parse_path("""M120,120 h25 a25,25 0 10 -25,25z""")
+        self.assertEqual(path20a, path20b)
+        path20a = parse_path("""M200,120 h-25 a25,25 0 1,1 25,25 z""")
+        path20b = parse_path("""M200,120 h-25 a25,25 0 1125,25 z""")
+        self.assertEqual(path20a, path20b)
+        path20a = parse_path("""M280,120 h25 a25,25 0 1,0 -25,25 z""")
+        self.assertRaises(
+            Exception, 'parse_path("""M280,120 h25 a25,25 0 6 0 -25,25 z""")'
+        )
+        path20a = parse_path("""M360,120 h-25 a25,25 0 1,1 25,25 z""")
+        self.assertRaises(
+            Exception, 'parse_path("""M360,120 h-25 a25,25 0 1 -1 25,25 z""")'
+        )
+        path20a = parse_path("""M120,200 h25 a25,25 0 1,1 -25,-25 z""")
+        path20b = parse_path("""M120,200 h25 a25,25 0 1 1-25,-25 z""")
+        self.assertEqual(path20a, path20b)
+        path20a = parse_path("""M200,200 h-25 a25,25 0 1,0 25,-25 z""")
+        self.assertRaises(
+            Exception, 'parse_path("""M200,200 h-25 a25,2501 025,-25 z""")'
+        )
+        path20a = parse_path("""M280,200 h25 a25,25 0 1,1 -25,-25 z""")
+        self.assertRaises(
+            Exception, 'parse_path("""M280,200 h25 a25 25 0 1 7 -25 -25 z""")'
+        )
+        path20a = parse_path("""M360,200 h-25 a25,25 0 1,0 25,-25 z""")
+        self.assertRaises(
+            Exception, 'parse_path("""M360,200 h-25 a25,25 0 -1 0 25,-25 z""")'
+        )
+
     def test_others(self):
         # Other paths that need testing:
 
