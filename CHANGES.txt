@@ -8,6 +8,27 @@ Changelog
 - Added new abstract base classes: PathSegment, and NonLinear. Also, Linear
   is now derived from PathSegment, and may become abstract in the future.
 
+- Added smooth support:
+
+  - CubicBezier and QuadraticBezier now has a "smooth" flag, that will be set
+    when parsing if the SVG path had a smooth segment.
+
+  - A path element will now only be designated as a smooth segment if it has
+    the smooth flag set. That means a path that *is* smooth but not parsed
+    from smooth (S and T) segments will not be represented as smooth.
+    The path segment must also be smooth, so if you parse a path with a
+    smooth segment, and modify it so it isn't smooth, it will not be
+    represented as smooth, regardless of the flag.
+
+  - CubicBezier and QuadraticBezier now has a "set_smooth_from" flag, that
+    will adjust the start point and first control point so that the curve is
+    smooth. It also sets the smooth flag.
+
+- Added support to preserve vertical/horizontal commands.
+
+- Refactored the generation of SVG path texts, each segment now generates its
+  own segment text, with a `_d(self, previous)` method.
+
 
 5.1 (2022-03-23)
 ----------------

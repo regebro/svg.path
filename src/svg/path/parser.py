@@ -146,15 +146,15 @@ def parse_path(pathdef):
 
     for token in _tokenize_path(pathdef):
         command = token[0]
-        absolute = command.isupper()
+        relative = command.islower()
         command = command.upper()
         if command == "M":
             pos = token[1]
-            if absolute:
-                current_pos = pos
-            else:
+            if relative:
                 current_pos += pos
-            segments.append(path.Move(current_pos))
+            else:
+                current_pos = pos
+            segments.append(path.Move(current_pos, relative=relative))
             start_pos = current_pos
 
         elif command == "Z":
@@ -163,14 +163,14 @@ def parse_path(pathdef):
 
         elif command == "L":
             pos = token[1]
-            if not absolute:
+            if relative:
                 pos += current_pos
             segments.append(path.Line(current_pos, pos))
             current_pos = pos
 
         elif command == "H":
             hpos = token[1]
-            if not absolute:
+            if relative:
                 hpos += current_pos.real
             pos = complex(hpos, current_pos.imag)
             segments.append(path.Line(current_pos, pos))
@@ -178,7 +178,7 @@ def parse_path(pathdef):
 
         elif command == "V":
             vpos = token[1]
-            if not absolute:
+            if relative:
                 vpos += current_pos.imag
             pos = complex(current_pos.real, vpos)
             segments.append(path.Line(current_pos, pos))
@@ -189,7 +189,7 @@ def parse_path(pathdef):
             control2 = token[2]
             end = token[3]
 
-            if not absolute:
+            if relative:
                 control1 += current_pos
                 control2 += current_pos
                 end += current_pos
@@ -203,7 +203,7 @@ def parse_path(pathdef):
             control2 = token[1]
             end = token[2]
 
-            if not absolute:
+            if relative:
                 control2 += current_pos
                 end += current_pos
 
@@ -218,14 +218,16 @@ def parse_path(pathdef):
                 # coincident with the current point.
                 control1 = current_pos
 
-            segments.append(path.CubicBezier(current_pos, control1, control2, end))
+            segments.append(
+                path.CubicBezier(current_pos, control1, control2, end, smooth=True)
+            )
             current_pos = end
 
         elif command == "Q":
             control = token[1]
             end = token[2]
 
-            if not absolute:
+            if relative:
                 control += current_pos
                 end += current_pos
 
@@ -237,7 +239,7 @@ def parse_path(pathdef):
             # the second control point in the previous path.
             end = token[1]
 
-            if not absolute:
+            if relative:
                 end += current_pos
 
             if last_command in "QT":
@@ -251,7 +253,9 @@ def parse_path(pathdef):
                 # coincident with the current point.
                 control = current_pos
 
-            segments.append(path.QuadraticBezier(current_pos, control, end))
+            segments.append(
+                path.QuadraticBezier(current_pos, control, end, smooth=True)
+            )
             current_pos = end
 
         elif command == "A":
@@ -263,7 +267,7 @@ def parse_path(pathdef):
             sweep = token[5]
             end = token[6]
 
-            if not absolute:
+            if relative:
                 end += current_pos
 
             segments.append(path.Arc(current_pos, radius, rotation, arc, sweep, end))
