@@ -585,3 +585,15 @@ class TestParser(unittest.TestCase):
         )
 
         self.assertIn("A 14.5445,14.5445 0 0,0 1672.24,-54.8161 Z", path.d())
+
+    def test_arc_flag(self):
+        """Issue #69"""
+        path = parse_path(
+            "M 5 1 v 7.344 A 3.574 3.574 0 003.5 8 3.515 3.515 0 000 11.5 C 0 13.421 1.579 15 3.5 15 "
+            "A 3.517 3.517 0 007 11.531 v -7.53 h 6 v 4.343 A 3.574 3.574 0 0011.5 8 3.515 3.515 0 008 11.5 "
+            "c 0 1.921 1.579 3.5 3.5 3.5 1.9 0 3.465 -1.546 3.5 -3.437 V 1 z"
+        )
+        # Check that all elemets is there:
+        self.assertEqual(len(path), 15)
+        # It ends on a vertical line to Y 1:
+        self.assertEqual(path[-1].end.imag, 1)
