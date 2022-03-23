@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-5.0.2 (unreleased)
-------------------
+5.1 (2022-03-23)
+----------------
 
 - Added SVG standard tests. [tatarize]
 
