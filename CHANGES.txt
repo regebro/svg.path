@@ -9,6 +9,9 @@ Changelog
 
 - Allow random characters to end parsing.
 
+- #61: Fixed the length() calculations of nearly linear QuadradicBeziers.
+  [tatarize, regebro]
+
 
 5.0.1 (2022-03-21)
 ------------------
@@ -47,6 +50,8 @@ Changelog
 
 4.0.1 (2019-11-03)
 ------------------
+            else:
+                raise
 
 - The pure setup.cfg config didn't work. All the tests pass fine,
   but when installing the package somewhere else, nothing gets installed.

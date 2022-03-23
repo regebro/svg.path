@@ -183,17 +183,8 @@ class QuadraticBezier:
     def length(self, error=None, min_depth=None):
         a = self.start - 2 * self.control + self.end
         b = 2 * (self.control - self.start)
-        a_dot_b = a.real * b.real + a.imag * b.imag
 
-        if abs(a) < 1e-12:
-            s = abs(b)
-        elif abs(a_dot_b + abs(a) * abs(b)) < 1e-12:
-            k = abs(b) / abs(a)
-            if k >= 2:
-                s = abs(b) - abs(a)
-            else:
-                s = abs(a) * (k**2 / 2 - k + 1)
-        else:
+        try:
             # For an explanation of this case, see
             # http://www.malczak.info/blog/quadratic-bezier-curve-length/
             A = 4 * (a.real**2 + a.imag**2)
@@ -211,6 +202,15 @@ class QuadraticBezier:
                 + A2 * B * (Sabc - C2)
                 + (4 * C * A - B**2) * log((2 * A2 + BA + Sabc) / (BA + C2))
             ) / (4 * A32)
+        except (ZeroDivisionError, ValueError):
+            if abs(a) < 1e-10:
+                s = abs(b)
+            else:
+                k = abs(b) / abs(a)
+                if k >= 2:
+                    s = abs(b) - abs(a)
+                else:
+                    s = abs(a) * (k**2 / 2 - k + 1)
         return s
 
 

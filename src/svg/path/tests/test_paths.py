@@ -2,6 +2,7 @@ import unittest
 from math import sqrt, pi
 
 from ..path import CubicBezier, QuadraticBezier, Line, Arc, Move, Close, Path
+from ..parser import parse_path
 
 
 # Most of these test points are not calculated separately, as that would
@@ -337,6 +338,28 @@ class QuadraticBezierTest(unittest.TestCase):
         self.assertTrue(segment != QuadraticBezier(200 + 301j, 400 + 50j, 600 + 300j))
         self.assertFalse(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j) != segment)
+
+    def test_linear_arcs_issue_61(self):
+        p = parse_path("M 206.5,525 Q 162.5,583 162.5,583")
+        self.assertAlmostEqual(p.length(), 72.80109889280519)
+        p = parse_path("M 425.781 446.289 Q 410.40000000000003 373.047 410.4 373.047")
+        self.assertAlmostEqual(p.length(), 74.83959997888816)
+        p = parse_path("M 639.648 568.115 Q 606.6890000000001 507.568 606.689 507.568")
+        self.assertAlmostEqual(p.length(), 68.93645544992873)
+        p = parse_path("M 288.818 616.699 Q 301.025 547.3629999999999 301.025 547.363")
+        self.assertAlmostEqual(p.length(), 70.40235610403947)
+        p = parse_path("M 339.927 706.25 Q 243.92700000000002 806.25 243.927 806.25")
+        self.assertAlmostEqual(p.length(), 138.6217876093077)
+        p = parse_path(
+            "M 539.795 702.637 Q 548.0959999999999 803.4669999999999 548.096 803.467"
+        )
+        self.assertAlmostEqual(p.length(), 101.17111989594662)
+        p = parse_path(
+            "M 537.815 555.042 Q 570.1680000000001 499.1600000000001 570.168 499.16"
+        )
+        self.assertAlmostEqual(p.length(), 64.57177814649368)
+        p = parse_path("M 615.297 470.503 Q 538.797 694.5029999999999 538.797 694.503")
+        self.assertAlmostEqual(p.length(), 236.70287281737836)
 
 
 class ArcTest(unittest.TestCase):
