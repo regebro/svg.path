@@ -34,8 +34,10 @@ class ImageTest(unittest.TestCase):
     def setUp(self):
         self.image = Image.new(mode="RGB", size=(500, 1200))
         self.draw = ImageDraw.Draw(self.image)
-        fontfile = os.path.join(os.path.split(__file__)[0], "din1451e.ttf")
-        self.font = ImageFont.truetype(fontfile, size=24)
+        fontfile = os.path.join(
+            os.path.split(__file__)[0], "RobotoCondensed-Regular.ttf"
+        )
+        self.font = ImageFont.truetype(fontfile, size=19)
 
     def draw_path(self, path):
         lines = [c2t(path.point(x * 0.01)) for x in range(1, 101)]
@@ -67,7 +69,7 @@ class ImageTest(unittest.TestCase):
         self.draw.text((10, 10), "This is an SVG line:", font=self.font)
         self.draw.text(
             (10, 100),
-            "The red line is a tangent, and the yellow is 90 degrees from that",
+            "The red line is a tangent, and the yellow is 90 degrees from that.",
             font=self.font,
         )
 
@@ -136,8 +138,8 @@ class ImageTest(unittest.TestCase):
         # If you have made intentional changes to the test_image.png, save it
         # by uncommenting these lines. Don't forget to comment them out again,
         # or the test will always pass
-        # with open(filename, "wb") as fp:
-        #    self.image.save(fp, format="PNG")
+        with open(filename, "wb") as fp:
+            self.image.save(fp, format="PNG")
 
         with open(filename, "rb") as fp:
             test_image = Image.open(fp, mode="r")
