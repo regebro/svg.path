@@ -5,7 +5,8 @@ Changelog
 5.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added new abstract base classes: PathSegment, and NonLinear. Also, Linear
+  is now derived from PathSegment, and may become abstract in the future.
 
 
 5.1 (2022-03-23)

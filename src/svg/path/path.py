@@ -1,5 +1,6 @@
 from math import sqrt, cos, sin, acos, degrees, radians, log, pi
 from bisect import bisect
+from abc import ABC, abstractmethod
 
 try:
     from collections.abc import MutableSequence
@@ -34,7 +35,37 @@ def segment_length(curve, start, end, start_point, end_point, error, min_depth, 
     return length2
 
 
-class Linear:
+class PathSegment(ABC):
+    @abstractmethod
+    def point(self, pos):
+        """Returns the coordinate point (as a complex number) of a point on the path,
+        as expressed as a floating point number between 0 (start) and 1 (end).
+        """
+
+    @abstractmethod
+    def tangent(self, pos):
+        """Returns a vector (as a complex number) representing the tangent of a point
+        on the path as expressed as a floating point number between 0 (start) and 1 (end).
+        """
+
+    @abstractmethod
+    def length(self, error=ERROR, min_depth=MIN_DEPTH):
+        """Returns the length of a path.
+
+        The CubicBezier and Arc lengths are non-exact and iterative and you can select to
+        either do the calculations until a maximum error has been achieved, or a minimum
+        number of iterations.
+        """
+
+
+class NonLinear(PathSegment):
+    """A line that is not straight
+
+    The base of Arc, QuadraticBezier and CubicBezier
+    """
+
+
+class Linear(PathSegment):
     """A straight line
 
     The base for Line() and Close().
@@ -71,7 +102,7 @@ class Line(Linear):
         return self.start == other.start and self.end == other.end
 
 
-class CubicBezier:
+class CubicBezier(NonLinear):
     def __init__(self, start, control1, control2, end):
         self.start = start
         self.control1 = control1
@@ -134,7 +165,7 @@ class CubicBezier:
         return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
 
 
-class QuadraticBezier:
+class QuadraticBezier(NonLinear):
     def __init__(self, start, control, end):
         self.start = start
         self.end = end
@@ -214,7 +245,7 @@ class QuadraticBezier:
         return s
 
 
-class Arc:
+class Arc(NonLinear):
     def __init__(self, start, radius, rotation, arc, sweep, end):
         """radius is complex, rotation is in degrees,
         large and sweep are 1 or 0 (True/False also work)"""
