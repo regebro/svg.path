@@ -289,6 +289,13 @@ class CubicBezierTest(unittest.TestCase):
         )
         self.assertTrue(segment != Line(0, 400))
 
+    def test_smooth(self):
+        cb1 = CubicBezier(0, 0, 100 + 100j, 100 + 100j)
+        cb2 = CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j)
+        self.assertFalse(cb2.is_smooth_from(cb1))
+        cb2.set_smooth_from(cb1)
+        self.assertTrue(cb2.is_smooth_from(cb1))
+
 
 class QuadraticBezierTest(unittest.TestCase):
     def test_svg_examples(self):
@@ -360,6 +367,13 @@ class QuadraticBezierTest(unittest.TestCase):
         self.assertAlmostEqual(p.length(), 64.57177814649368)
         p = parse_path("M 615.297 470.503 Q 538.797 694.5029999999999 538.797 694.503")
         self.assertAlmostEqual(p.length(), 236.70287281737836)
+
+    def test_smooth(self):
+        cb1 = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
+        cb2 = QuadraticBezier(600 + 300j, 400 + 50j, 1000 + 300j)
+        self.assertFalse(cb2.is_smooth_from(cb1))
+        cb2.set_smooth_from(cb1)
+        self.assertTrue(cb2.is_smooth_from(cb1))
 
 
 class ArcTest(unittest.TestCase):

@@ -71,9 +71,10 @@ class Linear(PathSegment):
     The base for Line() and Close().
     """
 
-    def __init__(self, start, end):
+    def __init__(self, start, end, relative=False):
         self.start = start
         self.end = end
+        self.relative = relative
 
     def __ne__(self, other):
         if not isinstance(other, Line):
@@ -93,6 +94,13 @@ class Linear(PathSegment):
 
 
 class Line(Linear):
+    def __init__(self, start, end, relative=False, vertical=False, horizontal=False):
+        self.start = start
+        self.end = end
+        self.relative = relative
+        self.vertical = vertical
+        self.horizontal = horizontal
+
     def __repr__(self):
         return f"Line(start={self.start}, end={self.end})"
 
@@ -101,18 +109,44 @@ class Line(Linear):
             return NotImplemented
         return self.start == other.start and self.end == other.end
 
+    def _d(self, previous):
+        x = self.end.real
+        y = self.end.imag
+        if self.relative:
+            x -= previous.end.real
+            y -= previous.end.imag
+
+        if self.horizontal and self.is_horizontal_from(previous):
+            cmd = "h" if self.relative else "H"
+            return f"{cmd} {x:G},{y:G}"
+
+        if self.vertical and self.is_vertical_from(previous):
+            cmd = "v" if self.relative else "V"
+            return f"{cmd} {y:G}"
+
+        cmd = "l" if self.relative else "L"
+        return f"{cmd} {x:G},{y:G}"
+
+    def is_vertical_from(self, previous):
+        return self.start == previous.end and self.start.real == self.end.real
+
+    def is_horizontal_from(self, previous):
+        return self.start == previous.end and self.start.imag == self.end.imag
+
 
 class CubicBezier(NonLinear):
-    def __init__(self, start, control1, control2, end):
+    def __init__(self, start, control1, control2, end, relative=False, smooth=False):
         self.start = start
         self.control1 = control1
         self.control2 = control2
         self.end = end
+        self.relative = relative
+        self.smooth = smooth
 
     def __repr__(self):
         return (
             f"CubicBezier(start={self.start}, control1={self.control1}, "
-            f"control2={self.control2}, end={self.end})"
+            f"control2={self.control2}, end={self.end}, smooth={self.smooth})"
         )
 
     def __eq__(self, other):
@@ -130,6 +164,23 @@ class CubicBezier(NonLinear):
             return NotImplemented
         return not self == other
 
+    def _d(self, previous):
+        c1 = self.control1
+        c2 = self.control2
+        end = self.end
+
+        if self.relative and previous:
+            c1 -= previous.end
+            c2 -= previous.end
+            end -= previous.end
+
+        if self.smooth and self.is_smooth_from(previous):
+            cmd = "s" if self.relative else "S"
+            return f"{cmd} {c2.real:G},{c2.imag:G} {end.real:G},{end.imag:G}"
+
+        cmd = "c" if self.relative else "C"
+        return f"{cmd} {c1.real:G},{c1.imag:G} {c2.real:G},{c2.imag:G} {end.real:G},{end.imag:G}"
+
     def is_smooth_from(self, previous):
         """Checks if this segment would be a smooth segment following the previous"""
         if isinstance(previous, CubicBezier):
@@ -138,6 +189,12 @@ class CubicBezier(NonLinear):
             )
         else:
             return self.control1 == self.start
+
+    def set_smooth_from(self, previous):
+        assert isinstance(previous, CubicBezier)
+        self.start = previous.end
+        self.control1 = previous.end - previous.control2 + self.start
+        self.smooth = True
 
     def point(self, pos):
         """Calculate the x,y position at a certain position of the path"""
@@ -166,13 +223,18 @@ class CubicBezier(NonLinear):
 
 
 class QuadraticBezier(NonLinear):
-    def __init__(self, start, control, end):
+    def __init__(self, start, control, end, relative=False, smooth=False):
         self.start = start
         self.end = end
         self.control = control
+        self.relative = relative
+        self.smooth = smooth
 
     def __repr__(self):
-        return f"QuadraticBezier(start={self.start}, control={self.control}, end={self.end})"
+        return (
+            f"QuadraticBezier(start={self.start}, control={self.control}, "
+            f"end={self.end}, smooth={self.smooth})"
+        )
 
     def __eq__(self, other):
         if not isinstance(other, QuadraticBezier):
@@ -188,6 +250,20 @@ class QuadraticBezier(NonLinear):
             return NotImplemented
         return not self == other
 
+    def _d(self, previous):
+        control = self.control
+        end = self.end
+        if self.relative and previous:
+            control -= previous.end
+            end -= previous.end
+
+        if self.smooth and self.is_smooth_from(previous):
+            cmd = "t" if self.relative else "T"
+            return f"{cmd} {end.real:G},{end.imag:G}"
+
+        cmd = "q" if self.relative else "Q"
+        return f"{cmd} {control.real:G},{control.imag:G} {end.real:G},{end.imag:G}"
+
     def is_smooth_from(self, previous):
         """Checks if this segment would be a smooth segment following the previous"""
         if isinstance(previous, QuadraticBezier):
@@ -196,6 +272,12 @@ class QuadraticBezier(NonLinear):
             )
         else:
             return self.control == self.start
+
+    def set_smooth_from(self, previous):
+        assert isinstance(previous, QuadraticBezier)
+        self.start = previous.end
+        self.control = previous.end - previous.control + self.start
+        self.smooth = True
 
     def point(self, pos):
         return (
@@ -246,7 +328,7 @@ class QuadraticBezier(NonLinear):
 
 
 class Arc(NonLinear):
-    def __init__(self, start, radius, rotation, arc, sweep, end):
+    def __init__(self, start, radius, rotation, arc, sweep, end, relative=False):
         """radius is complex, rotation is in degrees,
         large and sweep are 1 or 0 (True/False also work)"""
 
@@ -256,6 +338,7 @@ class Arc(NonLinear):
         self.arc = bool(arc)
         self.sweep = bool(sweep)
         self.end = end
+        self.relative = relative
 
         self._parameterize()
 
@@ -281,6 +364,17 @@ class Arc(NonLinear):
         if not isinstance(other, Arc):
             return NotImplemented
         return not self == other
+
+    def _d(self, previous):
+        end = self.end
+        cmd = "a" if self.relative else "A"
+        if self.relative:
+            end -= previous.end
+
+        return (
+            f"{cmd} {self.radius.real:G},{self.radius.imag:G} {self.rotation:G} "
+            f"{int(self.arc):d},{int(self.sweep):d} {end.real:G},{end.imag:G}"
+        )
 
     def _parameterize(self):
         # Conversion from endpoint to center parameterization
@@ -427,8 +521,9 @@ class Move:
     paths that consist of only move commands, which is valid, but pointless.
     """
 
-    def __init__(self, to):
+    def __init__(self, to, relative=False):
         self.start = self.end = to
+        self.relative = relative
 
     def __repr__(self):
         return "Move(to=%s)" % self.start
@@ -442,6 +537,17 @@ class Move:
         if not isinstance(other, Move):
             return NotImplemented
         return not self == other
+
+    def _d(self, previous):
+        cmd = "M"
+        x = self.end.real
+        y = self.end.imag
+        if self.relative:
+            cmd = "m"
+            if previous:
+                x -= previous.end.real
+                y -= previous.end.imag
+        return f"{cmd} {x:G},{y:G}"
 
     def point(self, pos):
         return self.start
@@ -463,6 +569,9 @@ class Close(Linear):
 
     def __repr__(self):
         return f"Close(start={self.start}, end={self.end})"
+
+    def _d(self, previous):
+        return "z" if self.relative else "Z"
 
 
 class Path(MutableSequence):
@@ -571,54 +680,11 @@ class Path(MutableSequence):
         return self._length
 
     def d(self):
-        current_pos = None
         parts = []
         previous_segment = None
-        end = self[-1].end
 
         for segment in self:
-            start = segment.start
-            # If the start of this segment does not coincide with the end of
-            # the last segment or if this segment is actually the close point
-            # of a closed path, then we should start a new subpath here.
-            if isinstance(segment, Close):
-                parts.append("Z")
-            elif (
-                isinstance(segment, Move)
-                or (current_pos != start)
-                or (start == end and not isinstance(previous_segment, Move))
-            ):
-                parts.append(f"M {start.real:G},{start.imag:G}")
-
-            if isinstance(segment, Line):
-                parts.append(f"L {segment.end.real:G},{segment.end.imag:G}")
-            elif isinstance(segment, CubicBezier):
-                if segment.is_smooth_from(previous_segment):
-                    parts.append(
-                        f"S {segment.control2.real:G},{segment.control2.imag:G} "
-                        f"{segment.end.real:G},{segment.end.imag:G}"
-                    )
-                else:
-                    parts.append(
-                        f"C {segment.control1.real:G},{segment.control1.imag:G} "
-                        f"{segment.control2.real:G},{segment.control2.imag:G} "
-                        f"{segment.end.real:G},{segment.end.imag:G}"
-                    )
-            elif isinstance(segment, QuadraticBezier):
-                if segment.is_smooth_from(previous_segment):
-                    parts.append(f"T {segment.end.real:G},{segment.end.imag:G}")
-                else:
-                    parts.append(
-                        f"Q {segment.control.real:G},{segment.control.imag:G} "
-                        f"{segment.end.real:G},{segment.end.imag:G}"
-                    )
-            elif isinstance(segment, Arc):
-                parts.append(
-                    f"A {segment.radius.real:G},{segment.radius.imag:G} {segment.rotation:G} "
-                    f"{int(segment.arc):d},{int(segment.sweep):d} {segment.end.real:G},{segment.end.imag:G}"
-                )
-
-            current_pos = segment.end
+            parts.append(segment._d(previous_segment))
             previous_segment = segment
 
         return " ".join(parts)
