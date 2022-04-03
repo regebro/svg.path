@@ -1,8 +1,6 @@
 import unittest
 import os
-import pytest
-import sys
-from PIL import Image, ImageDraw, ImageColor, ImageFont, ImageChops
+from PIL import Image, ImageDraw, ImageColor, ImageChops
 from math import sqrt
 
 from ..path import CubicBezier, QuadraticBezier, Line, Arc
@@ -34,10 +32,6 @@ class ImageTest(unittest.TestCase):
     def setUp(self):
         self.image = Image.new(mode="RGB", size=(500, 1200))
         self.draw = ImageDraw.Draw(self.image)
-        fontfile = os.path.join(
-            os.path.split(__file__)[0], "RobotoCondensed-Regular.ttf"
-        )
-        self.font = ImageFont.truetype(fontfile, size=19)
 
     def draw_path(self, path):
         lines = [c2t(path.point(x * 0.01)) for x in range(1, 101)]
@@ -62,33 +56,26 @@ class ImageTest(unittest.TestCase):
 
             self.draw.line([c2t(p), c2t(tt + p)], fill=YELLOW, width=1)
 
-    # For some reason, the resulting image doesn't look exactly the same
-    # on mac and windows...?
-    @pytest.mark.skipif(sys.platform != "linux", reason="skipping Linux-only tests")
     def test_image(self):
-        self.draw.text((10, 10), "This is an SVG line:", font=self.font)
+        self.draw.text((10, 10), "This is an SVG line:")
         self.draw.text(
             (10, 100),
             "The red line is a tangent, and the yellow is 90 degrees from that.",
-            font=self.font,
         )
 
         line1 = Line(40 + 60j, 200 + 80j)
         self.draw_path(line1)
         self.draw_tangents(line1, 1)
 
-        self.draw.text(
-            (10, 140), "This is an Arc segment, almost a whole circle:", font=self.font
-        )
+        self.draw.text((10, 140), "This is an Arc segment, almost a whole circle:")
         arc1 = Arc(260 + 320j, 100 + 100j, 0, 1, 1, 260 + 319j)
         self.draw_path(arc1)
         self.draw_tangents(arc1, 5)
-        self.draw.text((10, 460), "With five tangents.", font=self.font)
+        self.draw.text((10, 460), "With five tangents.")
 
         self.draw.text(
             (10, 500),
             "Next we have a quadratic bezier curve, with one tangent:",
-            font=self.font,
         )
         start = 30 + 600j
         control = 400 + 540j
@@ -101,16 +88,12 @@ class ImageTest(unittest.TestCase):
         self.draw.text(
             (10, 670),
             "The white dot is the control point, and the cyan lines are ",
-            font=self.font,
         )
-        self.draw.text(
-            (10, 690), "illustrating the how the control point works.", font=self.font
-        )
+        self.draw.text((10, 690), "illustrating the how the control point works.")
 
         self.draw.text(
             (10, 730),
             "Lastly is a cubic bezier, with 2 tangents, and 2 control points:",
-            font=self.font,
         )
 
         start = 30 + 800j
@@ -138,8 +121,8 @@ class ImageTest(unittest.TestCase):
         # If you have made intentional changes to the test_image.png, save it
         # by uncommenting these lines. Don't forget to comment them out again,
         # or the test will always pass
-        with open(filename, "wb") as fp:
-            self.image.save(fp, format="PNG")
+        # with open(filename, "wb") as fp:
+        #     self.image.save(fp, format="PNG")
 
         with open(filename, "rb") as fp:
             test_image = Image.open(fp, mode="r")
