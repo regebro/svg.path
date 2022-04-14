@@ -5,7 +5,7 @@ Changelog
 6.0b2 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- No functional changes from 6.0b1, only changes to tests.
 
 
 6.0b1 (2022-04-02)
