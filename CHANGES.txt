@@ -5,7 +5,7 @@ Changelog
 6.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Not all path segments preserved the relative setting. [Lucas-C]
 
 
 6.0 (2022-04-14)

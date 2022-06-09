@@ -19,3 +19,6 @@ Thanks to tatarize for help with investigating issues, and coming with
 much feedback and ideas.
 
 Samuel Carlsson [vidstige] provided the `tangent()` functions.
+
+Lucas Simon discovered and fixed that not all path segments preserved
+the relative setting when parsing.
