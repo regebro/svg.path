@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-6.1 (unreleased)
+6.1 (2022-06-09)
 ----------------
 
 - Not all path segments preserved the relative setting. [Lucas-C]
