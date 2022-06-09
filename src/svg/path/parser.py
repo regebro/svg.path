@@ -173,7 +173,9 @@ def parse_path(pathdef):
             if relative:
                 hpos += current_pos.real
             pos = complex(hpos, current_pos.imag)
-            segments.append(path.Line(current_pos, pos, relative=relative, horizontal=True))
+            segments.append(
+                path.Line(current_pos, pos, relative=relative, horizontal=True)
+            )
             current_pos = pos
 
         elif command == "V":
@@ -181,7 +183,9 @@ def parse_path(pathdef):
             if relative:
                 vpos += current_pos.imag
             pos = complex(current_pos.real, vpos)
-            segments.append(path.Line(current_pos, pos, relative=relative, vertical=True))
+            segments.append(
+                path.Line(current_pos, pos, relative=relative, vertical=True)
+            )
             current_pos = pos
 
         elif command == "C":
@@ -194,7 +198,11 @@ def parse_path(pathdef):
                 control2 += current_pos
                 end += current_pos
 
-            segments.append(path.CubicBezier(current_pos, control1, control2, end, relative=relative))
+            segments.append(
+                path.CubicBezier(
+                    current_pos, control1, control2, end, relative=relative
+                )
+            )
             current_pos = end
 
         elif command == "S":
@@ -219,7 +227,9 @@ def parse_path(pathdef):
                 control1 = current_pos
 
             segments.append(
-                path.CubicBezier(current_pos, control1, control2, end, relative=relative, smooth=True)
+                path.CubicBezier(
+                    current_pos, control1, control2, end, relative=relative, smooth=True
+                )
             )
             current_pos = end
 
@@ -231,7 +241,9 @@ def parse_path(pathdef):
                 control += current_pos
                 end += current_pos
 
-            segments.append(path.QuadraticBezier(current_pos, control, end, relative=relative))
+            segments.append(
+                path.QuadraticBezier(current_pos, control, end, relative=relative)
+            )
             current_pos = end
 
         elif command == "T":
@@ -254,7 +266,9 @@ def parse_path(pathdef):
                 control = current_pos
 
             segments.append(
-                path.QuadraticBezier(current_pos, control, end, smooth=True, relative=relative)
+                path.QuadraticBezier(
+                    current_pos, control, end, smooth=True, relative=relative
+                )
             )
             current_pos = end
 
@@ -270,7 +284,11 @@ def parse_path(pathdef):
             if relative:
                 end += current_pos
 
-            segments.append(path.Arc(current_pos, radius, rotation, arc, sweep, end, relative=relative))
+            segments.append(
+                path.Arc(
+                    current_pos, radius, rotation, arc, sweep, end, relative=relative
+                )
+            )
             current_pos = end
 
         # Finish up the loop in preparation for next command
