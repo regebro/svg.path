@@ -4,6 +4,8 @@ from ..parser import parse_path
 
 
 class TestParser(unittest.TestCase):
+    maxDiff = None
+
     def test_svg_examples(self):
         """Examples from the SVG spec"""
         path1 = parse_path("M 100 100 L 300 100 L 200 300 z")
@@ -572,6 +574,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual(path.d(), "M 10.236,100.184")
 
     def test_issue_45(self):
+        # A missing Z in certain cases
         path = parse_path(
             "m 1672.2372,-54.8161 "
             "a 14.5445,14.5445 0 0 0 -11.3152,23.6652 "
@@ -584,7 +587,18 @@ class TestParser(unittest.TestCase):
             "z"
         )
 
-        self.assertIn("A 14.5445,14.5445 0 0,0 1672.24,-54.8161 Z", path.d())
+        self.assertEqual(
+            "m 1672.24,-54.8161 "
+            "a 14.5445,14.5445 0 0,0 -11.3152,23.6652 "
+            "l 27.2573,27.2572 l 27.2572,-27.2572 "
+            "a 14.5445,14.5445 0 0,0 -11.3012,-23.634 "
+            "a 14.5445,14.5445 0 0,0 -11.414,5.4625 "
+            "l -4.542,4.542 "
+            "l -4.5437,-4.542 "
+            "a 14.5445,14.5445 0 0,0 -11.3984,-5.4937 "
+            "z",
+            path.d(),
+        )
 
     def test_arc_flag(self):
         """Issue #69"""

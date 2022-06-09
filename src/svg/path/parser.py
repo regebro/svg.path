@@ -158,7 +158,9 @@ def parse_path(pathdef):
             start_pos = current_pos
 
         elif command == "Z":
-            segments.append(path.Close(current_pos, start_pos))
+            # For Close commands the "relative" argument just preserves case,
+            # it has no different in behavior.
+            segments.append(path.Close(current_pos, start_pos, relative=relative))
             current_pos = start_pos
 
         elif command == "L":
