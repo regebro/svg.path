@@ -611,3 +611,10 @@ class TestParser(unittest.TestCase):
         self.assertEqual(len(path), 15)
         # It ends on a vertical line to Y 1:
         self.assertEqual(path[-1].end.imag, 1)
+
+    def test_incomplete_numbers(self):
+        path = parse_path("M 0. .1")
+        self.assertEqual(path.d(), "M 0,0.1")
+
+        path = parse_path("M 0..1")
+        self.assertEqual(path.d(), "M 0,0.1")
