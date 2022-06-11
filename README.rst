@@ -16,7 +16,7 @@ All coordinate values for these classes are given as ``complex`` values,
 where the ``.real`` part represents the X coordinate, and the ``.imag`` part
 representes the Y coordinate::
 
-    >>> from svg.path import Path, Line, Arc, CubicBezier, QuadraticBezier, Close
+    >>> from svg.path import Path, Move, Line, Arc, CubicBezier, QuadraticBezier, Close
 
 All of these objects have a ``.point()`` function which will return the
 coordinates of a point on the path, where the point is given as a floating
@@ -74,9 +74,9 @@ with a sequence of path segments:
 The ``Path`` class is a mutable sequence, so it behaves like a list.
 You can add to it and replace path segments etc::
 
-    >>> path = Path(Line(100+100j,300+100j), Line(100+100j,300+100j))
+    >>> path = Path(Move(200+100j), Line(200+100j,100+200j), Line(100+200j,300+100j))
     >>> path.append(QuadraticBezier(300+100j, 200+200j, 200+300j))
-    >>> path[0] = Line(200+100j,300+100j)
+    >>> path[0] = Move(200+100j)
     >>> del path[1]
 
 The path object also has a ``d()`` method that will return the
@@ -84,6 +84,18 @@ SVG representation of the Path segments::
 
     >>> path.d()
     'M 200,100 L 300,100 Q 200,200 200,300'
+
+Note that there currently is no internal consistency checks when you
+manipulate lines this way. This path now has an internal representation that
+it's different from it's d() path. Notice how the `Line()` segment starts in
+a different location from where the `Move()` segments say. This **may**
+change in future releases, and the Path manipulation methods **may** be
+changed to ensure consistency.
+
+    >>> path
+    Path(Move(to=(200+100j)), Line(start=(100+200j), end=(300+100j)),
+    QuadraticBezier(start=(300+100j), control=(200+200j), end=(200+300j),
+    smooth=False))
 
 
 Examples
