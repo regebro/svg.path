@@ -7,6 +7,8 @@ Changelog
 
 - Allow numbers with decimal point but no decimals, because other parsers do.
 
+- Re-enabled the README.rst doctest, which got lost when switching to pytest
+
 
 6.1 (2022-06-09)
 ----------------
