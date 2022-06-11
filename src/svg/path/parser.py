@@ -7,7 +7,7 @@ COMMANDS = set("MmZzLlHhVvCcSsQqTtAa")
 UPPERCASE = set("MZLHVCSQTA")
 
 COMMAND_RE = re.compile(r"([MmZzLlHhVvCcSsQqTtAa])")
-FLOAT_RE = re.compile(rb"^[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
+FLOAT_RE = re.compile(rb"^[-+]?\d*\.?\d*(?:[eE][-+]?\d+)?")
 
 
 class InvalidPathError(ValueError):
@@ -42,7 +42,7 @@ def strip_array(arg_array):
 
 def pop_number(arg_array):
     res = FLOAT_RE.search(arg_array)
-    if not res:
+    if not res or not res.group():
         raise InvalidPathError(f"Expected a number, got '{arg_array}'.")
     number = float(res.group())
     start = res.start()
