@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-6.2 (unreleased)
+6.2 (2022-06-17)
 ----------------
 
 - Allow numbers with decimal point but no decimals, because other parsers do.
