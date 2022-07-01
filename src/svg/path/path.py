@@ -118,7 +118,7 @@ class Line(Linear):
 
         if self.horizontal and self.is_horizontal_from(previous):
             cmd = "h" if self.relative else "H"
-            return f"{cmd} {x:G},{y:G}"
+            return f"{cmd} {x:G}"
 
         if self.vertical and self.is_vertical_from(previous):
             cmd = "v" if self.relative else "V"
