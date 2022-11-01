@@ -3,3 +3,4 @@ include *.txt
 
 recursive-include src *.png
 
+global-exclude tests/*
