@@ -3,7 +3,7 @@ import os
 from PIL import Image, ImageDraw, ImageColor, ImageChops
 from math import sqrt
 
-from ..path import CubicBezier, QuadraticBezier, Line, Arc
+from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc
 
 
 RED = ImageColor.getcolor("red", mode="RGB")

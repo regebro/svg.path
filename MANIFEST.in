@@ -1,5 +1,6 @@
 include *.rst
 include *.txt
 
-recursive-include src *.png
+exclude Makefile
+recursive-exclude tests *
 
