@@ -1,6 +1,6 @@
 import unittest
-from ..path import CubicBezier, QuadraticBezier, Line, Arc, Path, Move, Close
-from ..parser import parse_path
+from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc, Path, Move, Close
+from svg.path.parser import parse_path
 
 
 class TestParser(unittest.TestCase):

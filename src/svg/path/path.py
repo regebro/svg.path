@@ -611,7 +611,6 @@ class Path(MutableSequence):
         return "Path(%s)" % (", ".join(repr(x) for x in self._segments))
 
     def __eq__(self, other):
-
         if not isinstance(other, Path):
             return NotImplemented
         if len(self) != len(other):

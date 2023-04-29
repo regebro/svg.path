@@ -1,8 +1,8 @@
 import unittest
 from math import sqrt, pi
 
-from ..path import CubicBezier, QuadraticBezier, Line, Arc, Move, Close, Path
-from ..parser import parse_path
+from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc, Move, Close, Path
+from svg.path.parser import parse_path
 
 
 # Most of these test points are not calculated separately, as that would
@@ -156,7 +156,6 @@ class CubicBezierTest(unittest.TestCase):
         self.assertAlmostEqual(arc4.point(1), (0j))
 
     def test_svg_examples(self):
-
         # M100,200 C100,100 250,100 250,200
         path1 = CubicBezier(100 + 200j, 100 + 100j, 250 + 100j, 250 + 200j)
         self.assertAlmostEqual(path1.point(0), (100 + 200j))
@@ -231,7 +230,6 @@ class CubicBezierTest(unittest.TestCase):
         self.assertAlmostEqual(path9.point(1), (900 + 800j))
 
     def test_length(self):
-
         # A straight line:
         arc = CubicBezier(
             complex(0, 0), complex(0, 0), complex(0, 100), complex(0, 100)
@@ -718,7 +716,6 @@ class TestPath(unittest.TestCase):
         self.assertAlmostEqual(path.tangent(1), 600j)
 
     def test_tangent_magnitude(self):
-
         line1 = Line(start=6 + 3.5j, end=6.5 + 3.25j)
         line2 = Line(start=6 + 3.5j, end=7 + 3j)
         # line2 is twice as long as line1, the tangent should have twice the magnitude:

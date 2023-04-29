@@ -1,5 +1,5 @@
 import unittest
-from ..parser import parse_path
+from svg.path.parser import parse_path
 
 
 class TestGeneration(unittest.TestCase):
