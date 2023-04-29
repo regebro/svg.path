@@ -1,9 +1,10 @@
 import unittest
 import os
-from PIL import Image, ImageDraw, ImageColor, ImageChops
-from math import sqrt
+import pytest
+import sys
 
-from ..path import CubicBezier, QuadraticBezier, Line, Arc
+from PIL import Image, ImageDraw, ImageColor, ImageChops
+from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc
 
 
 RED = ImageColor.getcolor("red", mode="RGB")
@@ -40,14 +41,21 @@ class BoundingBoxImageTest(unittest.TestCase):
 
     def draw_boundingbox(self, path):
         x1, y1, x2, y2 = path.boundingbox()
-        self.draw.line([
-            (x1, y1),
-            (x2, y1),
-            (x2, y2),
-            (x1, y2),
-            (x1, y1),
-        ], fill=RED, width=2)
+        self.draw.line(
+            [
+                (x1, y1),
+                (x2, y1),
+                (x2, y2),
+                (x1, y2),
+                (x1, y1),
+            ],
+            fill=RED,
+            width=2,
+        )
 
+    @pytest.mark.skipif(
+        sys.platform != "linux", reason="Different platforms have different fonts"
+    )
     def test_image(self):
         self.draw.text((10, 10), "This is an SVG line:")
         self.draw.text(
@@ -63,7 +71,6 @@ class BoundingBoxImageTest(unittest.TestCase):
         arc1 = Arc(260 + 320j, 100 + 100j, 0, 1, 1, 260 + 319j)
         self.draw_path(arc1)
         self.draw_boundingbox(arc1)
-
 
         arc2 = Arc(450 + 320j, 40 + 80j, 50, 1, 1, 420 + 319j)
         self.draw_path(arc2)
@@ -116,9 +123,11 @@ class BoundingBoxImageTest(unittest.TestCase):
 
         # self.image.show()  # Useful when debugging
 
-        filename = os.path.join(os.path.split(__file__)[0], "test_boundingbox_image.png")
+        filename = os.path.join(
+            os.path.split(__file__)[0], "test_boundingbox_image.png"
+        )
 
-        # If you have made intentional changes to the test_boundingbox_image.png, 
+        # If you have made intentional changes to the test_boundingbox_image.png,
         # save it by uncommenting these lines. Don't forget to comment them out again,
         # or the test will always pass
         # with open(filename, "wb") as fp:
@@ -128,5 +137,6 @@ class BoundingBoxImageTest(unittest.TestCase):
             test_image = Image.open(fp, mode="r")
             diff = ImageChops.difference(test_image, self.image)
             self.assertFalse(
-                diff.getbbox(), "The resulting image is different from test_boundingbox_image.png"
+                diff.getbbox(),
+                "The resulting image is different from test_boundingbox_image.png",
             )

@@ -16,13 +16,13 @@ ERROR = 1e-12
 
 
 def _find_solutions_for_bezier(c2, c1, c0):
-    """Find solutions of c2 * t^2 + c1 * t + c0 = 0 where t \in [0, 1]"""
+    """Find solutions of c2 * t^2 + c1 * t + c0 = 0 where t in [0, 1]"""
     soln = []
     if c2 == 0:
         if c1 != 0:
             soln.append(-c0 / c1)
     else:
-        det = c1 ** 2 - 4 * c2 * c0
+        det = c1**2 - 4 * c2 * c0
         if det >= 0:
             soln.append((-c1 + math.pow(det, 0.5)) / 2.0 / c2)
             soln.append((-c1 - math.pow(det, 0.5)) / 2.0 / c2)
@@ -30,41 +30,44 @@ def _find_solutions_for_bezier(c2, c1, c0):
 
 
 def _find_solutions_for_arc(a, b, c, d):
-    """Find solution for a sin(x) + b cos(x) = 0 where x = c + d * t and t \in [0, 1] """
+    """Find solution for a sin(x) + b cos(x) = 0 where x = c + d * t and t in [0, 1]"""
     if a == 0:
         # when n \in Z
         # pi / 2 + pi * n = c + d * t
-        # --> n = d / pi * t - (1/2 - c/pi) 
+        # --> n = d / pi * t - (1/2 - c/pi)
         # --> t = (pi / 2 - c + pi * n) / d
-        n_ranges =  [- 0.5 + c / math.pi, d / math.pi - 0.5 + c / math.pi]
+        n_ranges = [-0.5 + c / math.pi, d / math.pi - 0.5 + c / math.pi]
         n_range_start = math.floor(min(n_ranges))
-        n_range_end   = math.ceil(max(n_ranges))
-        t_list = [(math.pi / 2 - c + math.pi * n) / d for n in range(n_range_start, n_range_end + 1)]
+        n_range_end = math.ceil(max(n_ranges))
+        t_list = [
+            (math.pi / 2 - c + math.pi * n) / d
+            for n in range(n_range_start, n_range_end + 1)
+        ]
     elif b == 0:
         # when n \in Z
         # pi * n = c + d * t
-        # --> n = d / pi * t + c / pi 
+        # --> n = d / pi * t + c / pi
         # --> t = (- c + pi * n) / d
-        n_ranges =  [c / math.pi, d / math.pi + c / math.pi]
+        n_ranges = [c / math.pi, d / math.pi + c / math.pi]
         n_range_start = math.floor(min(n_ranges))
-        n_range_end   = math.ceil(max(n_ranges))
-        t_list = [(- c + math.pi * n) / d for n in range(n_range_start, n_range_end + 1)]
+        n_range_end = math.ceil(max(n_ranges))
+        t_list = [(-c + math.pi * n) / d for n in range(n_range_start, n_range_end + 1)]
     else:
         # when n \in Z
-        # arct = tan^-1 (- b / a)  and 
-        # arct + pi * n = c + d * t 
+        # arct = tan^-1 (- b / a)  and
+        # arct + pi * n = c + d * t
         # --> n = (c - arct + d * t) / pi
         # --> t = (arct - c + pi * n) / d
-        arct = math.atan( - b / a)
-        n_ranges =  [(c - arct) / math.pi, d / math.pi + (c - arct) / math.pi]
+        arct = math.atan(-b / a)
+        n_ranges = [(c - arct) / math.pi, d / math.pi + (c - arct) / math.pi]
         n_range_start = math.floor(min(n_ranges))
-        n_range_end   = math.ceil(max(n_ranges))
-        t_list = [(arct - c + math.pi * n) / d for n in range(n_range_start, n_range_end + 1)]
+        n_range_end = math.ceil(max(n_ranges))
+        t_list = [
+            (arct - c + math.pi * n) / d for n in range(n_range_start, n_range_end + 1)
+        ]
 
-    t_list = [ t for t in t_list if 0.0 <= t and t <= 1.0]
+    t_list = [t for t in t_list if 0.0 <= t and t <= 1.0]
     return t_list
-
-
 
 
 def segment_length(curve, start, end, start_point, end_point, error, min_depth, depth):
@@ -148,7 +151,7 @@ class Linear(PathSegment):
     def length(self, error=None, min_depth=None):
         distance = self.end - self.start
         return sqrt(distance.real**2 + distance.imag**2)
-    
+
 
 class Line(Linear):
     def __init__(self, start, end, relative=False, vertical=False, horizontal=False):
@@ -196,7 +199,6 @@ class Line(Linear):
         y_min = min(self.start.imag, self.end.imag)
         y_max = max(self.start.imag, self.end.imag)
         return [x_min, y_min, x_max, y_max]
-
 
 
 class CubicBezier(NonLinear):
@@ -285,15 +287,14 @@ class CubicBezier(NonLinear):
         start_point = self.point(0)
         end_point = self.point(1)
         return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
-    
-    
+
     def boundingbox(self):
         """Calculate the bounding box of a cubic Bezier curve.
 
-            A cubic Bezier curve and its derivative are given as follows.
+        A cubic Bezier curve and its derivative are given as follows.
 
-            P(t)  = (1-t)^3 P0 + 3 t (1-t)^2 P1 + 3 t^2 (1-t) P2 + t^3 P_3
-            P'(t) = 3(1-t)^2 (P1-P0) + 6(1-t)t (P2-P1) + 3 t^2 (P3 - P2)
+        P(t)  = (1-t)^3 P0 + 3 t (1-t)^2 P1 + 3 t^2 (1-t) P2 + t^3 P_3
+        P'(t) = 3(1-t)^2 (P1-P0) + 6(1-t)t (P2-P1) + 3 t^2 (P3 - P2)
         """
         g0 = self.control1 - self.start
         g1 = self.control2 - self.control1
@@ -301,7 +302,7 @@ class CubicBezier(NonLinear):
 
         c0 = 3 * g0
         c1 = -6 * g0 + 6 * g1
-        c2 =  3 * g0 - 6 * g1 + 3 * g2
+        c2 = 3 * g0 - 6 * g1 + 3 * g2
 
         x_c0, x_c1, x_c2 = [c.real for c in [c0, c1, c2]]
         y_c0, y_c1, y_c2 = [c.imag for c in [c0, c1, c2]]
@@ -430,15 +431,15 @@ class QuadraticBezier(NonLinear):
     def boundingbox(self):
         """Calculate the bounding box of a quadratic Bezier curve.
 
-            A quadratic Bezier curve and its derivative are given as follows.
+        A quadratic Bezier curve and its derivative are given as follows.
 
-            P(t)  = (1-t)^2 P0 + 2 t (1-t)^2 P1 + t^2 P2 
-            P'(t) = 2(1-t) (P1-P0) + 2t (P2-P1) 
+        P(t)  = (1-t)^2 P0 + 2 t (1-t)^2 P1 + t^2 P2
+        P'(t) = 2(1-t) (P1-P0) + 2t (P2-P1)
         """
         g0 = self.control - self.start
         g1 = self.end - self.control
 
-        c0 =  2 * g0
+        c0 = 2 * g0
         c1 = -2 * g0 + 2 * g1
 
         x_c0, x_c1 = [c.real for c in [c0, c1]]
@@ -459,7 +460,6 @@ class QuadraticBezier(NonLinear):
         x_min, x_max = min(x_coords), max(x_coords)
         y_min, y_max = min(y_coords), max(y_coords)
         return [x_min, y_min, x_max, y_max]
-
 
 
 class Arc(NonLinear):
@@ -653,15 +653,15 @@ class Arc(NonLinear):
     def boundingbox(self):
         """Calculate the bounding box of an arc
 
-        To calculate the extremums of the arc coordinates, we solve 
+        To calculate the extremums of the arc coordinates, we solve
 
         x'(angle) = - cosr * radius.real * sin(angle)
                     - sinr * radius.imag * cos(angle) = 0
-        
+
         y'(angle) = - sinr * radius.real * sin(angle)
                     + cosr * radius.imag * cos(angle) = 0
 
-        and 
+        and
             angle = radians(self.theta + (self.delta * pos))
         where pos ranges from 0 to 1
         """
@@ -883,7 +883,7 @@ class Path(MutableSequence):
             previous_segment = segment
 
         return " ".join(parts)
-    
+
     def boundingbox(self):
         x_coords = []
         y_coords = []
