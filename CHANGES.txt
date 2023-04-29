@@ -11,6 +11,8 @@ Changelog
 
 - Tests are now outside the source directory, which is common practice now.
 
+- Drops Python 3.6 and 3.7, adds support for 3.10 and 3.11.
+
 
 6.2 (2022-06-17)
 ----------------
