@@ -23,3 +23,5 @@ Samuel Carlsson [vidstige] provided the `tangent()` functions.
 Lucas Simon discovered and fixed that not all path segments preserved
 the relative setting when parsing.
 
+Taewoong Jang [twjang] implemented boundingbox functions. 
+
