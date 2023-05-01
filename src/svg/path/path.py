@@ -4,7 +4,6 @@ from typing import overload, Iterable, List, Tuple, Union, TYPE_CHECKING
 from bisect import bisect
 from abc import ABC, abstractmethod
 from array import array
-
 from collections.abc import MutableSequence
 
 # This file contains classes for the different types of SVG path segments as
