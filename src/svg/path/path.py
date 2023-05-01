@@ -1,6 +1,7 @@
 from math import sqrt, cos, sin, acos, degrees, radians, log, pi
 from bisect import bisect
 from abc import ABC, abstractmethod
+from array import array
 import math
 
 try:
@@ -13,6 +14,11 @@ except ImportError:
 
 MIN_DEPTH = 5
 ERROR = 1e-12
+
+
+def _xform(coord, matrix):
+    res = matrix @ array("f", [coord.real, coord.imag, 1])
+    return complex(res[0], res[1])
 
 
 def _find_solutions_for_bezier(c2, c1, c0):
@@ -152,6 +158,13 @@ class Linear(PathSegment):
         distance = self.end - self.start
         return sqrt(distance.real**2 + distance.imag**2)
 
+    def transform(self, matrix):
+        return self.__class__(
+            _xform(self.start, matrix),
+            _xform(self.end, matrix),
+            relative=self.relative,
+        )
+
 
 class Line(Linear):
     def __init__(self, start, end, relative=False, vertical=False, horizontal=False):
@@ -199,6 +212,15 @@ class Line(Linear):
         y_min = min(self.start.imag, self.end.imag)
         y_max = max(self.start.imag, self.end.imag)
         return [x_min, y_min, x_max, y_max]
+
+    def transform(self, matrix):
+        return self.__class__(
+            _xform(self.start, matrix),
+            _xform(self.end, matrix),
+            relative=self.relative,
+            vertical=self.vertical,
+            horizontal=self.horizontal,
+        )
 
 
 class CubicBezier(NonLinear):
@@ -322,6 +344,16 @@ class CubicBezier(NonLinear):
         x_min, x_max = min(x_coords), max(x_coords)
         y_min, y_max = min(y_coords), max(y_coords)
         return [x_min, y_min, x_max, y_max]
+
+    def transform(self, matrix):
+        return self.__class__(
+            _xform(self.start, matrix),
+            _xform(self.control1, matrix),
+            _xform(self.control2, matrix),
+            _xform(self.end, matrix),
+            relative=self.relative,
+            smooth=self.smooth,
+        )
 
 
 class QuadraticBezier(NonLinear):
@@ -460,6 +492,15 @@ class QuadraticBezier(NonLinear):
         x_min, x_max = min(x_coords), max(x_coords)
         y_min, y_max = min(y_coords), max(y_coords)
         return [x_min, y_min, x_max, y_max]
+
+    def transform(self, matrix):
+        return self.__class__(
+            _xform(self.start, matrix),
+            _xform(self.control, matrix),
+            _xform(self.end, matrix),
+            relative=self.relative,
+            smooth=self.smooth,
+        )
 
 
 class Arc(NonLinear):
@@ -697,6 +738,17 @@ class Arc(NonLinear):
         y_min, y_max = min(y_coords), max(y_coords)
         return [x_min, y_min, x_max, y_max]
 
+    def transform(self, matrix):
+        return self.__class__(
+            _xform(self.start, matrix),
+            self.radius,
+            self.rotation,
+            self.arc,
+            self.sweep,
+            _xform(self.end, matrix),
+            self.relative,
+        )
+
 
 class Move:
     """Represents move commands. Does nothing, but is there to handle
@@ -746,6 +798,9 @@ class Move:
         y_min = min(self.start.imag, self.end.imag)
         y_max = max(self.start.imag, self.end.imag)
         return [x_min, y_min, x_max, y_max]
+
+    def transform(self, matrix):
+        return self.__class__(_xform(self.start, matrix), self.relative)
 
 
 class Close(Linear):
@@ -898,3 +953,6 @@ class Path(MutableSequence):
         x_min, x_max = min(x_coords), max(x_coords)
         y_min, y_max = min(y_coords), max(y_coords)
         return [x_min, y_min, x_max, y_max]
+
+    def transform(self, matrix):
+        return self.__class__(*[segment.transform(matrix) for segment in self])
