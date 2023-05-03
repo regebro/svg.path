@@ -1,5 +1,4 @@
 from math import sqrt, cos, sin, acos, atan, degrees, radians, log, pi, floor, ceil
-from math import sqrt, cos, sin, acos, degrees, radians, log, pi
 from typing import overload, Iterable, List, Tuple, Union, TYPE_CHECKING
 from bisect import bisect
 from abc import ABC, abstractmethod
