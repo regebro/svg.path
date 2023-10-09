@@ -1,0 +1,19 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+-   repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 23.9.1
+    hooks:
+    -   id: black
+-   repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+    -   id: flake8
+-   repo: https://github.com/regebro/pyroma
+    rev: '4.2'
+    hooks:
+    -   id: pyroma
