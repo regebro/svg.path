@@ -1,7 +1,7 @@
-from math import sqrt, cos, sin, acos, degrees, radians, log, pi
+from math import sqrt, cos, sin, acos, atan, degrees, radians, log, pi, floor, ceil
 from bisect import bisect
 from abc import ABC, abstractmethod
-import math
+from array import array
 
 try:
     from collections.abc import MutableSequence
@@ -15,6 +15,11 @@ MIN_DEPTH = 5
 ERROR = 1e-12
 
 
+def _xform(coord, matrix):
+    res = matrix @ array("f", [coord.real, coord.imag, 1])
+    return complex(res[0], res[1])
+
+
 def _find_solutions_for_bezier(c2, c1, c0):
     """Find solutions of c2 * t^2 + c1 * t + c0 = 0 where t in [0, 1]"""
     soln = []
@@ -24,8 +29,8 @@ def _find_solutions_for_bezier(c2, c1, c0):
     else:
         det = c1**2 - 4 * c2 * c0
         if det >= 0:
-            soln.append((-c1 + math.pow(det, 0.5)) / 2.0 / c2)
-            soln.append((-c1 - math.pow(det, 0.5)) / 2.0 / c2)
+            soln.append((-c1 + pow(det, 0.5)) / 2.0 / c2)
+            soln.append((-c1 - pow(det, 0.5)) / 2.0 / c2)
     return [s for s in soln if 0.0 <= s and s <= 1.0]
 
 
@@ -36,34 +41,33 @@ def _find_solutions_for_arc(a, b, c, d):
         # pi / 2 + pi * n = c + d * t
         # --> n = d / pi * t - (1/2 - c/pi)
         # --> t = (pi / 2 - c + pi * n) / d
-        n_ranges = [-0.5 + c / math.pi, d / math.pi - 0.5 + c / math.pi]
-        n_range_start = math.floor(min(n_ranges))
-        n_range_end = math.ceil(max(n_ranges))
+        n_ranges = [-0.5 + c / pi, d / pi - 0.5 + c / pi]
+        n_range_start = floor(min(n_ranges))
+        n_range_end = ceil(max(n_ranges))
         t_list = [
-            (math.pi / 2 - c + math.pi * n) / d
-            for n in range(n_range_start, n_range_end + 1)
+            (pi / 2 - c + pi * n) / d for n in range(n_range_start, n_range_end + 1)
         ]
     elif b == 0:
         # when n \in Z
         # pi * n = c + d * t
         # --> n = d / pi * t + c / pi
         # --> t = (- c + pi * n) / d
-        n_ranges = [c / math.pi, d / math.pi + c / math.pi]
-        n_range_start = math.floor(min(n_ranges))
-        n_range_end = math.ceil(max(n_ranges))
-        t_list = [(-c + math.pi * n) / d for n in range(n_range_start, n_range_end + 1)]
+        n_ranges = [c / pi, d / pi + c / pi]
+        n_range_start = floor(min(n_ranges))
+        n_range_end = ceil(max(n_ranges))
+        t_list = [(-c + pi * n) / d for n in range(n_range_start, n_range_end + 1)]
     else:
         # when n \in Z
         # arct = tan^-1 (- b / a)  and
         # arct + pi * n = c + d * t
         # --> n = (c - arct + d * t) / pi
         # --> t = (arct - c + pi * n) / d
-        arct = math.atan(-b / a)
-        n_ranges = [(c - arct) / math.pi, d / math.pi + (c - arct) / math.pi]
-        n_range_start = math.floor(min(n_ranges))
-        n_range_end = math.ceil(max(n_ranges))
+        arct = atan(-b / a)
+        n_ranges = [(c - arct) / pi, d / pi + (c - arct) / pi]
+        n_range_start = floor(min(n_ranges))
+        n_range_end = ceil(max(n_ranges))
         t_list = [
-            (arct - c + math.pi * n) / d for n in range(n_range_start, n_range_end + 1)
+            (arct - c + pi * n) / d for n in range(n_range_start, n_range_end + 1)
         ]
 
     t_list = [t for t in t_list if 0.0 <= t and t <= 1.0]
@@ -152,6 +156,13 @@ class Linear(PathSegment):
         distance = self.end - self.start
         return sqrt(distance.real**2 + distance.imag**2)
 
+    def transform(self, matrix):
+        return self.__class__(
+            _xform(self.start, matrix),
+            _xform(self.end, matrix),
+            relative=self.relative,
+        )
+
 
 class Line(Linear):
     def __init__(self, start, end, relative=False, vertical=False, horizontal=False):
@@ -199,6 +210,15 @@ class Line(Linear):
         y_min = min(self.start.imag, self.end.imag)
         y_max = max(self.start.imag, self.end.imag)
         return [x_min, y_min, x_max, y_max]
+
+    def transform(self, matrix):
+        return self.__class__(
+            _xform(self.start, matrix),
+            _xform(self.end, matrix),
+            relative=self.relative,
+            vertical=self.vertical,
+            horizontal=self.horizontal,
+        )
 
 
 class CubicBezier(NonLinear):
@@ -322,6 +342,16 @@ class CubicBezier(NonLinear):
         x_min, x_max = min(x_coords), max(x_coords)
         y_min, y_max = min(y_coords), max(y_coords)
         return [x_min, y_min, x_max, y_max]
+
+    def transform(self, matrix):
+        return self.__class__(
+            _xform(self.start, matrix),
+            _xform(self.control1, matrix),
+            _xform(self.control2, matrix),
+            _xform(self.end, matrix),
+            relative=self.relative,
+            smooth=self.smooth,
+        )
 
 
 class QuadraticBezier(NonLinear):
@@ -460,6 +490,15 @@ class QuadraticBezier(NonLinear):
         x_min, x_max = min(x_coords), max(x_coords)
         y_min, y_max = min(y_coords), max(y_coords)
         return [x_min, y_min, x_max, y_max]
+
+    def transform(self, matrix):
+        return self.__class__(
+            _xform(self.start, matrix),
+            _xform(self.control, matrix),
+            _xform(self.end, matrix),
+            relative=self.relative,
+            smooth=self.smooth,
+        )
 
 
 class Arc(NonLinear):
@@ -697,6 +736,74 @@ class Arc(NonLinear):
         y_min, y_max = min(y_coords), max(y_coords)
         return [x_min, y_min, x_max, y_max]
 
+    def transform(self, matrix):
+        # This arcane magic is adapted from
+        # https://math.stackexchange.com/questions/2068583/
+        #
+        #  A=1/a^2
+        #  B/2=−tanβ/a^2
+        #  C=1/b^2+tan2β/a^2
+        #  D=√((A+C)^2+B^2−4AC) (useful)
+        #  λ1,2=(A+C∓D)/2
+        #  new a = √(1/λ1)
+        #  new b = √(1/λ2)
+        #  new rotation = atan((A-C+D)/B)
+
+        new_rotation = self.rotation
+        rx = self.radius.real
+        ry = self.radius.imag
+
+        # Now look for skews:
+        skewx_angle = matrix[0][1]
+        skewy_angle = matrix[1][0]
+
+        if skewx_angle:
+            a = self.radius.real
+            b = self.radius.imag
+            tan_beta = -skewx_angle
+            A = 1 / (a**2)
+            B = -2 * tan_beta / a**2
+            C = (1 / b**2) + tan_beta**2 / a**2
+            D = sqrt((A + C) ** 2 + B**2 - 4 * A * C)
+            lambda1 = (A + C - D) / 2
+            lambda2 = (A + C + D) / 2
+            rx = sqrt(1 / lambda1)
+            ry = sqrt(1 / lambda2)
+            new_rotation += degrees(atan((A - C + D) / B))
+
+        if skewy_angle:
+            a = self.radius.imag
+            b = self.radius.real
+            tan_beta = skewy_angle
+            A = 1 / (a**2)
+            B = -2 * tan_beta / a**2
+            C = (1 / b**2) + tan_beta**2 / a**2
+            D = sqrt((A + C) ** 2 + B**2 - 4 * A * C)
+            lambda1 = (A + C - D) / 2
+            lambda2 = (A + C + D) / 2
+            rxb = sqrt(1 / lambda2)
+            ryb = sqrt(1 / lambda1)
+            if skewx_angle:
+                rx = rx + rxb
+                ry = ry + ryb
+            else:
+                rx = rxb
+                ry = ryb
+            new_rotation += degrees(atan((A - C + D) / B))
+
+        rx *= matrix[0][0]
+        ry *= matrix[1][1]
+
+        return self.__class__(
+            _xform(self.start, matrix),
+            complex(rx, ry),
+            new_rotation,
+            self.arc,
+            self.sweep,
+            _xform(self.end, matrix),
+            self.relative,
+        )
+
 
 class Move:
     """Represents move commands. Does nothing, but is there to handle
@@ -746,6 +853,9 @@ class Move:
         y_min = min(self.start.imag, self.end.imag)
         y_max = max(self.start.imag, self.end.imag)
         return [x_min, y_min, x_max, y_max]
+
+    def transform(self, matrix):
+        return self.__class__(_xform(self.start, matrix), self.relative)
 
 
 class Close(Linear):
@@ -898,3 +1008,6 @@ class Path(MutableSequence):
         x_min, x_max = min(x_coords), max(x_coords)
         y_min, y_max = min(y_coords), max(y_coords)
         return [x_min, y_min, x_max, y_max]
+
+    def transform(self, matrix):
+        return self.__class__(*[segment.transform(matrix) for segment in self])
