@@ -23,6 +23,7 @@ $(bin_dir)fullrelease: $(bin_dir)
 check: devenv
 	$(bin_dir)black src tests
 	$(bin_dir)flake8 src tests
+	$(bin_dir)mypy
 	$(bin_dir)pyroma -d .
 	$(bin_dir)check-manifest
 

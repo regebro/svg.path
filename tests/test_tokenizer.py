@@ -1,3 +1,4 @@
+from typing import Union, List, Tuple
 import pytest
 from svg.path import parser
 
@@ -62,11 +63,21 @@ PATHS = [
 
 
 @pytest.mark.parametrize("path, commands, tokens", PATHS)
-def test_commandifier(path, commands, tokens):
+def test_commandifier(
+    path: str,
+    commands: List[Tuple[str, ...]],
+    tokens: List[Tuple[Union[str, complex, float, bool, None], ...]],
+) -> None:
     assert list(parser._commandify_path(path)) == commands
     assert list(parser._tokenize_path(path)) == tokens
 
 
 @pytest.mark.parametrize("path, commands, tokens", PATHS)
-def test_parser(path, commands, tokens):
-    path = parser.parse_path(path)
+def test_parser(
+    path: str,
+    commands: List[Tuple[str, ...]],
+    tokens: List[Tuple[Union[str, complex, float, bool, None], ...]],
+) -> None:
+    # TODO: Add a check that svg_path.d() is correct.
+    # flake8: F841 local variable 'svg_path' is assigned to but never used
+    svg_path = parser.parse_path(path)  # noqa: F841
