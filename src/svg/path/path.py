@@ -1,14 +1,11 @@
 from __future__ import annotations
 from math import sqrt, cos, sin, acos, degrees, radians, log, pi
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, TYPE_CHECKING
 from bisect import bisect
 from abc import ABC, abstractmethod
 import math
 
-try:
-    from collections.abc import MutableSequence
-except ImportError:
-    from collections import MutableSequence
+from collections.abc import MutableSequence
 
 # This file contains classes for the different types of SVG path segments as
 # well as a Path object that contains a sequence of path segments.
@@ -835,7 +832,18 @@ class Close(Linear):
         return [x_min, y_min, x_max, y_max]
 
 
-class Path(MutableSequence[Union[PathSegment, Move]]):
+if TYPE_CHECKING:
+
+    class PathType(MutableSequence[Union[PathSegment, Move]]):
+        pass
+
+else:
+
+    class PathType(MutableSequence):
+        pass
+
+
+class Path(PathType):
     """A Path is a sequence of path segments"""
 
     def __init__(self, *segments: Union[PathSegment, Move]) -> None:
