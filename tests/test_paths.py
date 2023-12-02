@@ -1,8 +1,8 @@
 import unittest
 from math import sqrt, pi
 
-from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc, Move, Close, Path
-from svg.path.parser import parse_path
+from svg.path import CubicBezier, QuadraticBezier, Line, Arc, Move, Close, Path
+from svg.path import parse_path
 
 
 # Most of these test points are not calculated separately, as that would
@@ -35,7 +35,7 @@ from svg.path.parser import parse_path
 
 
 class LineTest(unittest.TestCase):
-    def test_lines(self):
+    def test_lines(self) -> None:
         # These points are calculated, and not just regression tests.
 
         line1 = Line(0j, 400 + 0j)
@@ -62,7 +62,7 @@ class LineTest(unittest.TestCase):
         self.assertAlmostEqual(line3.point(1), (0j))
         self.assertAlmostEqual(line3.length(), 500)
 
-    def test_equality(self):
+    def test_equality(self) -> None:
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
         line = Line(0j, 400 + 0j)
@@ -76,7 +76,7 @@ class LineTest(unittest.TestCase):
 
 
 class CubicBezierTest(unittest.TestCase):
-    def test_approx_circle(self):
+    def test_approx_circle(self) -> None:
         """This is a approximate circle drawn in Inkscape"""
 
         arc1 = CubicBezier(
@@ -155,7 +155,7 @@ class CubicBezierTest(unittest.TestCase):
         self.assertAlmostEqual(arc4.point(0.9), (-2.59896457 - 32.20931675j))
         self.assertAlmostEqual(arc4.point(1), (0j))
 
-    def test_svg_examples(self):
+    def test_svg_examples(self) -> None:
         # M100,200 C100,100 250,100 250,200
         path1 = CubicBezier(100 + 200j, 100 + 100j, 250 + 100j, 250 + 200j)
         self.assertAlmostEqual(path1.point(0), (100 + 200j))
@@ -229,7 +229,7 @@ class CubicBezierTest(unittest.TestCase):
         self.assertAlmostEqual(path9.point(0.9), (890.4 + 827j))
         self.assertAlmostEqual(path9.point(1), (900 + 800j))
 
-    def test_length(self):
+    def test_length(self) -> None:
         # A straight line:
         arc = CubicBezier(
             complex(0, 0), complex(0, 0), complex(0, 100), complex(0, 100)
@@ -272,7 +272,7 @@ class CubicBezierTest(unittest.TestCase):
         )
         self.assertTrue(arc.length() > 300.0)
 
-    def test_equality(self):
+    def test_equality(self) -> None:
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
         segment = CubicBezier(
@@ -287,7 +287,7 @@ class CubicBezierTest(unittest.TestCase):
         )
         self.assertTrue(segment != Line(0, 400))
 
-    def test_smooth(self):
+    def test_smooth(self) -> None:
         cb1 = CubicBezier(0, 0, 100 + 100j, 100 + 100j)
         cb2 = CubicBezier(600 + 500j, 600 + 350j, 900 + 650j, 900 + 500j)
         self.assertFalse(cb2.is_smooth_from(cb1))
@@ -296,7 +296,7 @@ class CubicBezierTest(unittest.TestCase):
 
 
 class QuadraticBezierTest(unittest.TestCase):
-    def test_svg_examples(self):
+    def test_svg_examples(self) -> None:
         """These is the path in the SVG specs"""
         # M200,300 Q400,50 600,300 T1000,300
         path1 = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
@@ -315,7 +315,7 @@ class QuadraticBezierTest(unittest.TestCase):
         self.assertAlmostEqual(path2.point(0.9), (960 + 345j))
         self.assertAlmostEqual(path2.point(1), (1000 + 300j))
 
-    def test_length(self):
+    def test_length(self) -> None:
         # expected results calculated with
         # svg.path.segment_length(q, 0, 1, q.start, q.end, 1e-14, 20, 0)
         q1 = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
@@ -335,7 +335,7 @@ class QuadraticBezierTest(unittest.TestCase):
         for q, exp_res in tests:
             self.assertAlmostEqual(q.length(), exp_res)
 
-    def test_equality(self):
+    def test_equality(self) -> None:
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
         segment = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
@@ -344,7 +344,7 @@ class QuadraticBezierTest(unittest.TestCase):
         self.assertFalse(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j) != segment)
 
-    def test_linear_arcs_issue_61(self):
+    def test_linear_arcs_issue_61(self) -> None:
         p = parse_path("M 206.5,525 Q 162.5,583 162.5,583")
         self.assertAlmostEqual(p.length(), 72.80109889280519)
         p = parse_path("M 425.781 446.289 Q 410.40000000000003 373.047 410.4 373.047")
@@ -366,7 +366,7 @@ class QuadraticBezierTest(unittest.TestCase):
         p = parse_path("M 615.297 470.503 Q 538.797 694.5029999999999 538.797 694.503")
         self.assertAlmostEqual(p.length(), 236.70287281737836)
 
-    def test_smooth(self):
+    def test_smooth(self) -> None:
         cb1 = QuadraticBezier(200 + 300j, 400 + 50j, 600 + 300j)
         cb2 = QuadraticBezier(600 + 300j, 400 + 50j, 1000 + 300j)
         self.assertFalse(cb2.is_smooth_from(cb1))
@@ -375,7 +375,7 @@ class QuadraticBezierTest(unittest.TestCase):
 
 
 class ArcTest(unittest.TestCase):
-    def test_points(self):
+    def test_points(self) -> None:
         arc1 = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertAlmostEqual(arc1.center, 100 + 0j)
         self.assertAlmostEqual(arc1.theta, 180.0)
@@ -444,14 +444,14 @@ class ArcTest(unittest.TestCase):
         self.assertAlmostEqual(arc4.point(0.9), (145.399049974 + 44.5503262094j))
         self.assertAlmostEqual(arc4.point(1.0), (100 + 50j))
 
-    def test_length(self):
+    def test_length(self) -> None:
         # I'll test the length calculations by making a circle, in two parts.
         arc1 = Arc(0j, 100 + 100j, 0, 0, 0, 200 + 0j)
         arc2 = Arc(200 + 0j, 100 + 100j, 0, 0, 0, 0j)
         self.assertAlmostEqual(arc1.length(), pi * 100)
         self.assertAlmostEqual(arc2.length(), pi * 100)
 
-    def test_length_out_of_range(self):
+    def test_length_out_of_range(self) -> None:
         # See F.6.2 Out-of-range parameters
 
         # If the endpoints (x1, y1) and (x2, y2) are identical, then this is
@@ -480,14 +480,14 @@ class ArcTest(unittest.TestCase):
         arc = Arc(200 + 0j, -100 - 100j, 720, 0, 0, 0j)
         self.assertAlmostEqual(arc.length(), pi * 100)
 
-    def test_equality(self):
+    def test_equality(self) -> None:
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
         segment = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertTrue(segment == Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j))
         self.assertTrue(segment != Arc(0j, 100 + 50j, 0, 1, 0, 100 + 50j))
 
-    def test_issue25(self):
+    def test_issue25(self) -> None:
         # This raised a math domain error
         Arc(
             (725.307482225571 - 915.5548199281527j),
@@ -500,7 +500,7 @@ class ArcTest(unittest.TestCase):
 
 
 class TestPath(unittest.TestCase):
-    def test_circle(self):
+    def test_circle(self) -> None:
         arc1 = Arc(0j, 100 + 100j, 0, 0, 0, 200 + 0j)
         arc2 = Arc(200 + 0j, 100 + 100j, 0, 0, 0, 0j)
         path = Path(arc1, arc2)
@@ -511,7 +511,7 @@ class TestPath(unittest.TestCase):
         self.assertAlmostEqual(path.point(1.0), (0j))
         self.assertAlmostEqual(path.length(), pi * 200)
 
-    def test_svg_specs(self):
+    def test_svg_specs(self) -> None:
         """The paths that are in the SVG specs"""
 
         # Big pie: M300,200 h-150 a150,150 0 1,0 150,-150 z
@@ -571,7 +571,7 @@ class TestPath(unittest.TestCase):
         self.assertAlmostEqual(path.point(1.0), (1050 + 125j))
         self.assertAlmostEqual(path.length(), 928.388639381)
 
-    def test_repr(self):
+    def test_repr(self) -> None:
         path = Path(
             Line(start=600 + 350j, end=650 + 325j),
             Arc(
@@ -592,11 +592,11 @@ class TestPath(unittest.TestCase):
         )
         self.assertEqual(eval(repr(path)), path)
 
-    def test_reverse(self):
+    def test_reverse(self) -> None:
         # Currently you can't reverse paths.
         self.assertRaises(NotImplementedError, Path().reverse)
 
-    def test_equality(self):
+    def test_equality(self) -> None:
         # This is to test the __eq__ and __ne__ methods, so we can't use
         # assertEqual and assertNotEqual
         path1 = Path(
@@ -650,16 +650,17 @@ class TestPath(unittest.TestCase):
         self.assertFalse(path1 == path2)
 
         # It's not equal to a list of it's segments
-        self.assertTrue(path1 != path1[:])
-        self.assertFalse(path1 == path1[:])
+        # TODO: Path does not support slicing, but this is not tested here.
+        self.assertTrue(path1 != path1[:])  # type: ignore[index]
+        self.assertFalse(path1 == path1[:])  # type: ignore[index]
 
-    def test_non_arc(self):
+    def test_non_arc(self) -> None:
         # And arc with the same start and end is a noop.
         segment = Arc(0j + 70j, 35 + 35j, 0, 1, 0, 0 + 70j)
         self.assertEqual(segment.length(), 0)
         self.assertEqual(segment.point(0.5), segment.start)
 
-    def test_zero_paths(self):
+    def test_zero_paths(self) -> None:
         move_only = Path(Move(0))
         self.assertEqual(move_only.point(0), 0 + 0j)
         self.assertEqual(move_only.point(0.5), 0 + 0j)
@@ -684,7 +685,7 @@ class TestPath(unittest.TestCase):
         self.assertEqual(only_line.point(1), 1 + 1j)
         self.assertEqual(only_line.length(), 0)
 
-    def test_tangent(self):
+    def test_tangent(self) -> None:
         path = Path(
             Line(start=600 + 350j, end=650 + 325j),
             Arc(
@@ -715,7 +716,7 @@ class TestPath(unittest.TestCase):
         self.assertAlmostEqual(path.tangent(0.75), 13.630819414210208j)
         self.assertAlmostEqual(path.tangent(1), 600j)
 
-    def test_tangent_magnitude(self):
+    def test_tangent_magnitude(self) -> None:
         line1 = Line(start=6 + 3.5j, end=6.5 + 3.25j)
         line2 = Line(start=6 + 3.5j, end=7 + 3j)
         # line2 is twice as long as line1, the tangent should have twice the magnitude:

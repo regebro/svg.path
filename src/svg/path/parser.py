@@ -1,5 +1,6 @@
 # SVG Path specification parser
 
+from typing import Generator, Tuple, Union
 import re
 from svg.path import path
 
@@ -33,14 +34,14 @@ ARGUMENT_SEQUENCE = {
 }
 
 
-def strip_array(arg_array):
+def strip_array(arg_array: bytearray) -> None:
     """Strips whitespace and commas"""
     # EBNF wsp:(#x20 | #x9 | #xD | #xA) + comma: 0x2C
     while arg_array and arg_array[0] in (0x20, 0x9, 0xD, 0xA, 0x2C):
         arg_array[0:1] = b""
 
 
-def pop_number(arg_array):
+def pop_number(arg_array: bytearray) -> float:
     res = FLOAT_RE.search(arg_array)
     if not res or not res.group():
         raise InvalidPathError(f"Expected a number, got '{arg_array}'.")
@@ -53,20 +54,20 @@ def pop_number(arg_array):
     return number
 
 
-def pop_unsigned_number(arg_array):
+def pop_unsigned_number(arg_array: bytearray) -> float:
     number = pop_number(arg_array)
     if number < 0:
         raise InvalidPathError(f"Expected a non-negative number, got '{number}'.")
     return number
 
 
-def pop_coordinate_pair(arg_array):
+def pop_coordinate_pair(arg_array: bytearray) -> complex:
     x = pop_number(arg_array)
     y = pop_number(arg_array)
     return complex(x, y)
 
 
-def pop_flag(arg_array):
+def pop_flag(arg_array: bytearray) -> Union[bool, None]:
     flag = arg_array[0]
     arg_array[0:1] = b""
     strip_array(arg_array)
@@ -74,6 +75,7 @@ def pop_flag(arg_array):
         return False
     if flag == 49:  # ASCII 1
         return True
+    return None
 
 
 FIELD_POPPERS = {
@@ -84,9 +86,9 @@ FIELD_POPPERS = {
 }
 
 
-def _commandify_path(pathdef):
+def _commandify_path(pathdef: str) -> Generator[Tuple[str, ...], None, None]:
     """Splits path into commands and arguments"""
-    token = None
+    token: Union[Tuple[str, ...], None] = None
     for x in COMMAND_RE.split(pathdef):
         x = x.strip()
         if x in COMMANDS:
@@ -101,10 +103,14 @@ def _commandify_path(pathdef):
             if token is None:
                 raise InvalidPathError(f"Path does not start with a command: {pathdef}")
             token += (x,)
-    yield token
+    # Logically token cannot be None, but mypy cannot deduce this.
+    if token is not None:
+        yield token
 
 
-def _tokenize_path(pathdef):
+def _tokenize_path(
+    pathdef: str,
+) -> Generator[Tuple[Union[str, complex, float, bool, None], ...], None, None]:
     for command, args in _commandify_path(pathdef):
         # Shortcut this for the close command, that doesn't have arguments:
         if command in ("z", "Z"):
@@ -138,18 +144,20 @@ def _tokenize_path(pathdef):
                 command = "L"
 
 
-def parse_path(pathdef):
+def parse_path(pathdef: str) -> path.Path:
     segments = path.Path()
     start_pos = None
-    last_command = None
-    current_pos = 0
+    last_command = "No last command"
+    current_pos = 0j
 
     for token in _tokenize_path(pathdef):
         command = token[0]
+        assert isinstance(command, str)
         relative = command.islower()
         command = command.upper()
         if command == "M":
             pos = token[1]
+            assert isinstance(pos, complex)
             if relative:
                 current_pos += pos
             else:
@@ -160,11 +168,13 @@ def parse_path(pathdef):
         elif command == "Z":
             # For Close commands the "relative" argument just preserves case,
             # it has no different in behavior.
+            assert isinstance(start_pos, complex)
             segments.append(path.Close(current_pos, start_pos, relative=relative))
             current_pos = start_pos
 
         elif command == "L":
             pos = token[1]
+            assert isinstance(pos, complex)
             if relative:
                 pos += current_pos
             segments.append(path.Line(current_pos, pos, relative=relative))
@@ -172,6 +182,7 @@ def parse_path(pathdef):
 
         elif command == "H":
             hpos = token[1]
+            assert isinstance(hpos, float)
             if relative:
                 hpos += current_pos.real
             pos = complex(hpos, current_pos.imag)
@@ -182,6 +193,7 @@ def parse_path(pathdef):
 
         elif command == "V":
             vpos = token[1]
+            assert isinstance(vpos, float)
             if relative:
                 vpos += current_pos.imag
             pos = complex(current_pos.real, vpos)
@@ -192,8 +204,11 @@ def parse_path(pathdef):
 
         elif command == "C":
             control1 = token[1]
+            assert isinstance(control1, complex)
             control2 = token[2]
+            assert isinstance(control2, complex)
             end = token[3]
+            assert isinstance(end, complex)
 
             if relative:
                 control1 += current_pos
@@ -211,7 +226,9 @@ def parse_path(pathdef):
             # Smooth curve. First control point is the "reflection" of
             # the second control point in the previous path.
             control2 = token[1]
+            assert isinstance(control2, complex)
             end = token[2]
+            assert isinstance(end, complex)
 
             if relative:
                 control2 += current_pos
@@ -221,6 +238,7 @@ def parse_path(pathdef):
                 # The first control point is assumed to be the reflection of
                 # the second control point on the previous command relative
                 # to the current point.
+                assert isinstance(segments[-1], path.CubicBezier)
                 control1 = current_pos + current_pos - segments[-1].control2
             else:
                 # If there is no previous command or if the previous command
@@ -237,7 +255,9 @@ def parse_path(pathdef):
 
         elif command == "Q":
             control = token[1]
+            assert isinstance(control, complex)
             end = token[2]
+            assert isinstance(end, complex)
 
             if relative:
                 control += current_pos
@@ -252,6 +272,7 @@ def parse_path(pathdef):
             # Smooth curve. Control point is the "reflection" of
             # the second control point in the previous path.
             end = token[1]
+            assert isinstance(end, complex)
 
             if relative:
                 end += current_pos
@@ -260,6 +281,7 @@ def parse_path(pathdef):
                 # The control point is assumed to be the reflection of
                 # the control point on the previous command relative
                 # to the current point.
+                assert isinstance(segments[-1], path.QuadraticBezier)
                 control = current_pos + current_pos - segments[-1].control
             else:
                 # If there is no previous command or if the previous command
@@ -277,11 +299,17 @@ def parse_path(pathdef):
         elif command == "A":
             # For some reason I implemented the Arc with a complex radius.
             # That doesn't really make much sense, but... *shrugs*
+            assert isinstance(token[1], float)
+            assert isinstance(token[2], float)
             radius = complex(token[1], token[2])
             rotation = token[3]
+            assert isinstance(rotation, float)
             arc = token[4]
+            assert isinstance(arc, (bool, int))
             sweep = token[5]
+            assert isinstance(sweep, (bool, int))
             end = token[6]
+            assert isinstance(end, complex)
 
             if relative:
                 end += current_pos

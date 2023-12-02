@@ -1,12 +1,12 @@
 import unittest
-from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc, Path, Move, Close
-from svg.path.parser import parse_path
+from svg.path import CubicBezier, QuadraticBezier, Line, Arc, Path, Move, Close
+from svg.path import parse_path
 
 
 class TestParser(unittest.TestCase):
     maxDiff = None
 
-    def test_svg_examples(self):
+    def test_svg_examples(self) -> None:
         """Examples from the SVG spec"""
         path1 = parse_path("M 100 100 L 300 100 L 200 300 z")
         self.assertEqual(
@@ -179,7 +179,7 @@ class TestParser(unittest.TestCase):
             ),
         )
 
-    def test_wc3_examples12(self):
+    def test_wc3_examples12(self) -> None:
         """
         W3C_SVG_11_TestSuite Paths
 
@@ -227,7 +227,7 @@ class TestParser(unittest.TestCase):
             ),
         )
 
-    def test_wc3_examples13(self):
+    def test_wc3_examples13(self) -> None:
         """
         W3C_SVG_11_TestSuite Paths
 
@@ -262,7 +262,7 @@ class TestParser(unittest.TestCase):
             ),
         )
 
-    def test_wc3_examples14(self):
+    def test_wc3_examples14(self) -> None:
         """
         W3C_SVG_11_TestSuite Paths
 
@@ -318,7 +318,7 @@ class TestParser(unittest.TestCase):
             ),
         )
 
-    def test_wc3_examples15(self):
+    def test_wc3_examples15(self) -> None:
         """
         W3C_SVG_11_TestSuite Paths
 
@@ -367,7 +367,7 @@ class TestParser(unittest.TestCase):
             ),
         )
 
-    def test_wc3_examples17(self):
+    def test_wc3_examples17(self) -> None:
         """
         W3C_SVG_11_TestSuite Paths
 
@@ -380,7 +380,7 @@ class TestParser(unittest.TestCase):
         path17b = parse_path("M 250 50 L 250 150 L 350 150 L 350 50 z")
         self.assertEqual(path17a, path17b)
 
-    def test_wc3_examples18(self):
+    def test_wc3_examples18(self) -> None:
         """
         W3C_SVG_11_TestSuite Paths
 
@@ -421,7 +421,7 @@ class TestParser(unittest.TestCase):
         path18b = parse_path("M 20 160 H 40#90")
         self.assertEqual(path18a, path18b)
 
-    def test_wc3_examples19(self):
+    def test_wc3_examples19(self) -> None:
         """
         W3C_SVG_11_TestSuite Paths
 
@@ -476,7 +476,7 @@ class TestParser(unittest.TestCase):
         path19b = parse_path("M400,300 a25 25 0 0 0 25 -50 25 25 0 0 0 -25 50")
         self.assertEqual(path19a, path19b)
 
-    def test_wc3_examples20(self):
+    def test_wc3_examples20(self) -> None:
         """
         W3C_SVG_11_TestSuite Paths
         Tests parsing of the elliptical arc path syntax.
@@ -488,26 +488,20 @@ class TestParser(unittest.TestCase):
         path20b = parse_path("M200,120 h-25 a25,25 0 1125,25 z")
         self.assertEqual(path20a, path20b)
         path20a = parse_path("M280,120 h25 a25,25 0 1,0 -25,25 z")
-        self.assertRaises(Exception, 'parse_path("M280,120 h25 a25,25 0 6 0 -25,25 z")')
+        self.assertRaises(Exception, parse_path, "M280,120 h25 a25,25 0 6 0 -25,25 z")
         path20a = parse_path("M360,120 h-25 a25,25 0 1,1 25,25 z")
-        self.assertRaises(
-            Exception, 'parse_path("M360,120 h-25 a25,25 0 1 -1 25,25 z")'
-        )
+        self.assertRaises(Exception, parse_path, "M360,120 h-25 a25,25 0 1 -1 25,25 z")
         path20a = parse_path("M120,200 h25 a25,25 0 1,1 -25,-25 z")
         path20b = parse_path("M120,200 h25 a25,25 0 1 1-25,-25 z")
         self.assertEqual(path20a, path20b)
         path20a = parse_path("M200,200 h-25 a25,25 0 1,0 25,-25 z")
-        self.assertRaises(Exception, 'parse_path("M200,200 h-25 a25,2501 025,-25 z")')
+        self.assertRaises(Exception, parse_path, "M200,200 h-25 a25,2501 025,-25 z")
         path20a = parse_path("M280,200 h25 a25,25 0 1,1 -25,-25 z")
-        self.assertRaises(
-            Exception, 'parse_path("M280,200 h25 a25 25 0 1 7 -25 -25 z")'
-        )
+        self.assertRaises(Exception, parse_path, "M280,200 h25 a25 25 0 1 7 -25 -25 z")
         path20a = parse_path("M360,200 h-25 a25,25 0 1,0 25,-25 z")
-        self.assertRaises(
-            Exception, 'parse_path("M360,200 h-25 a25,25 0 -1 0 25,-25 z")'
-        )
+        self.assertRaises(Exception, parse_path, "M360,200 h-25 a25,25 0 -1 0 25,-25 z")
 
-    def test_others(self):
+    def test_others(self) -> None:
         # Other paths that need testing:
 
         # Relative moveto:
@@ -548,13 +542,13 @@ class TestParser(unittest.TestCase):
             Path(Move(100 + 200j), QuadraticBezier(100 + 200j, 100 + 200j, 250 + 200j)),
         )
 
-    def test_negative(self):
+    def test_negative(self) -> None:
         """You don't need spaces before a minus-sign"""
         path1 = parse_path("M100,200c10-5,20-10,30-20")
         path2 = parse_path("M 100 200 c 10 -5 20 -10 30 -20")
         self.assertEqual(path1, path2)
 
-    def test_numbers(self):
+    def test_numbers(self) -> None:
         """Exponents and other number format cases"""
         # It can be e or E, the plus is optional, and a minimum of +/-3.4e38 must be supported.
         path1 = parse_path("M-3.4e38 3.4E+38L-3.4E-38,3.4e-38")
@@ -563,17 +557,17 @@ class TestParser(unittest.TestCase):
         )
         self.assertEqual(path1, path2)
 
-    def test_errors(self):
+    def test_errors(self) -> None:
         self.assertRaises(ValueError, parse_path, "M 100 100 L 200 200 Z 100 200")
 
-    def test_non_path(self):
+    def test_non_path(self) -> None:
         # It's possible in SVG to create paths that has zero length,
         # we need to handle that.
 
         path = parse_path("M10.236,100.184")
         self.assertEqual(path.d(), "M 10.236,100.184")
 
-    def test_issue_45(self):
+    def test_issue_45(self) -> None:
         # A missing Z in certain cases
         path = parse_path(
             "m 1672.2372,-54.8161 "
@@ -600,7 +594,7 @@ class TestParser(unittest.TestCase):
             path.d(),
         )
 
-    def test_arc_flag(self):
+    def test_arc_flag(self) -> None:
         """Issue #69"""
         path = parse_path(
             "M 5 1 v 7.344 A 3.574 3.574 0 003.5 8 3.515 3.515 0 000 11.5 C 0 13.421 1.579 15 3.5 15 "
@@ -612,7 +606,7 @@ class TestParser(unittest.TestCase):
         # It ends on a vertical line to Y 1:
         self.assertEqual(path[-1].end.imag, 1)
 
-    def test_incomplete_numbers(self):
+    def test_incomplete_numbers(self) -> None:
         path = parse_path("M 0. .1")
         self.assertEqual(path.d(), "M 0,0.1")
 

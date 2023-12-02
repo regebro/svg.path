@@ -1,5 +1,6 @@
 include *.rst
 include *.txt
+include src/svg/path/py.typed
 
 exclude Makefile
 recursive-exclude tests *
