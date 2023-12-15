@@ -4,6 +4,7 @@ from PIL import Image, ImageDraw, ImageColor, ImageChops
 from math import sqrt
 
 from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc
+from .font import get_better_than_nothing_font
 
 
 RED = ImageColor.getcolor("red", mode="RGB")
@@ -57,25 +58,30 @@ class ImageTest(unittest.TestCase):
             self.draw.line([c2t(p), c2t(tt + p)], fill=YELLOW, width=1)
 
     def test_image(self):
-        self.draw.text((10, 10), "This is an SVG line:")
+        font = get_better_than_nothing_font()
+        self.draw.text((10, 10), "This is an SVG line:", font=font)
         self.draw.text(
             (10, 100),
             "The red line is a tangent, and the yellow is 90 degrees from that.",
+            font=font,
         )
 
         line1 = Line(40 + 60j, 200 + 80j)
         self.draw_path(line1)
         self.draw_tangents(line1, 1)
 
-        self.draw.text((10, 140), "This is an Arc segment, almost a whole circle:")
+        self.draw.text(
+            (10, 140), "This is an Arc segment, almost a whole circle:", font=font
+        )
         arc1 = Arc(260 + 320j, 100 + 100j, 0, 1, 1, 260 + 319j)
         self.draw_path(arc1)
         self.draw_tangents(arc1, 5)
-        self.draw.text((10, 460), "With five tangents.")
+        self.draw.text((10, 460), "With five tangents.", font=font)
 
         self.draw.text(
             (10, 500),
             "Next we have a quadratic bezier curve, with one tangent:",
+            font=font,
         )
         start = 30 + 600j
         control = 400 + 540j
@@ -88,12 +94,16 @@ class ImageTest(unittest.TestCase):
         self.draw.text(
             (10, 670),
             "The white dot is the control point, and the cyan lines are ",
+            font=font,
         )
-        self.draw.text((10, 690), "illustrating the how the control point works.")
+        self.draw.text(
+            (10, 690), "illustrating the how the control point works.", font=font
+        )
 
         self.draw.text(
             (10, 730),
             "Lastly is a cubic bezier, with 2 tangents, and 2 control points:",
+            font=font,
         )
 
         start = 30 + 800j

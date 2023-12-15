@@ -5,6 +5,7 @@ import sys
 
 from PIL import Image, ImageDraw, ImageColor, ImageChops
 from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc
+from .font import get_better_than_nothing_font
 
 
 RED = ImageColor.getcolor("red", mode="RGB")
@@ -57,17 +58,15 @@ class BoundingBoxImageTest(unittest.TestCase):
         sys.platform != "linux", reason="Different platforms have different fonts"
     )
     def test_image(self):
-        self.draw.text((10, 10), "This is an SVG line:")
-        self.draw.text(
-            (10, 100),
-            "The red line is a bounding box.",
-        )
+        font = get_better_than_nothing_font()
+        self.draw.text((10, 10), "This is an SVG line:", font=font)
+        self.draw.text((10, 100), "The red line is a bounding box.", font=font)
 
         line1 = Line(40 + 60j, 200 + 80j)
         self.draw_path(line1)
         self.draw_boundingbox(line1)
 
-        self.draw.text((10, 140), "These are Arc segments:")
+        self.draw.text((10, 140), "These are Arc segments:", font=font)
         arc1 = Arc(260 + 320j, 100 + 100j, 0, 1, 1, 260 + 319j)
         self.draw_path(arc1)
         self.draw_boundingbox(arc1)
@@ -83,6 +82,7 @@ class BoundingBoxImageTest(unittest.TestCase):
         self.draw.text(
             (10, 500),
             "Next we have a quadratic bezier curve, with one tangent:",
+            font=font,
         )
         start = 30 + 600j
         control = 400 + 540j
@@ -95,12 +95,16 @@ class BoundingBoxImageTest(unittest.TestCase):
         self.draw.text(
             (10, 670),
             "The white dot is the control point, and the cyan lines are ",
+            font=font,
         )
-        self.draw.text((10, 690), "illustrating the how the control point works.")
+        self.draw.text(
+            (10, 690), "illustrating the how the control point works.", font=font
+        )
 
         self.draw.text(
             (10, 730),
             "Lastly is a cubic bezier, with 2 tangents, and 2 control points:",
+            font=font,
         )
 
         start = 200 + 800j
