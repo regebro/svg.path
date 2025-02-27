@@ -1,5 +1,6 @@
 import unittest
 import os
+from typing import Tuple
 from PIL import Image, ImageDraw, ImageColor, ImageChops
 from math import sqrt
 
@@ -7,34 +8,34 @@ from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc
 from .font import get_better_than_nothing_font
 
 
-RED = ImageColor.getcolor("red", mode="RGB")
-GREEN = ImageColor.getcolor("limegreen", mode="RGB")
-BLUE = ImageColor.getcolor("cornflowerblue", mode="RGB")
-YELLOW = ImageColor.getcolor("yellow", mode="RGB")
-CYAN = ImageColor.getcolor("cyan", mode="RGB")
-WHITE = ImageColor.getcolor("white", mode="RGB")
-BLACK = ImageColor.getcolor("black", mode="RGB")
+RED = ImageColor.getrgb("red")
+GREEN = ImageColor.getrgb("limegreen")
+BLUE = ImageColor.getrgb("cornflowerblue")
+YELLOW = ImageColor.getrgb("yellow")
+CYAN = ImageColor.getrgb("cyan")
+WHITE = ImageColor.getrgb("white")
+BLACK = ImageColor.getrgb("black")
 
 DOT = 4 + 4j  # x+y radius of dot
 
 
-def c2t(c):
+def c2t(c: complex) -> Tuple[float, float]:
     """Make a complex number into a tuple"""
     return c.real, c.imag
 
 
-def magnitude(c):
+def magnitude(c: complex) -> float:
     return sqrt(c.real**2 + c.imag**2)
 
 
 class ImageTest(unittest.TestCase):
     """Creates a PNG image and compares with a correct PNG"""
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.image = Image.new(mode="RGB", size=(500, 1200))
         self.draw = ImageDraw.Draw(self.image)
 
-    def draw_path(self, path):
+    def draw_path(self, path: PathSegment) -> None:
         lines = [c2t(path.point(x * 0.01)) for x in range(1, 101)]
         self.draw.line(lines, fill=WHITE, width=2)
 
@@ -43,7 +44,7 @@ class ImageTest(unittest.TestCase):
         p = path.point(1)
         self.draw.ellipse([c2t(p - DOT), c2t(p + DOT)], fill=GREEN)
 
-    def draw_tangents(self, path, count):
+    def draw_tangents(self, path: PathSegment, count: int) -> None:
         count += 1
         for i in range(1, count):
             p = path.point(i / count)
