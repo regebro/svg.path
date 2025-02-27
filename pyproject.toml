@@ -38,6 +38,7 @@ test = [
     "flake8",
     "pyroma",
     "check-manifest",
+    "mypy",
     "zest.releaser[recommended]",
 ]
 
@@ -58,3 +59,8 @@ universal = 1
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.mypy]
+files = ["src", "tests"]
+
+strict = true

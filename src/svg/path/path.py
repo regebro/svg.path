@@ -1,12 +1,11 @@
 from math import sqrt, cos, sin, acos, atan, degrees, radians, log, pi, floor, ceil
+from math import sqrt, cos, sin, acos, degrees, radians, log, pi
+from typing import List, Tuple, Union, TYPE_CHECKING
 from bisect import bisect
 from abc import ABC, abstractmethod
 from array import array
 
-try:
-    from collections.abc import MutableSequence
-except ImportError:
-    from collections import MutableSequence
+from collections.abc import MutableSequence
 
 # This file contains classes for the different types of SVG path segments as
 # well as a Path object that contains a sequence of path segments.
@@ -20,7 +19,7 @@ def _xform(coord, matrix):
     return complex(res[0], res[1])
 
 
-def _find_solutions_for_bezier(c2, c1, c0):
+def _find_solutions_for_bezier(c2: float, c1: float, c0: float) -> List[float]:
     """Find solutions of c2 * t^2 + c1 * t + c0 = 0 where t in [0, 1]"""
     soln = []
     if c2 == 0:
@@ -34,7 +33,7 @@ def _find_solutions_for_bezier(c2, c1, c0):
     return [s for s in soln if 0.0 <= s and s <= 1.0]
 
 
-def _find_solutions_for_arc(a, b, c, d):
+def _find_solutions_for_arc(a: float, b: float, c: float, d: float) -> List[float]:
     """Find solution for a sin(x) + b cos(x) = 0 where x = c + d * t and t in [0, 1]"""
     if a == 0:
         # when n \in Z
@@ -74,7 +73,16 @@ def _find_solutions_for_arc(a, b, c, d):
     return t_list
 
 
-def segment_length(curve, start, end, start_point, end_point, error, min_depth, depth):
+def segment_length(
+    curve: NonLinear,
+    start: float,
+    end: float,
+    start_point: complex,
+    end_point: complex,
+    error: float,
+    min_depth: int,
+    depth: int,
+) -> float:
     """Recursively approximates the length by straight lines"""
     mid = (start + end) / 2
     mid_point = curve.point(mid)
@@ -96,20 +104,27 @@ def segment_length(curve, start, end, start_point, end_point, error, min_depth, 
 
 
 class PathSegment(ABC):
+    start: complex
+    end: complex
+
     @abstractmethod
-    def point(self, pos):
+    def _d(self, previous: PathSegment) -> str:
+        pass
+
+    @abstractmethod
+    def point(self, pos: float) -> complex:
         """Returns the coordinate point (as a complex number) of a point on the path,
         as expressed as a floating point number between 0 (start) and 1 (end).
         """
 
     @abstractmethod
-    def tangent(self, pos):
+    def tangent(self, pos: float) -> complex:
         """Returns a vector (as a complex number) representing the tangent of a point
         on the path as expressed as a floating point number between 0 (start) and 1 (end).
         """
 
     @abstractmethod
-    def length(self, error=ERROR, min_depth=MIN_DEPTH):
+    def length(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
         """Returns the length of a path.
 
         The CubicBezier and Arc lengths are non-exact and iterative and you can select to
@@ -117,8 +132,10 @@ class PathSegment(ABC):
         number of iterations.
         """
 
+    # TODO: It would be more appropriate to have a return type of:
+    #     Tuple[float, float, float, float]
     @abstractmethod
-    def boundingbox(self):
+    def boundingbox(self) -> List[float]:
         """Returns the bounding box of a path in the format of [left, top, right, bottom]"""
 
 
@@ -135,24 +152,24 @@ class Linear(PathSegment):
     The base for Line() and Close().
     """
 
-    def __init__(self, start, end, relative=False):
+    def __init__(self, start: complex, end: complex, relative: bool = False) -> None:
         self.start = start
         self.end = end
         self.relative = relative
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if not isinstance(other, Line):
             return NotImplemented
         return not self == other
 
-    def point(self, pos):
+    def point(self, pos: float) -> complex:
         distance = self.end - self.start
         return self.start + distance * pos
 
-    def tangent(self, pos):
+    def tangent(self, pos: float) -> complex:
         return self.end - self.start
 
-    def length(self, error=None, min_depth=None):
+    def length(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
         distance = self.end - self.start
         return sqrt(distance.real**2 + distance.imag**2)
 
@@ -165,46 +182,59 @@ class Linear(PathSegment):
 
 
 class Line(Linear):
-    def __init__(self, start, end, relative=False, vertical=False, horizontal=False):
+    def __init__(
+        self,
+        start: complex,
+        end: complex,
+        relative: bool = False,
+        vertical: bool = False,
+        horizontal: bool = False,
+    ) -> None:
         self.start = start
         self.end = end
         self.relative = relative
         self.vertical = vertical
         self.horizontal = horizontal
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Line(start={self.start}, end={self.end})"
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Line):
             return NotImplemented
         return self.start == other.start and self.end == other.end
 
-    def _d(self, previous):
+    def _d(self, previous: PathSegment) -> str:
         x = self.end.real
         y = self.end.imag
         if self.relative:
             x -= previous.end.real
             y -= previous.end.imag
 
-        if self.horizontal and self.is_horizontal_from(previous):
+        # TODO: Add check that `previous` is Line instance.
+        # mypy error:
+        # Argument 1 to "is_horizontal_from" of "Line" has incompatible type "PathSegment"; expected "Line"
+        if self.horizontal and self.is_horizontal_from(previous):  # type: ignore[arg-type]
             cmd = "h" if self.relative else "H"
             return f"{cmd} {x:G}"
 
-        if self.vertical and self.is_vertical_from(previous):
+        # TODO: Add check that previous is Line instance.
+        # mypy error:
+        # Argument 1 to "is_vertical_from" of "Line" has incompatible type "PathSegment"; expected "Line"
+        if self.vertical and self.is_vertical_from(previous):  # type: ignore[arg-type]
             cmd = "v" if self.relative else "V"
             return f"{cmd} {y:G}"
 
         cmd = "l" if self.relative else "L"
         return f"{cmd} {x:G},{y:G}"
 
-    def is_vertical_from(self, previous):
+    def is_vertical_from(self, previous: Line) -> bool:
         return self.start == previous.end and self.start.real == self.end.real
 
-    def is_horizontal_from(self, previous):
+    def is_horizontal_from(self, previous: Line) -> bool:
         return self.start == previous.end and self.start.imag == self.end.imag
 
-    def boundingbox(self):
+    def boundingbox(self) -> List[float]:
         x_min = min(self.start.real, self.end.real)
         x_max = max(self.start.real, self.end.real)
         y_min = min(self.start.imag, self.end.imag)
@@ -222,7 +252,15 @@ class Line(Linear):
 
 
 class CubicBezier(NonLinear):
-    def __init__(self, start, control1, control2, end, relative=False, smooth=False):
+    def __init__(
+        self,
+        start: complex,
+        control1: complex,
+        control2: complex,
+        end: complex,
+        relative: bool = False,
+        smooth: bool = False,
+    ):
         self.start = start
         self.control1 = control1
         self.control2 = control2
@@ -230,13 +268,13 @@ class CubicBezier(NonLinear):
         self.relative = relative
         self.smooth = smooth
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"CubicBezier(start={self.start}, control1={self.control1}, "
             f"control2={self.control2}, end={self.end}, smooth={self.smooth})"
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, CubicBezier):
             return NotImplemented
         return (
@@ -246,12 +284,12 @@ class CubicBezier(NonLinear):
             and self.control2 == other.control2
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if not isinstance(other, CubicBezier):
             return NotImplemented
         return not self == other
 
-    def _d(self, previous):
+    def _d(self, previous: PathSegment) -> str:
         c1 = self.control1
         c2 = self.control2
         end = self.end
@@ -261,14 +299,18 @@ class CubicBezier(NonLinear):
             c2 -= previous.end
             end -= previous.end
 
-        if self.smooth and self.is_smooth_from(previous):
+        # TODO: Add check that previous is CubicBezier instance.
+        # mypy error:
+        # Argument 1 to "is_smooth_from" of "CubicBezier" has incompatible type
+        # "PathSegment"; expected "CubicBezier"  [arg-type]
+        if self.smooth and self.is_smooth_from(previous):  # type: ignore[arg-type]
             cmd = "s" if self.relative else "S"
             return f"{cmd} {c2.real:G},{c2.imag:G} {end.real:G},{end.imag:G}"
 
         cmd = "c" if self.relative else "C"
         return f"{cmd} {c1.real:G},{c1.imag:G} {c2.real:G},{c2.imag:G} {end.real:G},{end.imag:G}"
 
-    def is_smooth_from(self, previous):
+    def is_smooth_from(self, previous: CubicBezier) -> bool:
         """Checks if this segment would be a smooth segment following the previous"""
         if isinstance(previous, CubicBezier):
             return self.start == previous.end and (self.control1 - self.start) == (
@@ -277,13 +319,13 @@ class CubicBezier(NonLinear):
         else:
             return self.control1 == self.start
 
-    def set_smooth_from(self, previous):
+    def set_smooth_from(self, previous: CubicBezier) -> None:
         assert isinstance(previous, CubicBezier)
         self.start = previous.end
         self.control1 = previous.end - previous.control2 + self.start
         self.smooth = True
 
-    def point(self, pos):
+    def point(self, pos: float) -> complex:
         """Calculate the x,y position at a certain position of the path"""
         return (
             ((1 - pos) ** 3 * self.start)
@@ -292,7 +334,7 @@ class CubicBezier(NonLinear):
             + (pos**3 * self.end)
         )
 
-    def tangent(self, pos):
+    def tangent(self, pos: float) -> complex:
         return (
             -3 * (1 - pos) ** 2 * self.start
             + 3 * (1 - pos) ** 2 * self.control1
@@ -302,13 +344,13 @@ class CubicBezier(NonLinear):
             + 3 * pos**2 * self.end
         )
 
-    def length(self, error=ERROR, min_depth=MIN_DEPTH):
+    def length(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
         """Calculate the length of the path up to a certain position"""
         start_point = self.point(0)
         end_point = self.point(1)
         return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
 
-    def boundingbox(self):
+    def boundingbox(self) -> List[float]:
         """Calculate the bounding box of a cubic Bezier curve.
 
         A cubic Bezier curve and its derivative are given as follows.
@@ -355,20 +397,27 @@ class CubicBezier(NonLinear):
 
 
 class QuadraticBezier(NonLinear):
-    def __init__(self, start, control, end, relative=False, smooth=False):
+    def __init__(
+        self,
+        start: complex,
+        control: complex,
+        end: complex,
+        relative: bool = False,
+        smooth: bool = False,
+    ) -> None:
         self.start = start
         self.end = end
         self.control = control
         self.relative = relative
         self.smooth = smooth
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"QuadraticBezier(start={self.start}, control={self.control}, "
             f"end={self.end}, smooth={self.smooth})"
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, QuadraticBezier):
             return NotImplemented
         return (
@@ -377,26 +426,30 @@ class QuadraticBezier(NonLinear):
             and self.control == other.control
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if not isinstance(other, QuadraticBezier):
             return NotImplemented
         return not self == other
 
-    def _d(self, previous):
+    def _d(self, previous: PathSegment) -> str:
         control = self.control
         end = self.end
         if self.relative and previous:
             control -= previous.end
             end -= previous.end
 
-        if self.smooth and self.is_smooth_from(previous):
+        # TODO: Add check that previous is QuadraticBezier instance.
+        # mypy error:
+        # Argument 1 to "is_smooth_from" of "QuadraticBezier" has incompatible type
+        # "PathSegment"; expected "QuadraticBezier"  [arg-type]
+        if self.smooth and self.is_smooth_from(previous):  # type: ignore[arg-type]
             cmd = "t" if self.relative else "T"
             return f"{cmd} {end.real:G},{end.imag:G}"
 
         cmd = "q" if self.relative else "Q"
         return f"{cmd} {control.real:G},{control.imag:G} {end.real:G},{end.imag:G}"
 
-    def is_smooth_from(self, previous):
+    def is_smooth_from(self, previous: QuadraticBezier) -> bool:
         """Checks if this segment would be a smooth segment following the previous"""
         if isinstance(previous, QuadraticBezier):
             return self.start == previous.end and (self.control - self.start) == (
@@ -405,27 +458,27 @@ class QuadraticBezier(NonLinear):
         else:
             return self.control == self.start
 
-    def set_smooth_from(self, previous):
+    def set_smooth_from(self, previous: QuadraticBezier) -> None:
         assert isinstance(previous, QuadraticBezier)
         self.start = previous.end
         self.control = previous.end - previous.control + self.start
         self.smooth = True
 
-    def point(self, pos):
+    def point(self, pos: float) -> complex:
         return (
             (1 - pos) ** 2 * self.start
             + 2 * (1 - pos) * pos * self.control
             + pos**2 * self.end
         )
 
-    def tangent(self, pos):
+    def tangent(self, pos: float) -> complex:
         return (
             self.start * (2 * pos - 2)
             + (2 * self.end - 4 * self.control) * pos
             + 2 * self.control
         )
 
-    def length(self, error=None, min_depth=None):
+    def length(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
         a = self.start - 2 * self.control + self.end
         b = 2 * (self.control - self.start)
 
@@ -458,7 +511,7 @@ class QuadraticBezier(NonLinear):
                     s = abs(a) * (k**2 / 2 - k + 1)
         return s
 
-    def boundingbox(self):
+    def boundingbox(self) -> List[float]:
         """Calculate the bounding box of a quadratic Bezier curve.
 
         A quadratic Bezier curve and its derivative are given as follows.
@@ -502,7 +555,16 @@ class QuadraticBezier(NonLinear):
 
 
 class Arc(NonLinear):
-    def __init__(self, start, radius, rotation, arc, sweep, end, relative=False):
+    def __init__(
+        self,
+        start: complex,
+        radius: complex,
+        rotation: float,
+        arc: Union[bool, int],
+        sweep: Union[bool, int],
+        end: complex,
+        relative: bool = False,
+    ) -> None:
         """radius is complex, rotation is in degrees,
         large and sweep are 1 or 0 (True/False also work)"""
 
@@ -516,13 +578,13 @@ class Arc(NonLinear):
 
         self._parameterize()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"Arc(start={self.start}, radius={self.radius}, rotation={self.rotation}, "
             f"arc={self.arc}, sweep={self.sweep}, end={self.end})"
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Arc):
             return NotImplemented
         return (
@@ -534,12 +596,12 @@ class Arc(NonLinear):
             and self.sweep == other.sweep
         )
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if not isinstance(other, Arc):
             return NotImplemented
         return not self == other
 
-    def _d(self, previous):
+    def _d(self, previous: PathSegment) -> str:
         end = self.end
         cmd = "a" if self.relative else "A"
         if self.relative:
@@ -550,7 +612,7 @@ class Arc(NonLinear):
             f"{int(self.arc):d},{int(self.sweep):d} {end.real:G},{end.imag:G}"
         )
 
-    def _parameterize(self):
+    def _parameterize(self) -> None:
         # Conversion from endpoint to center parameterization
         # http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
         if self.start == self.end:
@@ -629,7 +691,7 @@ class Arc(NonLinear):
         if not self.sweep:
             self.delta -= 360
 
-    def point(self, pos):
+    def point(self, pos: float) -> complex:
         if self.start == self.end:
             # This is equivalent of omitting the segment
             return self.start
@@ -656,7 +718,7 @@ class Arc(NonLinear):
         )
         return complex(x, y)
 
-    def tangent(self, pos):
+    def tangent(self, pos: float) -> complex:
         angle = radians(self.theta + (self.delta * pos))
         cosr = cos(radians(self.rotation))
         sinr = sin(radians(self.rotation))
@@ -666,7 +728,7 @@ class Arc(NonLinear):
         y = sinr * cos(angle) * radius.real + cosr * sin(angle) * radius.imag
         return complex(x, y) * complex(0, 1)
 
-    def length(self, error=ERROR, min_depth=MIN_DEPTH):
+    def length(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
         """The length of an elliptical arc segment requires numerical
         integration, and in that case it's simpler to just do a geometric
         approximation, as for cubic bezier curves.
@@ -689,7 +751,7 @@ class Arc(NonLinear):
         end_point = self.point(1)
         return segment_length(self, 0, 1, start_point, end_point, error, min_depth, 0)
 
-    def boundingbox(self):
+    def boundingbox(self) -> List[float]:
         """Calculate the bounding box of an arc
 
         To calculate the extremums of the arc coordinates, we solve
@@ -810,24 +872,24 @@ class Move:
     paths that consist of only move commands, which is valid, but pointless.
     """
 
-    def __init__(self, to, relative=False):
+    def __init__(self, to: complex, relative: bool = False) -> None:
         self.start = self.end = to
         self.relative = relative
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Move(to=%s)" % self.start
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Move):
             return NotImplemented
         return self.start == other.start
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if not isinstance(other, Move):
             return NotImplemented
         return not self == other
 
-    def _d(self, previous):
+    def _d(self, previous: PathSegment) -> str:
         cmd = "M"
         x = self.end.real
         y = self.end.imag
@@ -838,16 +900,16 @@ class Move:
                 y -= previous.end.imag
         return f"{cmd} {x:G},{y:G}"
 
-    def point(self, pos):
+    def point(self, pos: float) -> complex:
         return self.start
 
-    def tangent(self, pos):
+    def tangent(self, pos: float) -> complex:
         return 0
 
-    def length(self, error=ERROR, min_depth=MIN_DEPTH):
+    def length(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
         return 0
 
-    def boundingbox(self):
+    def boundingbox(self) -> List[float]:
         x_min = min(self.start.real, self.end.real)
         x_max = max(self.start.real, self.end.real)
         y_min = min(self.start.imag, self.end.imag)
@@ -861,18 +923,18 @@ class Move:
 class Close(Linear):
     """Represents the closepath command"""
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Close):
             return NotImplemented
         return self.start == other.start and self.end == other.end
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Close(start={self.start}, end={self.end})"
 
-    def _d(self, previous):
+    def _d(self, previous: PathSegment) -> str:
         return "z" if self.relative else "Z"
 
-    def boundingbox(self):
+    def boundingbox(self) -> List[float]:
         x_min = min(self.start.real, self.end.real)
         x_max = max(self.start.real, self.end.real)
         y_min = min(self.start.imag, self.end.imag)
@@ -880,43 +942,57 @@ class Close(Linear):
         return [x_min, y_min, x_max, y_max]
 
 
-class Path(MutableSequence):
+if TYPE_CHECKING:
+
+    class PathType(MutableSequence[Union[PathSegment, Move]]):
+        pass
+
+else:
+
+    class PathType(MutableSequence):
+        pass
+
+
+class Path(PathType):
     """A Path is a sequence of path segments"""
 
-    def __init__(self, *segments):
+    def __init__(self, *segments: Union[PathSegment, Move]) -> None:
         self._segments = list(segments)
-        self._length = None
-        self._lengths = None
+        self._length: Union[float, None] = None
+        self._lengths: Union[List[float], None] = None
         # Fractional distance from starting point through the end of each segment.
-        self._fractions = []
+        self._fractions: List[float] = []
 
-    def __getitem__(self, index):
+    # TODO: Missing handling for slices.
+    def __getitem__(self, index: int) -> Union[PathSegment, Move]:  # type: ignore[override]
         return self._segments[index]
 
-    def __setitem__(self, index, value):
+    # TODO: Missing handling for slices.
+    def __setitem__(self, index: int, value: Union[PathSegment, Move]) -> None:  # type: ignore[override]
         self._segments[index] = value
         self._length = None
 
-    def __delitem__(self, index):
+    # TODO: Missing handling for slices.
+    def __delitem__(self, index: int) -> None:  # type: ignore[override]
         del self._segments[index]
         self._length = None
 
-    def insert(self, index, value):
+    def insert(self, index: int, value: Union[PathSegment, Move]) -> None:
         self._segments.insert(index, value)
         self._length = None
 
-    def reverse(self):
+    def reverse(self) -> None:
         # Reversing the order of a path would require reversing each element
         # as well. That's not implemented.
         raise NotImplementedError
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._segments)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Path(%s)" % (", ".join(repr(x) for x in self._segments))
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Path):
             return NotImplemented
         if len(self) != len(other):
@@ -926,12 +1002,12 @@ class Path(MutableSequence):
                 return False
         return True
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         if not isinstance(other, Path):
             return NotImplemented
         return not self == other
 
-    def _calc_lengths(self, error=ERROR, min_depth=MIN_DEPTH):
+    def _calc_lengths(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> None:
         if self._length is not None:
             return
 
@@ -944,12 +1020,14 @@ class Path(MutableSequence):
         else:
             self._lengths = [each / self._length for each in lengths]
         # Calculate the fractional distance for each segment to use in point()
-        fraction = 0
+        fraction = 0.0
         for each in self._lengths:
             fraction += each
             self._fractions.append(fraction)
 
-    def _find_segment(self, pos, error=ERROR):
+    def _find_segment(
+        self, pos: float, error: float = ERROR
+    ) -> Tuple[Union[PathSegment, Move], float]:
         # Shortcuts
         if pos == 0.0:
             return self._segments[0], pos
@@ -972,29 +1050,36 @@ class Path(MutableSequence):
             )
         return self._segments[i], segment_pos
 
-    def point(self, pos, error=ERROR):
+    def point(self, pos: float, error: float = ERROR) -> complex:
         segment, pos = self._find_segment(pos, error)
         return segment.point(pos)
 
-    def tangent(self, pos, error=ERROR):
+    def tangent(self, pos: float, error: float = ERROR) -> complex:
         segment, pos = self._find_segment(pos, error)
         return segment.tangent(pos)
 
-    def length(self, error=ERROR, min_depth=MIN_DEPTH):
+    def length(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
         self._calc_lengths(error, min_depth)
-        return self._length
+        # TODO: refactor code to avoid this mypy error:
+        # Incompatible return value type (got "Optional[float]", expected "float")
+        return self._length  # type: ignore[return-value]
 
-    def d(self):
+    def d(self) -> str:
         parts = []
         previous_segment = None
 
         for segment in self:
-            parts.append(segment._d(previous_segment))
+            # TODO: The `previous` argument in PathSegment._d(previous) cannot be
+            #     None because it will crash at least in some cases like Line._d(None).
+            # mypy error:
+            # Argument 1 to "_d" of "PathSegment" has incompatible type "None";
+            # expected "PathSegment"  [arg-type]
+            parts.append(segment._d(previous_segment))  # type: ignore[arg-type]
             previous_segment = segment
 
         return " ".join(parts)
 
-    def boundingbox(self):
+    def boundingbox(self) -> List[float]:
         x_coords = []
         y_coords = []
 
