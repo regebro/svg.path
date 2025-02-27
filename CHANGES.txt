@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-6.4 (unreleased)
-----------------
+6.4b1 (2025-02-27)
+------------------
 
 - Improved test reliability [bdrung]
 
