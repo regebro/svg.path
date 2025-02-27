@@ -27,4 +27,4 @@ Taewoong Jang [twjang] implemented boundingbox functions.
 
 Benjamin Drung [bdrung] added a font to make tests non-flakey.
 
- Udi Fuchs [udifuchs] added type annotations.
+Udi Fuchs [udifuchs] added type annotations.
