@@ -4,7 +4,7 @@ from typing import Tuple
 from PIL import Image, ImageDraw, ImageColor, ImageChops
 from math import sqrt
 
-from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc
+from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc, PathSegment
 from .font import get_better_than_nothing_font
 
 
@@ -58,7 +58,7 @@ class ImageTest(unittest.TestCase):
 
             self.draw.line([c2t(p), c2t(tt + p)], fill=YELLOW, width=1)
 
-    def test_image(self):
+    def test_image(self) -> None:
         font = get_better_than_nothing_font()
         self.draw.text((10, 10), "This is an SVG line:", font=font)
         self.draw.text(

@@ -5,7 +5,7 @@ import pytest
 import sys
 
 from PIL import Image, ImageDraw, ImageColor, ImageChops
-from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc
+from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc, PathSegment
 from .font import get_better_than_nothing_font
 
 
@@ -58,7 +58,7 @@ class BoundingBoxImageTest(unittest.TestCase):
     @pytest.mark.skipif(
         sys.platform != "linux", reason="Different platforms have different fonts"
     )
-    def test_image(self):
+    def test_image(self) -> None:
         font = get_better_than_nothing_font()
         self.draw.text((10, 10), "This is an SVG line:", font=font)
         self.draw.text((10, 100), "The red line is a bounding box.", font=font)

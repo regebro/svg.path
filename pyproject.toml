@@ -61,8 +61,6 @@ universal = 1
 testpaths = ["tests"]
 
 [tool.mypy]
-files =
-    src,
-    tests
+files = ["src", "tests"]
 
-strict = True
+strict = true
