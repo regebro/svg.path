@@ -12,7 +12,7 @@ all: devenv check test
 
 # The fullrelease script is a part of zest.releaser, which is the last
 # package installed, so if it exists, the devenv is installed.
-devenv:	$(bin_dir)fullrelease setup.cfg
+devenv:	$(bin_dir)fullrelease
 
 $(bin_dir):
 	virtualenv ve --python python3.9
