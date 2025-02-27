@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "svg.path"
+version = "6.4.dev0"
+description = "SVG path objects and parser"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Multimedia :: Graphics",
+]
+keywords = ["svg", "path", "maths"]
+authors = [{name = "Lennart Regebro", email = "regebro@gmail.com"}]
+license = {text = "MIT"}
+urls = {Homepage = "https://github.com/regebro/svg.path"}
+dynamic = ["readme"]
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+    "Pillow",
+    "black",
+    "flake8",
+    "pyroma",
+    "check-manifest",
+    "zest.releaser[recommended]",
+]
+
+[tool.setuptools]
+zip-safe = true
+include-package-data = true
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.rst", "CONTRIBUTORS.txt", "CHANGES.txt"]}
+
+[tool.distutils.bdist_wheel]
+universal = 1
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

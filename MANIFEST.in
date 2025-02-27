@@ -1,6 +1,9 @@
 include *.rst
 include *.txt
 
-exclude Makefile
+exclude Makefile .flake8
 recursive-exclude tests *
 
+
+# added by check-manifest
+include *.yaml
