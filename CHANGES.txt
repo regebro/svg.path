@@ -5,7 +5,7 @@ Changelog
 6.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Improved test reliability [bdrung]
 
 
 6.3 (2023-04-29)
