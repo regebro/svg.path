@@ -1,9 +1,9 @@
 import unittest
-from svg.path.parser import parse_path
+from svg.path import parse_path
 
 
 class TestGeneration(unittest.TestCase):
-    def test_svg_examples(self):
+    def test_svg_examples(self) -> None:
         """Examples from the SVG spec"""
         paths = [
             # "M 100,100 L 300,100 L 200,300 Z",

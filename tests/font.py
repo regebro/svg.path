@@ -9,7 +9,7 @@ from io import BytesIO
 import base64
 
 
-def get_better_than_nothing_font():
+def get_better_than_nothing_font() -> ImageFont.ImageFont:
     font = ImageFont.ImageFont()
     font._load_pilfont_data(
         # courB08
