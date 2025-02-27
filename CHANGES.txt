@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-6.4b2 (unreleased)
-------------------
+6.4 (2025-02-27)
+----------------
 
 - Nothing changed yet.
 
