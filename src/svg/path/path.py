@@ -1,6 +1,6 @@
 from __future__ import annotations
 from math import sqrt, cos, sin, acos, degrees, radians, log, pi
-from typing import List, Tuple, Union, TYPE_CHECKING
+from typing import overload, Iterable, List, Tuple, Union, TYPE_CHECKING
 from bisect import bisect
 from abc import ABC, abstractmethod
 import math
@@ -104,7 +104,7 @@ class PathSegment(ABC):
     end: complex
 
     @abstractmethod
-    def _d(self, previous: PathSegment) -> str:
+    def _d(self, previous: _BaseSegment) -> str:
         pass
 
     @abstractmethod
@@ -193,34 +193,28 @@ class Line(Linear):
             return NotImplemented
         return self.start == other.start and self.end == other.end
 
-    def _d(self, previous: PathSegment) -> str:
+    def _d(self, previous: _BaseSegment) -> str:
         x = self.end.real
         y = self.end.imag
         if self.relative:
             x -= previous.end.real
             y -= previous.end.imag
 
-        # TODO: Add check that `previous` is Line instance.
-        # mypy error:
-        # Argument 1 to "is_horizontal_from" of "Line" has incompatible type "PathSegment"; expected "Line"
-        if self.horizontal and self.is_horizontal_from(previous):  # type: ignore[arg-type]
+        if self.horizontal and self.is_horizontal_from(previous):
             cmd = "h" if self.relative else "H"
             return f"{cmd} {x:G}"
 
-        # TODO: Add check that previous is Line instance.
-        # mypy error:
-        # Argument 1 to "is_vertical_from" of "Line" has incompatible type "PathSegment"; expected "Line"
-        if self.vertical and self.is_vertical_from(previous):  # type: ignore[arg-type]
+        if self.vertical and self.is_vertical_from(previous):
             cmd = "v" if self.relative else "V"
             return f"{cmd} {y:G}"
 
         cmd = "l" if self.relative else "L"
         return f"{cmd} {x:G},{y:G}"
 
-    def is_vertical_from(self, previous: Line) -> bool:
+    def is_vertical_from(self, previous: _BaseSegment) -> bool:
         return self.start == previous.end and self.start.real == self.end.real
 
-    def is_horizontal_from(self, previous: Line) -> bool:
+    def is_horizontal_from(self, previous: _BaseSegment) -> bool:
         return self.start == previous.end and self.start.imag == self.end.imag
 
     def boundingbox(self) -> List[float]:
@@ -269,7 +263,7 @@ class CubicBezier(NonLinear):
             return NotImplemented
         return not self == other
 
-    def _d(self, previous: PathSegment) -> str:
+    def _d(self, previous: _BaseSegment) -> str:
         c1 = self.control1
         c2 = self.control2
         end = self.end
@@ -279,18 +273,14 @@ class CubicBezier(NonLinear):
             c2 -= previous.end
             end -= previous.end
 
-        # TODO: Add check that previous is CubicBezier instance.
-        # mypy error:
-        # Argument 1 to "is_smooth_from" of "CubicBezier" has incompatible type
-        # "PathSegment"; expected "CubicBezier"  [arg-type]
-        if self.smooth and self.is_smooth_from(previous):  # type: ignore[arg-type]
+        if self.smooth and self.is_smooth_from(previous):
             cmd = "s" if self.relative else "S"
             return f"{cmd} {c2.real:G},{c2.imag:G} {end.real:G},{end.imag:G}"
 
         cmd = "c" if self.relative else "C"
         return f"{cmd} {c1.real:G},{c1.imag:G} {c2.real:G},{c2.imag:G} {end.real:G},{end.imag:G}"
 
-    def is_smooth_from(self, previous: CubicBezier) -> bool:
+    def is_smooth_from(self, previous: _BaseSegment) -> bool:
         """Checks if this segment would be a smooth segment following the previous"""
         if isinstance(previous, CubicBezier):
             return self.start == previous.end and (self.control1 - self.start) == (
@@ -401,25 +391,21 @@ class QuadraticBezier(NonLinear):
             return NotImplemented
         return not self == other
 
-    def _d(self, previous: PathSegment) -> str:
+    def _d(self, previous: _BaseSegment) -> str:
         control = self.control
         end = self.end
         if self.relative and previous:
             control -= previous.end
             end -= previous.end
 
-        # TODO: Add check that previous is QuadraticBezier instance.
-        # mypy error:
-        # Argument 1 to "is_smooth_from" of "QuadraticBezier" has incompatible type
-        # "PathSegment"; expected "QuadraticBezier"  [arg-type]
-        if self.smooth and self.is_smooth_from(previous):  # type: ignore[arg-type]
+        if self.smooth and self.is_smooth_from(previous):
             cmd = "t" if self.relative else "T"
             return f"{cmd} {end.real:G},{end.imag:G}"
 
         cmd = "q" if self.relative else "Q"
         return f"{cmd} {control.real:G},{control.imag:G} {end.real:G},{end.imag:G}"
 
-    def is_smooth_from(self, previous: QuadraticBezier) -> bool:
+    def is_smooth_from(self, previous: _BaseSegment) -> bool:
         """Checks if this segment would be a smooth segment following the previous"""
         if isinstance(previous, QuadraticBezier):
             return self.start == previous.end and (self.control - self.start) == (
@@ -562,7 +548,7 @@ class Arc(NonLinear):
             return NotImplemented
         return not self == other
 
-    def _d(self, previous: PathSegment) -> str:
+    def _d(self, previous: _BaseSegment) -> str:
         end = self.end
         cmd = "a" if self.relative else "A"
         if self.relative:
@@ -782,7 +768,7 @@ class Move:
             return NotImplemented
         return not self == other
 
-    def _d(self, previous: PathSegment) -> str:
+    def _d(self, previous: _BaseSegment | None) -> str:
         cmd = "M"
         x = self.end.real
         y = self.end.imag
@@ -821,7 +807,7 @@ class Close(Linear):
     def __repr__(self) -> str:
         return f"Close(start={self.start}, end={self.end})"
 
-    def _d(self, previous: PathSegment) -> str:
+    def _d(self, previous: _BaseSegment) -> str:
         return "z" if self.relative else "Z"
 
     def boundingbox(self) -> List[float]:
@@ -832,9 +818,13 @@ class Close(Linear):
         return [x_min, y_min, x_max, y_max]
 
 
+# Path segments can be of type PathSegment or Move:
+_BaseSegment = Union[PathSegment, Move]
+
+
 if TYPE_CHECKING:
 
-    class PathType(MutableSequence[Union[PathSegment, Move]]):
+    class PathType(MutableSequence[_BaseSegment]):
         pass
 
 else:
@@ -846,28 +836,47 @@ else:
 class Path(PathType):
     """A Path is a sequence of path segments"""
 
-    def __init__(self, *segments: Union[PathSegment, Move]) -> None:
+    def __init__(self, *segments: _BaseSegment) -> None:
         self._segments = list(segments)
         self._length: Union[float, None] = None
         self._lengths: Union[List[float], None] = None
         # Fractional distance from starting point through the end of each segment.
         self._fractions: List[float] = []
 
-    # TODO: Missing handling for slices.
-    def __getitem__(self, index: int) -> Union[PathSegment, Move]:  # type: ignore[override]
+    @overload
+    def __getitem__(self, index: int) -> _BaseSegment: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> list[_BaseSegment]: ...
+
+    def __getitem__(self, index: slice | int) -> list[_BaseSegment] | _BaseSegment:
         return self._segments[index]
 
-    # TODO: Missing handling for slices.
-    def __setitem__(self, index: int, value: Union[PathSegment, Move]) -> None:  # type: ignore[override]
-        self._segments[index] = value
+    @overload
+    def __setitem__(self, index: int, value: _BaseSegment) -> None: ...
+
+    @overload
+    def __setitem__(self, index: slice, value: Iterable[_BaseSegment]) -> None: ...
+
+    def __setitem__(
+        self, index: int | slice, value: _BaseSegment | Iterable[_BaseSegment]
+    ) -> None:
+        # TODO: The following check is just to make mypy happy.
+        #       It can be removed once this mypy issue is fixed:
+        #       https://github.com/python/mypy/issues/7858
+        if isinstance(index, int):
+            assert isinstance(value, (PathSegment, Move))
+            self._segments[index] = value
+        else:
+            assert not isinstance(value, (PathSegment, Move))
+            self._segments[index] = value
         self._length = None
 
-    # TODO: Missing handling for slices.
-    def __delitem__(self, index: int) -> None:  # type: ignore[override]
+    def __delitem__(self, index: int | slice) -> None:
         del self._segments[index]
         self._length = None
 
-    def insert(self, index: int, value: Union[PathSegment, Move]) -> None:
+    def insert(self, index: int, value: _BaseSegment) -> None:
         self._segments.insert(index, value)
         self._length = None
 
@@ -897,9 +906,9 @@ class Path(PathType):
             return NotImplemented
         return not self == other
 
-    def _calc_lengths(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> None:
+    def _calc_lengths(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
         if self._length is not None:
-            return
+            return self._length
 
         lengths = [
             each.length(error=error, min_depth=min_depth) for each in self._segments
@@ -914,10 +923,11 @@ class Path(PathType):
         for each in self._lengths:
             fraction += each
             self._fractions.append(fraction)
+        return self._length
 
     def _find_segment(
         self, pos: float, error: float = ERROR
-    ) -> Tuple[Union[PathSegment, Move], float]:
+    ) -> Tuple[_BaseSegment, float]:
         # Shortcuts
         if pos == 0.0:
             return self._segments[0], pos
@@ -949,14 +959,11 @@ class Path(PathType):
         return segment.tangent(pos)
 
     def length(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
-        self._calc_lengths(error, min_depth)
-        # TODO: refactor code to avoid this mypy error:
-        # Incompatible return value type (got "Optional[float]", expected "float")
-        return self._length  # type: ignore[return-value]
+        return self._calc_lengths(error, min_depth)
 
     def d(self) -> str:
-        parts = []
-        previous_segment = None
+        parts: list[str] = []
+        previous_segment: _BaseSegment | None = None
 
         for segment in self:
             # TODO: The `previous` argument in PathSegment._d(previous) cannot be

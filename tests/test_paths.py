@@ -649,10 +649,28 @@ class TestPath(unittest.TestCase):
         del path2[-1]
         self.assertFalse(path1 == path2)
 
+        # Get rid of the last segment using a slice:
+        del path1[-1:]
+        self.assertTrue(path1 == path2)
+
         # It's not equal to a list of it's segments
-        # TODO: Path does not support slicing, but this is not tested here.
-        self.assertTrue(path1 != path1[:])  # type: ignore[index]
-        self.assertFalse(path1 == path1[:])  # type: ignore[index]
+        self.assertTrue(path1 != path1[:])
+        self.assertFalse(path1 == path1[:])
+
+        # A slice of a Path is not a Path. It is a list of segment:
+        self.assertTrue(isinstance(path1[1:2], list))
+        self.assertFalse(isinstance(path1[1:2], Path))
+
+        # Test setting a single item:
+        path1[1] = path2[2]
+        self.assertFalse(path1 == path2)
+        path1[1] = path2[1]
+        self.assertTrue(path1 == path2)
+        # Test setting a slice of items:
+        path1[1:2] = path2[1:3]
+        self.assertFalse(path1 == path2)
+        path1[1:3] = path2[1:2]
+        self.assertTrue(path1 == path2)
 
     def test_non_arc(self) -> None:
         # And arc with the same start and end is a noop.
