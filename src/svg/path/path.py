@@ -760,7 +760,7 @@ class Arc(NonLinear):
         return [x_min, y_min, x_max, y_max]
 
 
-class Move:
+class Move(PathSegment):
     """Represents move commands. Does nothing, but is there to handle
     paths that consist of only move commands, which is valid, but pointless.
     """
@@ -834,7 +834,7 @@ class Close(Linear):
 
 if TYPE_CHECKING:
 
-    class PathType(MutableSequence[Union[PathSegment, Move]]):
+    class PathType(MutableSequence[PathSegment]):
         pass
 
 else:
@@ -846,7 +846,7 @@ else:
 class Path(PathType):
     """A Path is a sequence of path segments"""
 
-    def __init__(self, *segments: Union[PathSegment, Move]) -> None:
+    def __init__(self, *segments: PathSegment) -> None:
         self._segments = list(segments)
         self._length: Union[float, None] = None
         self._lengths: Union[List[float], None] = None
@@ -854,11 +854,11 @@ class Path(PathType):
         self._fractions: List[float] = []
 
     # TODO: Missing handling for slices.
-    def __getitem__(self, index: int) -> Union[PathSegment, Move]:  # type: ignore[override]
+    def __getitem__(self, index: int) -> PathSegment:  # type: ignore[override]
         return self._segments[index]
 
     # TODO: Missing handling for slices.
-    def __setitem__(self, index: int, value: Union[PathSegment, Move]) -> None:  # type: ignore[override]
+    def __setitem__(self, index: int, value: PathSegment) -> None:  # type: ignore[override]
         self._segments[index] = value
         self._length = None
 
@@ -867,7 +867,7 @@ class Path(PathType):
         del self._segments[index]
         self._length = None
 
-    def insert(self, index: int, value: Union[PathSegment, Move]) -> None:
+    def insert(self, index: int, value: PathSegment) -> None:
         self._segments.insert(index, value)
         self._length = None
 
@@ -917,7 +917,7 @@ class Path(PathType):
 
     def _find_segment(
         self, pos: float, error: float = ERROR
-    ) -> Tuple[Union[PathSegment, Move], float]:
+    ) -> Tuple[PathSegment, float]:
         # Shortcuts
         if pos == 0.0:
             return self._segments[0], pos
