@@ -7,6 +7,9 @@ import math
 
 from collections.abc import MutableSequence
 
+import cython as cy
+
+
 # This file contains classes for the different types of SVG path segments as
 # well as a Path object that contains a sequence of path segments.
 
@@ -14,31 +17,41 @@ MIN_DEPTH = 5
 ERROR = 1e-12
 
 
-def _find_solutions_for_bezier(c2: float, c1: float, c0: float) -> List[float]:
+def _find_solutions_for_bezier(c2: cy.float, c1: cy.float, c0: cy.float) -> List[cy.float]:
     """Find solutions of c2 * t^2 + c1 * t + c0 = 0 where t in [0, 1]"""
     soln = []
     if c2 == 0:
         if c1 != 0:
             soln.append(-c0 / c1)
     else:
-        det = c1**2 - 4 * c2 * c0
+        det: float = c1**2 - 4 * c2 * c0
         if det >= 0:
             soln.append((-c1 + math.pow(det, 0.5)) / 2.0 / c2)
             soln.append((-c1 - math.pow(det, 0.5)) / 2.0 / c2)
     return [s for s in soln if 0.0 <= s and s <= 1.0]
 
 
-def _find_solutions_for_arc(a: float, b: float, c: float, d: float) -> List[float]:
+def _find_solutions_for_arc(a: cy.float, b: cy.float, c: cy.float, d: cy.float) -> List[cy.float]:
     """Find solution for a sin(x) + b cos(x) = 0 where x = c + d * t and t in [0, 1]"""
     if a == 0:
         # when n \in Z
         # pi / 2 + pi * n = c + d * t
         # --> n = d / pi * t - (1/2 - c/pi)
         # --> t = (pi / 2 - c + pi * n) / d
-        n_ranges = [-0.5 + c / math.pi, d / math.pi - 0.5 + c / math.pi]
-        n_range_start = math.floor(min(n_ranges))
-        n_range_end = math.ceil(max(n_ranges))
-        t_list = [
+        n_range_1: cy.float = -0.5 + c / math.pi
+        n_range_2: cy.float = d / math.pi - 0.5 + c / math.pi
+        n_range_start: cy.int
+        n_range_end: cy.int
+
+        if n_range_1 > n_range_2:
+            n_range_start = math.floor(n_range_2)
+            n_range_end = math.ceil(n_range_1)
+        else:
+            n_range_start = math.floor(n_range_1)
+            n_range_end = math.ceil(n_range_2)
+
+        alen: cy.int = n_range_end + 1 - n_range_start
+        t_list: cy.array[alen] = [
             (math.pi / 2 - c + math.pi * n) / d
             for n in range(n_range_start, n_range_end + 1)
         ]
@@ -47,21 +60,41 @@ def _find_solutions_for_arc(a: float, b: float, c: float, d: float) -> List[floa
         # pi * n = c + d * t
         # --> n = d / pi * t + c / pi
         # --> t = (- c + pi * n) / d
-        n_ranges = [c / math.pi, d / math.pi + c / math.pi]
-        n_range_start = math.floor(min(n_ranges))
-        n_range_end = math.ceil(max(n_ranges))
-        t_list = [(-c + math.pi * n) / d for n in range(n_range_start, n_range_end + 1)]
+        n_range_1: cy.float = c / math.pi
+        n_range_2: cy.float = d / math.pi + c / math.pi
+        n_range_start: cy.int
+        n_range_end: cy.int
+
+        if n_range_1 > n_range_2:
+            n_range_start = math.floor(n_range_2)
+            n_range_end = math.ceil(n_range_1)
+        else:
+            n_range_start = math.floor(n_range_1)
+            n_range_end = math.ceil(n_range_2)
+
+        alen: cy.int = n_range_end + 1 - n_range_start
+        t_list: cy.array[alen] = [(-c + math.pi * n) / d for n in range(n_range_start, n_range_end + 1)]
     else:
         # when n \in Z
         # arct = tan^-1 (- b / a)  and
         # arct + pi * n = c + d * t
         # --> n = (c - arct + d * t) / pi
         # --> t = (arct - c + pi * n) / d
-        arct = math.atan(-b / a)
-        n_ranges = [(c - arct) / math.pi, d / math.pi + (c - arct) / math.pi]
-        n_range_start = math.floor(min(n_ranges))
-        n_range_end = math.ceil(max(n_ranges))
-        t_list = [
+        arct: cy.float = math.atan(-b / a)
+        n_range_1: cy.float = (c - arct) / math.pi
+        n_range_2: cy.float = d / math.pi + (c - arct) / math.pi
+        n_range_start: cy.int
+        n_range_end: cy.int
+
+        if n_range_1 > n_range_2:
+            n_range_start = math.floor(n_range_2)
+            n_range_end = math.ceil(n_range_1)
+        else:
+            n_range_start = math.floor(n_range_1)
+            n_range_end = math.ceil(n_range_2)
+
+        alen: cy.int = n_range_end + 1 - n_range_start
+        t_list: cy.array[alen] = [
             (arct - c + math.pi * n) / d for n in range(n_range_start, n_range_end + 1)
         ]
 

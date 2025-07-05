@@ -5,7 +5,7 @@ import pytest
 import sys
 
 from PIL import Image, ImageDraw, ImageColor, ImageChops
-from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc, PathSegment
+from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc, PathSegment, Path
 from .font import get_better_than_nothing_font
 
 
@@ -54,6 +54,24 @@ class BoundingBoxImageTest(unittest.TestCase):
             fill=RED,
             width=2,
         )
+ 
+    def test_times(self) -> None:
+        start = 30 + 600j
+        control = 400 + 540j
+        end = 260 + 650j
+        qbez1 = QuadraticBezier(start, control, end)
+        start = 200 + 800j
+        control1 = 350 + 750j
+        control2 = 50 + 900j
+        end = 190 + 980j
+        cbez1 = CubicBezier(start, control1, control2, end)
+        path = Path(qbez1, cbez1)
+        import time
+        start = time.time()
+        print(start)
+        for x in range(300000):
+            path.boundingbox()
+        print(time.time()-start)
 
     @pytest.mark.skipif(
         sys.platform != "linux", reason="Different platforms have different fonts"
