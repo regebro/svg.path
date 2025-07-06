@@ -1,8 +1,67 @@
 import unittest
+import pytest
 from math import sqrt, pi
 
-from svg.path import CubicBezier, QuadraticBezier, Line, Arc, Move, Close, Path
+from svg.path import (
+    CubicBezier,
+    QuadraticBezier,
+    Line,
+    Arc,
+    Move,
+    Close,
+    Path,
+    PathSegment,
+)
 from svg.path import parse_path
+
+
+class PathTest(unittest.TestCase):
+
+    def test_path_class(self) -> None:
+        path = parse_path("M 0 0 L 50 20 M 100 100 L 300 100 L 200 300 z")
+        self.assertTrue(isinstance(path, Path))
+
+        # Paths are MutableSequences (ie lists).
+        self.assertEqual(len(path), 6)
+
+        # So we can take items:
+        self.assertTrue(isinstance(path[0], PathSegment))
+
+        # We can slice it:
+        self.assertTrue(isinstance(path[0:3], Path))
+        self.assertEqual(path[0:3].d(), "M 0,0 L 50,20 M 100,100")
+
+        # And replace bits in the middle
+        path[1] = QuadraticBezier(
+            start=(0 + 0j), control=(20 + 20j), end=(100 + 100j), smooth=False
+        )
+        self.assertEqual(len(path), 6)
+        self.assertEqual(
+            path.d(), "M 0,0 Q 20,20 100,100 M 100,100 L 300,100 L 200,300 z"
+        )
+
+        # Even multiples can be replaced
+        path[1:2] = [
+            Line(start=0j, end=(20 + 20j)),
+            QuadraticBezier(
+                start=(20 + 20j), control=(30 + 30j), end=(100 + 100j), smooth=False
+            ),
+        ]
+        # We replaced one with two, it should be longer
+        self.assertEqual(len(path), 7)
+
+        # And we can delete slices
+        del path[1:3]
+        self.assertEqual(len(path), 5)
+        self.assertEqual(path.d(), "M 0,0 M 100,100 L 300,100 L 200,300 z")
+
+        # These are type errors, and MyPy will complain about it without
+        # the type: ignore statement, but we want to check that they raise
+        # type errors:
+        with pytest.raises(TypeError):
+            path[1:2] = Line(start=0j, end=(20 + 20j))  # type: ignore
+        with pytest.raises(TypeError):
+            path[1] = [Line(start=0j, end=(20 + 20j))]  # type: ignore
 
 
 # Most of these test points are not calculated separately, as that would
@@ -649,10 +708,8 @@ class TestPath(unittest.TestCase):
         del path2[-1]
         self.assertFalse(path1 == path2)
 
-        # It's not equal to a list of it's segments
-        # TODO: Path does not support slicing, but this is not tested here.
-        self.assertTrue(path1 != path1[:])  # type: ignore[index]
-        self.assertFalse(path1 == path1[:])  # type: ignore[index]
+        # It is equal to a list of it's segments
+        self.assertEqual(path1, path1[:])
 
     def test_non_arc(self) -> None:
         # And arc with the same start and end is a noop.

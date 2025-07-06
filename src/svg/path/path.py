@@ -1,6 +1,6 @@
 from math import sqrt, cos, sin, acos, atan, degrees, radians, log, pi, floor, ceil
 from math import sqrt, cos, sin, acos, degrees, radians, log, pi
-from typing import List, Tuple, Union, TYPE_CHECKING
+from typing import overload, Iterable, List, Tuple, Union, TYPE_CHECKING
 from bisect import bisect
 from abc import ABC, abstractmethod
 from array import array
@@ -957,23 +957,54 @@ class Path(PathType):
     """A Path is a sequence of path segments"""
 
     def __init__(self, *segments: PathSegment) -> None:
-        self._segments = list(segments)
+        self._segments: list[PathSegment] = list(segments)
         self._length: Union[float, None] = None
         self._lengths: Union[List[float], None] = None
         # Fractional distance from starting point through the end of each segment.
         self._fractions: List[float] = []
 
-    # TODO: Missing handling for slices.
-    def __getitem__(self, index: int) -> PathSegment:  # type: ignore[override]
+    @overload
+    def __getitem__(self, index: int) -> PathSegment: ...
+    @overload
+    def __getitem__(self, index: slice) -> Path: ...
+
+    def __getitem__(self, index: Union[int, slice]) -> Union[PathSegment, Path]:
+        if isinstance(index, slice):
+            res = self._segments[index]
+            return Path(*res)
         return self._segments[index]
 
-    # TODO: Missing handling for slices.
-    def __setitem__(self, index: int, value: PathSegment) -> None:  # type: ignore[override]
-        self._segments[index] = value
+    @overload
+    def __setitem__(self, index: int, value: PathSegment) -> None: ...
+
+    @overload
+    def __setitem__(
+        self, index: slice, value: Union[Path, Iterable[PathSegment]]
+    ) -> None: ...
+
+    def __setitem__(
+        self,
+        index: Union[int, slice],
+        value: Union[PathSegment, Path, Iterable[PathSegment]],
+    ) -> None:
+        if isinstance(index, slice) and isinstance(value, Path):
+            self._segments[index] = value._segments
+        elif isinstance(index, slice) and isinstance(value, Iterable):
+            self._segments[index] = value
+        elif isinstance(index, int) and isinstance(value, PathSegment):
+            self._segments[index] = value
+        else:
+            # If you assign a non-iterable to a slice, or an iterable to a single
+            # location, this should raise an error.
+            # But I can't actually *check* for that without MyPy complaining,
+            # because it shouldn't happen.
+            raise TypeError(
+                "Can only assign a PathSegment to an index and an"
+                " iterable of PathSegments to a slice."
+            )
         self._length = None
 
-    # TODO: Missing handling for slices.
-    def __delitem__(self, index: int) -> None:  # type: ignore[override]
+    def __delitem__(self, index: Union[int, slice]) -> None:
         del self._segments[index]
         self._length = None
 
