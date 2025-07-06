@@ -10,6 +10,8 @@ Changelog
   PathSegments, this will break that. Instead the test has to be explicitly
   that it is NOT a Move segment.
 
+- Paths can now be sliced to return Paths.
+
 
 6.4b1 (2025-02-27)
 ------------------
