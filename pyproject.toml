@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "svg.path"
-version = "7.0"
+version = "7.1.dev0"
 description = "SVG path objects and parser"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
