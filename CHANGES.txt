@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-6.4b2 (unreleased)
-------------------
+7.0 (2025-07-06)
+----------------
 
 - Make the Move class a Path Segment, for type annotation consistency.
   If anyone is using isinstance() expecting that only draw commands are 
