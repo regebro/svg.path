@@ -63,6 +63,23 @@ class PathTest(unittest.TestCase):
         with pytest.raises(TypeError):
             path[1] = [Line(start=0j, end=(20 + 20j))]  # type: ignore
 
+    def test_path_lengths(self) -> None:
+        path = parse_path("M 0 0 L 100 0 L 100 50 L 0 50 z")
+        self.assertAlmostEqual(path.length(), 300.0)
+        self.assertEqual(len(path), 5)
+
+        lengths = path.lengths
+        self.assertEqual(len(lengths), 5)
+        expected = [
+            0.0,
+            0.3333333333333333,
+            0.16666666666666666,
+            0.3333333333333333,
+            0.16666666666666666,
+        ]
+        for a, b in zip(lengths, expected):
+            self.assertAlmostEqual(a, b)
+
 
 # Most of these test points are not calculated separately, as that would
 # take too long and be too error prone. Instead the curves have been verified
