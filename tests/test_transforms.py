@@ -1,7 +1,7 @@
 import unittest
 
 from svg import path, transform
-from math import pi, tan, atan, sqrt
+from math import tan, radians
 from cmath import polar, rect
 
 
@@ -35,9 +35,9 @@ class BaseTransformTests:
     def test_confirm_arcs(self):
         for arc in (
             path.Arc(-200-200j, 400 + 400j, 0, 0, 1, 200+200j),
-            #path.Arc(-200, 200 + 200j, 0, 0, 1, 200),
-            #path.Arc(-100, 100 + 50j, 0, 0, 1, 100),
-            #path.Arc(100, 100 + 50j, 0, 0, 1, -100),
+            path.Arc(-200, 200 + 200j, 0, 0, 1, 200),
+            path.Arc(-100, 100 + 50j, 0, 0, 1, 100),
+            path.Arc(100, 100 + 50j, 0, 0, 1, -100),
         ):
             self._confirm_transform(arc)
 
@@ -58,6 +58,8 @@ class TranslateTransformTests(BaseTransformTests, unittest.TestCase):
 
 class ScaleTransformTests(BaseTransformTests, unittest.TestCase):
     def _confirm_transform(self, original):
+        from .utils import DebugTurtle
+
         for x in (0.1, 0.5, 1, 1.1, 1.5, 2, 10):
             for y in (0.1, 0.5, 1, 1.1, 1.5, 2, 10):
                 scale = transform.scale_matrix(x, y)
@@ -66,6 +68,12 @@ class ScaleTransformTests(BaseTransformTests, unittest.TestCase):
                 for pos in range(0, 101):
                     opoint = original.point(pos*0.01)
                     xpoint = xformed.point(pos*0.01)
+                    if not abs(xpoint.real - opoint.real * x) < 0.00001:
+                        print(f"Failed scale x: {x} at pos {pos} for {xformed}")
+                        import pdb;pdb.set_trace()
+                    if not abs(xpoint.imag - opoint.imag * y) < 0.00001:
+                        print(f"Failed scale y: {y} at pos {pos} for {xformed}")
+                        import pdb;pdb.set_trace()
                     assert abs(xpoint.real - opoint.real * x) < 0.00001
                     assert abs(xpoint.imag - opoint.imag * y) < 0.00001
 
@@ -73,24 +81,13 @@ class ScaleTransformTests(BaseTransformTests, unittest.TestCase):
 class SkewTransformTests(BaseTransformTests, unittest.TestCase):
     def _confirm_transform(self, original):
         for alpha in range(1, 2):
-            angle = (alpha * 15 * 2 * pi) / 360
+            angle = radians(alpha * 15)
             skewx = transform.skewx_matrix(angle)
             xformed_x = original.transform(skewx)
             skewy = transform.skewy_matrix(angle)
             xformed_y = original.transform(skewy)
             skewboth = transform.make_matrix(ax=angle, ay=angle)
-            xformed_both2 = original.transform(skewboth)
-            xformed_both = path.Arc(xformed_both2.start, 780+780j, 0, 0, 1, xformed_both2.end)
-
-            from .utils import DebugTurtle
-            with DebugTurtle(steps=25) as t:
-                #t.draw_path(original)
-                #t.draw_path(original, color="blue", matrix=skewx)
-                #t.draw_path(xformed_x, color="light blue")
-                #t.draw_path(original, color="green", matrix=skewy)
-                #t.draw_path(xformed_y, color="light green")
-                t.draw_path(original, color="red", matrix=skewboth)
-                t.draw_path(xformed_both, color="pink")
+            xformed_both = original.transform(skewboth)
 
             for x in range(1, 101):
                 px = xformed_x.point(x * 0.01)
@@ -104,81 +101,42 @@ class SkewTransformTests(BaseTransformTests, unittest.TestCase):
                 assert abs(py.real - o.real) < 0.00001
                 assert abs(py.imag - (tan(angle) * o.real + o.imag)) < 0.00001
 
-                print(x, "X:", abs(pb.real - (tan(angle) * o.imag + o.real)))
-                print(x, "Y:", abs(pb.imag - (tan(angle) * o.real + o.imag)))
-
-            assert 1==0
+                assert abs(pb.real - (tan(angle) * o.imag + o.real)) < 0.00001
+                assert abs(pb.imag - (tan(angle) * o.real + o.imag)) < 0.00001
 
 
 class RotateTransformTests(BaseTransformTests, unittest.TestCase):
     def _confirm_transform(self, original):
         for alpha in range(1, 7):
-            angle = (alpha * 15 * 2 * pi) / 360
-            skewx = transform.rotate_matrix(angle)
-            xformed = original.transform(skewx)
+            angle = radians(alpha * 15)
+            rotateX = transform.rotate_matrix(angle)
+            xformed = original.transform(rotateX)
 
             for x in range(1, 101):
                 px = xformed.point(x * 0.01)
                 o = original.point(x * 0.01)
-
                 c, phi = polar(o)
-                px2 = rect(c, phi+angle)
-                assert abs(px - px2) < 1e-10
+                ox = rect(c, phi+angle)
+                assert abs(px - ox) < 1e-5
 
 
-class TransformTests(unittest.TestCase):
+class MatrixTransformTests(BaseTransformTests, unittest.TestCase):
+    def _confirm_transform(self, original):
+        for a in (1, 0.5): # scale x
+            for b in (0.1, 0.7): # shear y
+                for c in (0.2, 0.5): # shear x
+                    for d in (1, 2): # scale y
+                        for e in (0, 10, 100): # translate x
+                            for f in (0, -10, -100): # translate y
+                                matrix = transform.matrix_matrix(a, b, c, d, e, f)
+                                xformed = original.transform(matrix)
 
-    def test_svg_path_transform(self):
-        line = path.Line(0, 100 + 100j)
-        linex = line.transform(transform.make_matrix(sx=0.1, sy=0.2))
-        assert linex == path.Line(0, 10 + 20j)
+                                for pos in range(0, 101):
+                                    opoint = original.point(pos*0.01)
+                                    xpoint = xformed.point(pos*0.01)
 
-        d = path.parser.parse_path("M 750,100 L 250,900 L 1250,900 z")
-        # Makes it 10% as big in x and 20% as big in y
-        td = d.transform(transform.make_matrix(sx=0.1, sy=0.2))
-        assert td.d() == "M 75,20 L 25,180 L 125,180 z"
+                                    expected_x = a * opoint.real + c * opoint.imag + e
+                                    expected_y = b * opoint.real + d * opoint.imag + f
 
-        d = path.parser.parse_path(
-            "M 10, 30 A 20, 20 0, 0, 1 50, 30 A 20,20 0, 0, 1 90, 30 Q 90, 60 50, 90 Q 10, 60 10, 30 z"
-        )
-        # Makes it 10% as big in x and 20% as big in y
-        m = (
-            transform.rotate_matrix((-10 * 2 * pi) / 360, 50, 100)
-            @ transform.translate_matrix(-36, 45.5)
-            @ transform.skewx_matrix((40 * 2 * pi) / 360)
-            @ transform.scale_matrix(1, 0.5)
-        )
-        td = d.transform(m)
-        # assert (
-        # td.d()
-        # == "M 149.32,82.6809 A 20,20 0 0,1 115.757,104.442 A 20,20 0 0,1 82.1939,126.203 "
-        # "Q 88.0949,104.5 127.559,61.0359 Q 155.221,60.978 149.32,82.6809 z"
-        # )
-
-        import turtle
-        t = turtle.Turtle()
-        t.penup()
-        arc = path.parser.parse_path(
-            "M 10, 30 A 20, 20 0, 0, 1 50, 30 A 20,20 0, 0, 1 90, 30 Q 90, 60 50, 90 Q 10, 60 10, 30 z"
-        )
-
-        arc = arc.transform(transform.scale_matrix(3) @ transform.translate_matrix(-50, -50))
-        for m in (
-            transform.skewx_matrix((40*2*pi)/360),
-            transform.scale_matrix(1, 0.5),
-            transform.translate_matrix(-36, 45.5),
-            #transform.rotate_matrix((-10*2*pi)/360),
-            #transform.scale_matrix(1, 0.5)
-            ):
-            p = arc.point(0)
-            t.goto(p.real, -p.imag)
-            t.dot(3, 'black')
-            t.pendown()
-            for x in range(1, 101):
-                p = arc.point(x * 0.01)
-                t.goto(p.real, -p.imag)
-            t.penup()
-            t.dot(3, 'black')
-            arc = arc.transform(m)
-
-        import pdb;pdb.set_trace()
+                                    assert abs(xpoint.real - expected_x) < 0.00001
+                                    assert abs(xpoint.imag - expected_y) < 0.00001

@@ -1,4 +1,4 @@
-from math import sqrt, cos, sin, acos, atan, degrees, radians, log, pi, floor, ceil
+from math import sqrt, cos, sin, acos, atan, degrees, radians, log, pi, floor, ceil, atan2
 from typing import overload, Iterable, List, Tuple, Union, TYPE_CHECKING
 from bisect import bisect
 from abc import ABC, abstractmethod
@@ -16,6 +16,54 @@ def _xform(coord, matrix):
     res = matrix @ array("f", [coord.real, coord.imag, 1])
     return complex(res[0], res[1])
 
+def _matrix_mul(A, B):
+    """Multiply two 2×2 matrices."""
+    return [
+        [A[0][0]*B[0][0] + A[0][1]*B[1][0],
+        A[0][0]*B[0][1] + A[0][1]*B[1][1]],
+
+        [A[1][0]*B[0][0] + A[1][1]*B[1][0],
+        A[1][0]*B[0][1] + A[1][1]*B[1][1]]
+    ]
+
+def _eigen_symmetric(M):
+    """
+    Compute eigenvalues/eigenvectors of a real symmetric 2x2 matrix.
+    Returns (vals, vecs) where:
+    vals = [λ1, λ2]
+    vecs = [[v1_x, v2_x],
+            [v1_y, v2_y]]  (columns are eigenvectors)
+
+    I only understand half of this, don't ask me any questions.
+    """
+    a = M[0][0]
+    b = M[0][1]
+    d = M[1][1]
+
+    # eigenvalues
+    tr = a + d
+    disc = sqrt((a - d)**2 + 4*b*b)
+    λ1 = 0.5 * (tr - disc)
+    λ2 = 0.5 * (tr + disc)
+
+    def eigenvector(λ):
+        if abs(b) > 1e-14:
+            # solve (a-λ)x + b y = 0
+            x = 1.0
+            y = -(a - λ) / b
+        else:
+            # The matrix is diagonal or nearly so,
+            # so make the eigenvector align with the axis
+            x = 1.0 if abs(a - λ) < abs(d - λ) else 0.0
+            y = 0.0 if abs(a - λ) < abs(d - λ) else 1.0
+        # normalize
+        norm = sqrt(x*x + y*y)
+        return [x/norm, y/norm]
+
+    v1 = eigenvector(λ1)
+    v2 = eigenvector(λ2)
+
+    return [λ1, λ2], [v1, v2]
 
 def _find_solutions_for_bezier(c2: float, c1: float, c0: float) -> List[float]:
     """Find solutions of c2 * t^2 + c1 * t + c0 = 0 where t in [0, 1]"""
@@ -671,6 +719,7 @@ class Arc(NonLinear):
         theta = degrees(acos(p / n))
         if uy < 0:
             theta = -theta
+        # Theta is the angle from the center to the start point
         self.theta = theta % 360
 
         n = sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy))
@@ -685,6 +734,7 @@ class Arc(NonLinear):
         delta = degrees(acos(d))
         if (ux * vy - uy * vx) < 0:
             delta = -delta
+        # Delta is the angle between the start and end point
         self.delta = delta % 360
         if not self.sweep:
             self.delta -= 360
@@ -797,25 +847,227 @@ class Arc(NonLinear):
         return [x_min, y_min, x_max, y_max]
 
     def transform(self, matrix):
+        """Transform the arc according to the given transformation matrix."""
+        
+        new_start = _xform(self.start, matrix)
+        new_end = _xform(self.end, matrix)
+
+        rx = self.radius.real
+        ry = self.radius.imag
+        rx2 = rx ** 2
+        ry2 = ry ** 2
+
+        cosr = cos(radians(self.rotation))
+        sinr = sin(radians(self.rotation))
+        inv_rx2 = 1.0 / rx2
+        inv_ry2 = 1.0 / ry2
+
+        # Make the matrix that defines the ellipse before transformation
+        ellipseM = [
+            [cosr*cosr*inv_rx2 + sinr*sinr*inv_ry2,
+            (inv_rx2 - inv_ry2)*cosr*sinr],
+            [(inv_rx2 - inv_ry2)*cosr*sinr,
+            sinr*sinr*inv_rx2 + cosr*cosr*inv_ry2]
+        ]
+
+        tM = matrix  # shorthand for transformMatrix
+        if tM[0][1] or tM[1][0]:
+            # The transformation includes a shear, so we have to do it the hard way.
+
+            # The shear/skew transformations are arcane magic, made by me finding 
+            # code examples on the web that were all wrong and having AI look at 
+            # them until it produced something that almost worked, and me tweaking
+            # it until it did pass all the tests. So don't expect me to be able to 
+            # explain this code, because I can't.
+            
+            # Invert the upper-left 2×2 of transformation matrix
+            d = tM[0][0]*tM[1][1] - tM[1][0]*tM[0][1]
+            if d == 0:
+                raise ValueError("Invalid transformation matrix")
+            invtM = [
+                [ tM[1][1]/d, -tM[0][1]/d],
+                [-tM[1][0]/d,  tM[0][0]/d]
+            ]
+
+            # Transpose of invtM
+            transtM = [
+                [invtM[0][0], invtM[1][0]],
+                [invtM[0][1], invtM[1][1]]
+            ]
+
+            # Multiply these with each other to get the new ellipse matrix
+            # D = transtM * ellipseM * invtM
+            newM = _matrix_mul(_matrix_mul(transtM, ellipseM), invtM)
+
+            # symmetrize newM
+            newM = [
+                [(newM[0][0] + newM[0][0]) * 0.5, (newM[0][1] + newM[1][0]) * 0.5],
+                [(newM[1][0] + newM[0][1]) * 0.5, (newM[1][1] + newM[1][1]) * 0.5]
+            ]
+
+            # Calculate eigen values and eigen vectors
+            eigvals, eigvecs = _eigen_symmetric(newM)
+
+            rx = 1.0 / sqrt(eigvals[0])
+            ry = 1.0 / sqrt(eigvals[1])
+            new_radius = complex(rx, ry)
+
+            xvec = eigvecs[0]  # eigenvector for smallest eigenvalue
+            rot = degrees(atan2(xvec[1], xvec[0]))
+        else:
+            # No shear, so we can do it the easy way
+            a = tM[0][0]
+            d = tM[1][1]
+
+            new_rx = rx * abs(a)
+            new_ry = ry * abs(d)
+            new_radius = complex(new_rx, new_ry)
+
+            rot = self.rotation
+            if (a * d) < 0.0:
+                rot = -rot
+
+        if matrix[0][0] * matrix[1][1] >= 0.0:
+            new_sweep = self.sweep
+        else:
+            new_sweep = not self.sweep
+
+        return self.__class__(
+            new_start,
+            radius=new_radius,
+            rotation=rot,
+            arc=self.arc,
+            sweep=new_sweep,
+            end=new_end,
+            relative=self.relative
+        )
+        
+    def transformtest(self, matrix):
+        import numpy as np
+        from functools import reduce
+        new_start = _xform(self.start, matrix)
+        new_end = _xform(self.end, matrix)
+
+        # Based on https://math.stackexchange.com/questions/2349726/
+        rx2 = self.radius.real ** 2
+        ry2 = self.radius.imag ** 2
+
+        # Build Q0 accounting for the arc's rotation angle
+        cosr = cos(radians(self.rotation))
+        sinr = sin(radians(self.rotation))
+        inv_rx2 = 1.0 / rx2
+        inv_ry2 = 1.0 / ry2
+        
+        Q = [
+            [cosr**2 * inv_rx2 + sinr**2 * inv_ry2, 
+             (inv_rx2 - inv_ry2) * cosr * sinr],
+            [(inv_rx2 - inv_ry2) * cosr * sinr, 
+             sinr**2 * inv_rx2 + cosr**2 * inv_ry2]
+        ]
+        d = matrix[0][0]*matrix[1][1] - matrix[1][0]*matrix[0][1]
+        invT = [
+                [ matrix[1][1]/d, -matrix[0][1]/d],
+                [-matrix[1][0]/d,  matrix[0][0]/d]
+            ]
+
+        invTT = [
+            [invT[0][0], invT[1][0]],
+            [invT[0][1], invT[1][1]]
+        ]
+
+        invTmp = np.array(invT)
+
+        D = reduce(np.matmul, [invTT, Q, invT])
+
+        eigvals, eigvecs = np.linalg.eigh(0.5*(D+D.T))  # symmetrized in case of floating point error; D already symmetric
+        print("NUM eigenvals", eigvals, eigvecs)
+
+        rx = 1 / np.sqrt(eigvals[0])
+        ry = 1 / np.sqrt(eigvals[1])
+
+        new_radius = complex(rx, ry)
+
+        xeigvec = eigvecs[:, 0]
+        rot = np.degrees(np.arctan2(xeigvec[1], xeigvec[0]))
+
+        if new_radius.real == 0 or new_radius.imag == 0 :
+            return Line(new_start, new_end)
+        else:
+            if matrix[0][0] * matrix[1][1] >= 0.0:
+                new_sweep = self.sweep
+            else:
+                new_sweep = not self.sweep
+            return self.__class__(new_start, radius=new_radius, rotation=rot,
+                       arc=self.arc, sweep=new_sweep, end=new_end, relative=self.relative)
+
+    def transformnp(self, matrix):
+        import numpy as np
+        from functools import reduce
+        new_start = _xform(self.start, matrix)
+        new_end = _xform(self.end, matrix)
+
+        # Based on https://math.stackexchange.com/questions/2349726/
+        rx2 = self.radius.real ** 2
+        ry2 = self.radius.imag ** 2
+
+        # Build Q0 accounting for the arc's rotation angle
+        cosr = cos(radians(self.rotation))
+        sinr = sin(radians(self.rotation))
+        inv_rx2 = 1.0 / rx2
+        inv_ry2 = 1.0 / ry2
+        
+        Q = np.array([
+            [cosr**2 * inv_rx2 + sinr**2 * inv_ry2, 
+             (inv_rx2 - inv_ry2) * cosr * sinr],
+            [(inv_rx2 - inv_ry2) * cosr * sinr, 
+             sinr**2 * inv_rx2 + cosr**2 * inv_ry2]
+        ])
+        invT = np.linalg.inv(matrix[:2,:2])
+        D = reduce(np.matmul, [invT.T, Q, invT])
+
+        eigvals, eigvecs = np.linalg.eigh(0.5*(D+D.T))  # symmetrized in case of floating point error; D already symmetric
+        print("NUM eigenvals", eigvals, eigvecs)
+
+        rx = 1 / np.sqrt(eigvals[0])
+        ry = 1 / np.sqrt(eigvals[1])
+
+        new_radius = complex(rx, ry)
+
+        xeigvec = eigvecs[:, 0]
+        rot = np.degrees(np.arctan2(xeigvec[1], xeigvec[0]))
+
+        if new_radius.real == 0 or new_radius.imag == 0 :
+            return Line(new_start, new_end)
+        else:
+            if matrix[0][0] * matrix[1][1] >= 0.0:
+                new_sweep = self.sweep
+            else:
+                new_sweep = not self.sweep
+            return self.__class__(new_start, radius=new_radius, rotation=rot,
+                       arc=self.arc, sweep=new_sweep, end=new_end, relative=self.relative)
+
+    def transformold(self, matrix):
         # This arcane magic is adapted from
         # https://math.stackexchange.com/questions/2068583/
         #
         #  A=1/a^2
         #  B/2=−tanβ/a^2
-        #  C=1/b^2+tan2β/a^2
+        #  C=1/b^2+tan^2β/a^2
         #  D=√((A+C)^2+B^2−4AC) (useful)
         #  λ1,2=(A+C∓D)/2
         #  new a = √(1/λ1)
         #  new b = √(1/λ2)
         #  new rotation = atan((A-C+D)/B)
-
+        print("="*30)
         new_rotation = self.rotation
         rx = self.radius.real
         ry = self.radius.imag
+        print("orig", rx, ry, rx*ry, new_rotation)
 
         # Now look for skews:
         skewx_angle = matrix[0][1]
         skewy_angle = matrix[1][0]
+        print("skews", skewx_angle, skewy_angle)
 
         if skewx_angle:
             a = self.radius.real
@@ -825,11 +1077,14 @@ class Arc(NonLinear):
             B = -2 * tan_beta / a**2
             C = (1 / b**2) + tan_beta**2 / a**2
             D = sqrt((A + C) ** 2 + B**2 - 4 * A * C)
+            #print("ABCD", A, B, C, D)
             lambda1 = (A + C - D) / 2
             lambda2 = (A + C + D) / 2
+            #print("lambdas", lambda1, lambda2)
             rx = sqrt(1 / lambda1)
             ry = sqrt(1 / lambda2)
-            new_rotation += degrees(atan((A - C + D) / B))
+            new_rotation = degrees(atan((A - C + D) / B))
+            print("new rotation", new_rotation)
 
         if skewy_angle:
             a = self.radius.imag
@@ -849,10 +1104,16 @@ class Arc(NonLinear):
             else:
                 rx = rxb
                 ry = ryb
-            new_rotation += degrees(atan((A - C + D) / B))
+            new_rotation = degrees(atan((A - C + D) / B))
 
         rx *= matrix[0][0]
         ry *= matrix[1][1]
+
+        # verify
+        print("new xy", rx, ry, rx*ry)
+        new_start = _xform(self.start, matrix)
+        new_end = _xform(self.end, matrix)
+        print("new start", new_start, "new end", new_end)
 
         return self.__class__(
             _xform(self.start, matrix),

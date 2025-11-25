@@ -10,6 +10,8 @@ class DebugTurtle:
         import turtle
 
         self.t = turtle.Turtle()
+        self.t.speed(0)
+        self.t.hideturtle()
         self.t.pencolor("gray")
         self.t.penup()
         self.t.goto(0, -100)
@@ -45,3 +47,8 @@ class DebugTurtle:
             self.t.goto(p.real, p.imag)
         self.t.penup()
         self.t.dot(3)
+
+    def done(self):
+        import turtle
+
+        turtle.done()
