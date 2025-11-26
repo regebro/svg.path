@@ -1,3 +1,4 @@
+from __future__ import annotations
 from math import sqrt, cos, sin, acos, atan, degrees, radians, log, pi, floor, ceil, atan2
 from typing import overload, Iterable, List, Tuple, Union, TYPE_CHECKING
 from bisect import bisect
