@@ -797,7 +797,7 @@ class Move(PathSegment):
         return self.start
 
     def tangent(self, pos: float) -> complex:
-        return 0
+        return 0j
 
     def length(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
         return 0
