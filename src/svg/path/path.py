@@ -951,7 +951,10 @@ class Path(PathType):
     ) -> Tuple[PathSegment, float]:
         # Shortcuts
         if pos == 0.0:
-            return self._segments[0], pos
+            if isinstance(self._segments[0], Move) and len(self._segments) > 1:
+                return self._segments[1], pos
+            else:
+                return self._segments[0], pos
         if pos == 1.0:
             return self._segments[-1], pos
 

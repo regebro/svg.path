@@ -795,26 +795,3 @@ class TestPath(unittest.TestCase):
         qb2 = QuadraticBezier(start=0, control=2 + 2j, end=4)
         # Length should be double, tangent is double.
         self.assertAlmostEqual(qb2.tangent(0.5) / qb1.tangent(0.5), 2)
-
-        # Code for visually verifying these tangents. I should make a test of this.
-        # import turtle
-        # t = turtle.Turtle()
-        # t.penup()
-
-        # for arc in (line1, line2, arc1, arc2, bez1, bez2):
-        # p = arc.point(0)
-        # t.goto(p.real*20, -p.imag*20)
-        # t.dot(3, 'black')
-        # t.pendown()
-        # for x in range(1, 101):
-        # p = arc.point(x * 0.01)
-        # t.goto(p.real*20,-p.imag*20)
-        # t.penup()
-        # t.dot(3, 'black')
-        # p = arc.point(0.5)
-        # t.goto(p.real*20,-p.imag*20)
-        # t.dot(3, 'red')
-        # t.pendown()
-        # p += arc.tangent(0.5)
-        # t.goto(p.real*20,-p.imag*20)
-        # t.penup()
