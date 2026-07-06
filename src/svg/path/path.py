@@ -940,7 +940,11 @@ class Path(PathType):
             self._lengths = lengths
         else:
             self._lengths = [each / self._length for each in lengths]
-        # Calculate the fractional distance for each segment to use in point()
+        # Calculate the fractional distance for each segment to use in point().
+        # Reset first: mutating the path only clears self._length, so a stale
+        # self._fractions from an earlier calculation would otherwise be
+        # appended to here, corrupting the segment lookup in _find_segment().
+        self._fractions = []
         fraction = 0.0
         for each in self._lengths:
             fraction += each
