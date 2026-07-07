@@ -7,6 +7,8 @@ Changelog
 
 - Better handling of tangents of paths that start with a Move()
 
+- Add a lengths() method on the Path class.
+
 
 7.0 (2025-07-06)
 ----------------
