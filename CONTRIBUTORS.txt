@@ -31,4 +31,4 @@ Udi Fuchs [udifuchs] added type annotations.
 
 Damien Tournoud [damz] added Path.lenghts().
 
- Vincent Gao [gaoflow] fixed a bug when modifying Paths.
+Vincent Gao [gaoflow] fixed a bug when modifying Paths.
