@@ -90,6 +90,23 @@ class PathTest(unittest.TestCase):
             clean = Path(*list(path))
             for pos in (0.0, 0.25, 0.5, 0.75, 1.0):
                 self.assertAlmostEqual(path.point(pos), clean.point(pos))
+                
+    def test_path_lengths(self) -> None:
+        path = parse_path("M 0 0 L 100 0 L 100 50 L 0 50 z")
+        self.assertAlmostEqual(path.length(), 300.0)
+        self.assertEqual(len(path), 5)
+
+        lengths = path.lengths
+        self.assertEqual(len(lengths), 5)
+        expected = [
+            0.0,
+            0.3333333333333333,
+            0.16666666666666666,
+            0.3333333333333333,
+            0.16666666666666666,
+        ]
+        for a, b in zip(lengths, expected):
+            self.assertAlmostEqual(a, b)
 
 
 # Most of these test points are not calculated separately, as that would

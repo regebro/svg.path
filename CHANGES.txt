@@ -12,6 +12,8 @@ Changelog
   point()/tangent() again returns correct results instead of wrong
   coordinates or an IndexError.
 
+- Add a lengths() method on the Path class.
+
 
 7.0 (2025-07-06)
 ----------------

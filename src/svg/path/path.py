@@ -928,6 +928,17 @@ class Path(PathType):
             return NotImplemented
         return not self == other
 
+    @property
+    def lengths(self) -> List[float]:
+        """The relative lengths of each segment in the path.
+
+        The sum of all lengths is 1.0, unless the path has zero length, in
+        which case all lengths are zero.
+        """
+        self._calc_lengths()
+        assert self._lengths is not None
+        return self._lengths
+
     def _calc_lengths(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> None:
         if self._length is not None:
             return
