@@ -7,7 +7,6 @@ from math import sqrt
 from svg.path.path import CubicBezier, QuadraticBezier, Line, Arc, PathSegment
 from .font import get_better_than_nothing_font
 
-
 RED = ImageColor.getrgb("red")
 GREEN = ImageColor.getrgb("limegreen")
 BLUE = ImageColor.getrgb("cornflowerblue")

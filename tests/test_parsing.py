@@ -41,10 +41,8 @@ class TestParser(unittest.TestCase):
         path2 = parse_path("M 100 200 L 200 100 -100 -200")
         self.assertEqual(path1, path2)
 
-        path1 = parse_path(
-            """M100,200 C100,100 250,100 250,200
-                              S400,300 400,200"""
-        )
+        path1 = parse_path("""M100,200 C100,100 250,100 250,200
+                              S400,300 400,200""")
         self.assertEqual(
             path1,
             Path(
@@ -99,10 +97,8 @@ class TestParser(unittest.TestCase):
             ),
         )
 
-        path1 = parse_path(
-            """M600,800 C625,700 725,700 750,800
-                              S875,900 900,800"""
-        )
+        path1 = parse_path("""M600,800 C625,700 725,700 750,800
+                              S875,900 900,800""")
         self.assertEqual(
             path1,
             Path(
@@ -156,13 +152,11 @@ class TestParser(unittest.TestCase):
             ),
         )
 
-        path1 = parse_path(
-            """M600,350 l 50,-25
+        path1 = parse_path("""M600,350 l 50,-25
                               a25,25 -30 0,1 50,-25 l 50,-25
                               a25,50 -30 0,1 50,-25 l 50,-25
                               a25,75 -30 0,1 50,-25 l 50,-25
-                              a25,100 -30 0,1 50,-25 l 50,-25"""
-        )
+                              a25,100 -30 0,1 50,-25 l 50,-25""")
         self.assertEqual(
             path1,
             Path(
@@ -389,21 +383,17 @@ class TestParser(unittest.TestCase):
         satisfy the production is encountered.
         """
         path18a = parse_path("M 20 40 H 40")
-        path18b = parse_path(
-            """M 20 40
-                 H 40"""
-        )
+        path18b = parse_path("""M 20 40
+                 H 40""")
         self.assertEqual(path18a, path18b)
         path18a = parse_path("M 20 60 H 40")
-        path18b = parse_path(
-            """
+        path18b = parse_path("""
                   M
                   20
                   60
                   H
                   40
-                  """
-        )
+                  """)
         self.assertEqual(path18a, path18b)
         path18a = parse_path("M 20 80 H40")
         path18b = parse_path("M       20,80          H    40")
