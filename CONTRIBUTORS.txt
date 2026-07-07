@@ -29,4 +29,6 @@ Benjamin Drung [bdrung] added a font to make tests non-flakey.
 
 Udi Fuchs [udifuchs] added type annotations.
 
-Damien Tournoud [damz] added Path.lenghts()
+Damien Tournoud [damz] added Path.lenghts().
+
+ Vincent Gao [gaoflow] fixed a bug when modifying Paths.
