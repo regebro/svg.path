@@ -9,6 +9,11 @@ Changelog
 
 - Add a lengths() method on the Path class.
 
+- Reset the cached segment fractions when a Path is re-measured, so that
+  mutating a Path (via del/setitem/insert/slice assignment) and calling
+  point()/tangent() again returns correct results instead of wrong
+  coordinates or an IndexError.
+
 
 7.0 (2025-07-06)
 ----------------

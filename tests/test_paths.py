@@ -80,6 +80,35 @@ class PathTest(unittest.TestCase):
         for a, b in zip(lengths, expected):
             self.assertAlmostEqual(a, b)
 
+    def test_measure_then_mutate_then_measure(self) -> None:
+        # Measuring a path caches per-segment fractional distances. Mutating
+        # the path (Path is a MutableSequence) must invalidate that cache so a
+        # subsequent measurement recomputes it correctly. Previously only the
+        # cached total length was cleared while the fractions list kept being
+        # appended to, so the second measurement corrupted the segment lookup.
+        square = "M 0,0 L 10,0 L 10,10 L 0,10 Z"
+
+        for mutate in (
+            lambda p: p.__setitem__(1, Line(0j, 20 + 0j)),
+            lambda p: p.__delitem__(1),
+            lambda p: p.insert(1, Line(0j, 5 + 0j)),
+            lambda p: p.__setitem__(slice(1, 2), parse_path("M 0,0 L 5,0")),
+        ):
+            path = parse_path(square)
+            path.length()  # first measurement primes the caches
+            # Ignore typing here, there's a bug in mypy with lambdas that take no arguments
+            mutate(path)  # type: ignore
+            path.length()  # second measurement must rebuild, not append
+
+            # The fractions cache must have exactly one entry per segment.
+            self.assertEqual(len(path._fractions), len(path))
+
+            # point() must agree with an identical, never-mutated path and must
+            # not raise IndexError from an over-long fractions list.
+            clean = Path(*list(path))
+            for pos in (0.0, 0.25, 0.5, 0.75, 1.0):
+                self.assertAlmostEqual(path.point(pos), clean.point(pos))
+
 
 # Most of these test points are not calculated separately, as that would
 # take too long and be too error prone. Instead the curves have been verified
