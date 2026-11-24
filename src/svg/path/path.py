@@ -728,6 +728,10 @@ class Arc(NonLinear):
         where pos ranges from 0 to 1
         """
 
+        if self.start == self.end or self.radius.real == 0 or self.radius.imag == 0:
+            # These arcs have no center parameterization.
+            return Line(self.start, self.end).boundingbox()
+
         # angle = radians(self.theta + (self.delta * pos))
         cosr = cos(radians(self.rotation))
         sinr = sin(radians(self.rotation))
