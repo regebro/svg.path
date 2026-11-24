@@ -63,6 +63,16 @@ class PathTest(unittest.TestCase):
         with pytest.raises(TypeError):
             path[1] = [Line(start=0j, end=(20 + 20j))]  # type: ignore
 
+    def test_boundingbox_degenerate_arcs(self) -> None:
+        cases = (
+            ("M 10 20 A 0 5 30 0 1 -30 40", [-30, 20, 10, 40]),
+            ("M 10 20 A 5 0 30 0 1 -30 40", [-30, 20, 10, 40]),
+            ("M 10 20 A 5 7 30 0 1 10 20", [10, 20, 10, 20]),
+        )
+        for pathdef, expected in cases:
+            with self.subTest(pathdef=pathdef):
+                self.assertEqual(parse_path(pathdef).boundingbox(), expected)
+
     def test_path_lengths(self) -> None:
         path = parse_path("M 0 0 L 100 0 L 100 50 L 0 50 z")
         self.assertAlmostEqual(path.length(), 300.0)
@@ -480,6 +490,21 @@ class QuadraticBezierTest(unittest.TestCase):
 
 
 class ArcTest(unittest.TestCase):
+    def test_boundingbox_zero_radius(self) -> None:
+        for radius in (0j, 5j, 5 + 0j):
+            with self.subTest(radius=radius):
+                arc = Arc(10 + 20j, radius, 30, 0, 1, -30 + 40j)
+                self.assertEqual(arc.boundingbox(), [-30, 20, 10, 40])
+
+    def test_boundingbox_identical_endpoints(self) -> None:
+        arc = Arc(10 + 20j, 5 + 7j, 30, 1, 0, 10 + 20j)
+        self.assertEqual(arc.boundingbox(), [10, 20, 10, 20])
+
+    def test_boundingbox_regular_ellipse(self) -> None:
+        arc = Arc(10 + 0j, 10 + 20j, 0, 0, 1, -10 + 0j)
+        for actual, expected in zip(arc.boundingbox(), [-10, 0, 10, 20]):
+            self.assertAlmostEqual(actual, expected)
+
     def test_points(self) -> None:
         arc1 = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertAlmostEqual(arc1.center, 100 + 0j)
