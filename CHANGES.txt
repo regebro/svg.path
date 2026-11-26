@@ -4,7 +4,8 @@ Changelog
 7.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Raise InvalidPathError for arc flags that are not 0 or 1, and for
+  truncated arc arguments, instead of leaking IndexError/AssertionError.
 
 
 7.1 (2026-07-07)

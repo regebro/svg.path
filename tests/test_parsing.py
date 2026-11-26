@@ -1,6 +1,7 @@
 import unittest
 from svg.path import CubicBezier, QuadraticBezier, Line, Arc, Path, Move, Close
 from svg.path import parse_path
+from svg.path.parser import InvalidPathError
 
 
 class TestParser(unittest.TestCase):
@@ -612,3 +613,15 @@ class TestParser(unittest.TestCase):
 
         path = parse_path("M 0..1")
         self.assertEqual(path.d(), "M 0,0.1")
+
+    def test_invalid_arc_flags(self) -> None:
+        """Arc flags must be exactly 0 or 1, and may not be omitted."""
+        for pathdef in (
+            "M 0 0 A 1 1 0 2 0 2 2",
+            "M 0 0 A 1 1 0 0 2 2 2",
+            "M 0 0 A 1 1 0 -1 0 2 2",
+            "M 0 0 A 1 1 0 0",
+            "M 0 0 A 1 1 0 1,",
+        ):
+            with self.assertRaises(InvalidPathError, msg=pathdef):
+                parse_path(pathdef)
