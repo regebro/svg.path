@@ -67,15 +67,17 @@ def pop_coordinate_pair(arg_array: bytearray) -> complex:
     return complex(x, y)
 
 
-def pop_flag(arg_array: bytearray) -> Union[bool, None]:
+def pop_flag(arg_array: bytearray) -> bool:
+    if not arg_array:
+        raise InvalidPathError("Expected an arc flag, got nothing.")
     flag = arg_array[0]
+    if flag not in (48, 49):  # ASCII 0 and 1
+        raise InvalidPathError(
+            f"Expected an arc flag (0 or 1), got '{chr(flag)}'."
+        )
     arg_array[0:1] = b""
     strip_array(arg_array)
-    if flag == 48:  # ASCII 0
-        return False
-    if flag == 49:  # ASCII 1
-        return True
-    return None
+    return flag == 49
 
 
 FIELD_POPPERS = {
