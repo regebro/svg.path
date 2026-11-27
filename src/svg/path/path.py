@@ -680,14 +680,19 @@ class Arc(NonLinear):
         return complex(x, y)
 
     def tangent(self, pos: float) -> complex:
+        if self.start == self.end or self.radius.real == 0 or self.radius.imag == 0:
+            return self.end - self.start
+
         angle = radians(self.theta + (self.delta * pos))
         cosr = cos(radians(self.rotation))
         sinr = sin(radians(self.rotation))
         radius = self.radius * self.radius_scale
 
-        x = cosr * cos(angle) * radius.real - sinr * sin(angle) * radius.imag
-        y = sinr * cos(angle) * radius.real + cosr * sin(angle) * radius.imag
-        return complex(x, y) * complex(0, 1)
+        # Differentiate the ellipse with respect to its angle, then rotate.
+        dx = -radius.real * sin(angle)
+        dy = radius.imag * cos(angle)
+        tangent = complex(cosr * dx - sinr * dy, sinr * dx + cosr * dy)
+        return tangent if self.sweep else -tangent
 
     def length(self, error: float = ERROR, min_depth: int = MIN_DEPTH) -> float:
         """The length of an elliptical arc segment requires numerical
