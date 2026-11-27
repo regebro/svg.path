@@ -4,7 +4,8 @@ Changelog
 7.2 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix the direction of tangents on elliptical arcs and reverse sweeps.
+  Arcs with a zero radius or coincident endpoints now return a tangent too.
 
 
 7.1 (2026-07-07)

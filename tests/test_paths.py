@@ -480,6 +480,21 @@ class QuadraticBezierTest(unittest.TestCase):
 
 
 class ArcTest(unittest.TestCase):
+    def test_tangent_follows_rotated_ellipse(self) -> None:
+        for sweep in (False, True):
+            with self.subTest(sweep=sweep):
+                arc = Arc(0j, 3 + 5j, 30, False, sweep, 20 + 10j)
+                pos = 0.25
+                chord = arc.point(pos + 0.0001) - arc.point(pos - 0.0001)
+                tangent = arc.tangent(pos)
+                self.assertAlmostEqual(tangent / abs(tangent), chord / abs(chord))
+
+    def test_degenerate_arc_tangent(self) -> None:
+        for radius, end in ((5j, 8 + 9j), (5 + 0j, 8 + 9j), (3 + 5j, 2 + 3j)):
+            with self.subTest(radius=radius, end=end):
+                arc = Arc(2 + 3j, radius, 0, False, True, end)
+                self.assertEqual(arc.tangent(0.5), end - arc.start)
+
     def test_points(self) -> None:
         arc1 = Arc(0j, 100 + 50j, 0, 0, 0, 100 + 50j)
         self.assertAlmostEqual(arc1.center, 100 + 0j)
